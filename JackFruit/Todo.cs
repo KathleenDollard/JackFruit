@@ -1,5 +1,4 @@
-﻿
-using ConsoleSupport;
+﻿using ConsoleSupport;
 using System.ComponentModel.DataAnnotations;
 
 class Todo

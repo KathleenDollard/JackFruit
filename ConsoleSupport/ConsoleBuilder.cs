@@ -30,7 +30,7 @@ namespace ConsoleSupport
                 // Could also support complex types for options and args
                 // Need to work out DI
                 CommandWithOptionsArgs(command, handler);
-                command.Handler = CommandHandler.Create((T1 x, T2 y)=>Console.WriteLine(handler.Compile()(x, y)));
+                command.Handler = CommandHandler.Create((T1 x, T2 y) => Console.WriteLine(handler.Compile()(x, y)));
                 return command;
 
                 Command CommandWithOptionsArgs(Command command, Expression<Func<T1, T2, TRet>> handler)
@@ -92,10 +92,11 @@ namespace ConsoleSupport
                 var output = rootCommand.Invoke(args);
             }
 
-            public void Run(string args)
+            public void Run(string? args)
             {
                 rootCommand = rootCommand ?? throw new InvalidOperationException("No CLI commands defined");
-                var output = rootCommand.Invoke(args);
+                args ??= "";
+                rootCommand.Invoke(args);
             }
 
             private Command GetCommand(string path,
