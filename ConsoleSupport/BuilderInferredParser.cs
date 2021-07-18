@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.CommandLine.Parsing;
-using System.CommandLine;
+﻿using System.CommandLine.Parsing;
 using System.CommandLine.Invocation;
-using System.Linq;
-using System.Linq.Expressions;
+
+// START HERE: Handle arguments specified as parts on options and aliases on options.
 
 namespace ConsoleSupport
 {
