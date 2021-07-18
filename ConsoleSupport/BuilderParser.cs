@@ -22,52 +22,19 @@ namespace ConsoleSupport
         // Could also support complex types for options and args
         // Need to work out DI
 
-        public static Command Map<T1, T2, TRet>(string def,
-                                         Command rootCommand,
-                                         Expression<Func<T1, T2, TRet>> handler,
-                                         IEnumerable<Type>? diTypes = default)
+        private static IEnumerable<(string? name, Type type)> GetHandlerParameters(LambdaExpression handler)
+               => handler.Parameters.Select(x => (x.Name, x.Type));
+
+
+        public static Command Map(string def, Command rootCommand, Delegate del)
         {
-            var parms = GetHandlerParameters(handler);
+            var parms = GetHandlerParameters(del);
             var leafCommand = GetCommand(rootCommand, def, parms);
-            var compiledHandler = handler.Compile();
-            leafCommand.Handler = CommandHandler.Create((T1 x, T2 y) => Console.WriteLine(compiledHandler(x, y)));
-            return rootCommand;
+            leafCommand.Handler = CommandHandler.Create(del);
+            return leafCommand;
 
-            static IEnumerable<(string? name, Type type)> GetHandlerParameters(Expression<Func<T1, T2, TRet>> handler)
-                => handler.Parameters.Select(x => (x.Name, x.Type));
-
-        }
-
-        public static Command Map<T1, TRet>(string def,
-                                 Command rootCommand,
-                                 Expression<Func<T1, TRet>> handler,
-                                 IEnumerable<Type>? diTypes = default)
-        {
-            var parms = GetHandlerParameters(handler);
-            var leafCommand = GetCommand(rootCommand, def, parms);
-            var compiledHandler = handler.Compile();
-            leafCommand.Handler = CommandHandler.Create((T1 x) => Console.WriteLine(compiledHandler(x)));
-            return rootCommand;
-
-            static IEnumerable<(string? name, Type type)> GetHandlerParameters(Expression<Func<T1, TRet>> handler)
-                => handler.Parameters.Select(x => (x.Name, x.Type));
-
-        }
-
-        public static Command Map<TRet>(string def,
-                                 Command rootCommand,
-                                 Expression<Func<TRet>> handler,
-                                 IEnumerable<Type>? diTypes = default)
-        {
-            var parms = GetHandlerParameters(handler);
-            var leafCommand = GetCommand(rootCommand, def, parms);
-            var compiledHandler = handler.Compile();
-            leafCommand.Handler = CommandHandler.Create(() => Console.WriteLine(compiledHandler));
-            return rootCommand;
-
-            static IEnumerable<(string? name, Type type)> GetHandlerParameters(Expression<Func<TRet>> handler)
-                => handler.Parameters.Select(x => (x.Name, x.Type));
-
+            static IEnumerable<(string? name, Type type)> GetHandlerParameters(Delegate del)
+                       => del.Method.GetParameters().Select(x => (x.Name, x.ParameterType));
         }
 
         public static Command Map(string def,
@@ -77,13 +44,123 @@ namespace ConsoleSupport
         {
             var parms = GetHandlerParameters(handler);
             var leafCommand = GetCommand(rootCommand, def, parms);
-            var compiledHandler = handler.Compile();
-            leafCommand.Handler = CommandHandler.Create(() => Console.WriteLine(compiledHandler));
-            return rootCommand;
+            leafCommand.Handler = CommandHandler.Create(() => Console.WriteLine(handler.Compile()));
+            return leafCommand;
+         }
 
-            static IEnumerable<(string? name, Type type)> GetHandlerParameters(Expression<Action> handler)
-                => handler.Parameters.Select(x => (x.Name, x.Type));
+        public static Command Map<TRet>(string def,
+                                 Command rootCommand,
+                                 Expression<Func<TRet>> handler,
+                                 IEnumerable<Type>? diTypes = default)
+        {
+            var parms = GetHandlerParameters(handler);
+            var leafCommand = GetCommand(rootCommand, def, parms);
+            leafCommand.Handler = CommandHandler.Create(() => Console.WriteLine(handler.Compile()));
+            return leafCommand;
         }
+
+        public static Command Map<T1, TRet>(string def,
+                                 Command rootCommand,
+                                 Expression<Func<T1, TRet>> handler,
+                                 IEnumerable<Type>? diTypes = default)
+        {
+            var parms = GetHandlerParameters(handler);
+            var leafCommand = GetCommand(rootCommand, def, parms);
+            leafCommand.Handler = CommandHandler.Create((T1 x) => Console.WriteLine(handler.Compile()(x)));
+            return rootCommand;
+        }
+
+
+        public static Command Map<T1, T2, TRet>(string def,
+                                         Command rootCommand,
+                                         Expression<Func<T1, T2, TRet>> handler,
+                                         IEnumerable<Type>? diTypes = default)
+        {
+            var parms = GetHandlerParameters(handler);
+            var leafCommand = GetCommand(rootCommand, def, parms);
+            leafCommand.Handler = CommandHandler.Create((T1 x, T2 y) => Console.WriteLine(handler.Compile()(x, y)));
+            return rootCommand;
+        }
+
+        public static Command Map<T1, T2, T3, TRet>(string def,
+                                         Command rootCommand,
+                                         Expression<Func<T1, T2, T3,TRet>> handler,
+                                         IEnumerable<Type>? diTypes = default)
+        {
+            var parms = GetHandlerParameters(handler);
+            var leafCommand = GetCommand(rootCommand, def, parms);
+            leafCommand.Handler = CommandHandler.Create((T1 x1, T2 x2, T3 x3) => Console.WriteLine(handler.Compile()(x1, x2, x3)));
+            return rootCommand;
+        }
+
+        public static Command Map<T1, T2, T3, T4, TRet>(string def,
+                                 Command rootCommand,
+                                 Expression<Func<T1, T2, T3, T4,TRet>> handler,
+                                 IEnumerable<Type>? diTypes = default)
+        {
+            var parms = GetHandlerParameters(handler);
+            var leafCommand = GetCommand(rootCommand, def, parms);
+            leafCommand.Handler = CommandHandler.Create((T1 x1, T2 x2, T3 x3, T4 x4) => Console.WriteLine(handler.Compile()(x1, x2, x3, x4)));
+            return rootCommand;
+        }
+
+
+        public static Command Map<T1, T2, T3, T4, T5,TRet>(string def,
+                                 Command rootCommand,
+                                 Expression<Func<T1, T2, T3, T4, T5,TRet>> handler,
+                                 IEnumerable<Type>? diTypes = default)
+        {
+            var parms = GetHandlerParameters(handler);
+            var leafCommand = GetCommand(rootCommand, def, parms);
+            leafCommand.Handler = CommandHandler.Create((T1 x1, T2 x2, T3 x3, T4 x4, T5 x5) => Console.WriteLine(handler.Compile()(x1, x2, x3, x4, x5)));
+            return rootCommand;
+        }
+
+        public static Command Map<T1, T2, T3, T4, T5,T6, TRet>(string def,
+                                 Command rootCommand,
+                                 Expression<Func<T1, T2, T3, T4, T5,T6, TRet>> handler,
+                                 IEnumerable<Type>? diTypes = default)
+        {
+            var parms = GetHandlerParameters(handler);
+            var leafCommand = GetCommand(rootCommand, def, parms);
+            leafCommand.Handler = CommandHandler.Create((T1 x1, T2 x2, T3 x3, T4 x4, T5 x5, T6 x6) => Console.WriteLine(handler.Compile()(x1, x2, x3, x4, x5, x6)));
+            return rootCommand;
+        }
+
+        public static Command Map<T1, T2, T3, T4, T5, T6, T7, TRet>(string def,
+                                 Command rootCommand,
+                                 Expression<Func<T1, T2, T3, T4, T5, T6,T7, TRet>> handler,
+                                 IEnumerable<Type>? diTypes = default)
+        {
+            var parms = GetHandlerParameters(handler);
+            var leafCommand = GetCommand(rootCommand, def, parms);
+            leafCommand.Handler = CommandHandler.Create((T1 x1, T2 x2, T3 x3, T4 x4, T5 x5, T6 x6, T7 x7) => Console.WriteLine(handler.Compile()(x1, x2, x3, x4, x5, x6, x7)));
+            return rootCommand;
+        }
+
+        public static Command Map<T1, T2, T3, T4, T5, T6, T7, T8, TRet>(string def,
+                         Command rootCommand,
+                         Expression<Func<T1, T2, T3, T4, T5, T6, T7, T8, TRet>> handler,
+                         IEnumerable<Type>? diTypes = default)
+        {
+            var parms = GetHandlerParameters(handler);
+            var leafCommand = GetCommand(rootCommand, def, parms);
+            leafCommand.Handler = CommandHandler.Create((T1 x1, T2 x2, T3 x3, T4 x4, T5 x5, T6 x6, T7 x7, T8 x8) => Console.WriteLine(handler.Compile()(x1, x2, x3, x4, x5, x6, x7, x8)));
+            return rootCommand;
+        }
+
+        public static Command Map<T1, T2, T3, T4, T5, T6, T7, T8, T9 ,TRet>(string def,
+                         Command rootCommand,
+                         Expression<Func<T1, T2, T3, T4, T5, T6, T7, T8, T9,TRet>> handler,
+                         IEnumerable<Type>? diTypes = default)
+        {
+            var parms = GetHandlerParameters(handler);
+            var leafCommand = GetCommand(rootCommand, def, parms);
+            leafCommand.Handler = CommandHandler.Create((T1 x1, T2 x2, T3 x3, T4 x4, T5 x5, T6 x6, T7 x7, T8 x8, T9 x9) => Console.WriteLine(handler.Compile()(x1, x2, x3, x4, x5, x6, x7, x8, x9)));
+            return rootCommand;
+        }
+
+
 
         private static Command GetCommand(Command rootCommand,
                                                        string def,

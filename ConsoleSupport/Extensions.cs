@@ -19,5 +19,16 @@ namespace ConsoleSupport
             }
             return -1;
         }
+
+        public static void AddRange<TKey, TValue>(this Dictionary<TKey, TValue> dict, Dictionary<TKey, TValue> range)
+            where TKey: notnull
+        {
+            foreach (var pair in range)
+            {
+                dict.Add(pair.Key, pair.Value);
+            }
+        }
     }
+
+
 }
