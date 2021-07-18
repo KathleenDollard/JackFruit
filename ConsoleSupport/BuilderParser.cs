@@ -25,7 +25,7 @@ namespace ConsoleSupport
         public static Command Map<T1, T2, TRet>(string def,
                                          Command rootCommand,
                                          Expression<Func<T1, T2, TRet>> handler,
-                                         IEnumerable<Type> diTypes)
+                                         IEnumerable<Type>? diTypes = default)
         {
             var parms = GetHandlerParameters(handler);
             var leafCommand = GetCommand(rootCommand, def, parms);
@@ -41,7 +41,7 @@ namespace ConsoleSupport
         public static Command Map<T1, TRet>(string def,
                                  Command rootCommand,
                                  Expression<Func<T1, TRet>> handler,
-                                 IEnumerable<Type> diTypes)
+                                 IEnumerable<Type>? diTypes = default)
         {
             var parms = GetHandlerParameters(handler);
             var leafCommand = GetCommand(rootCommand, def, parms);
@@ -54,12 +54,10 @@ namespace ConsoleSupport
 
         }
 
-
-
         public static Command Map<TRet>(string def,
                                  Command rootCommand,
                                  Expression<Func<TRet>> handler,
-                                 IEnumerable<Type> diTypes)
+                                 IEnumerable<Type>? diTypes = default)
         {
             var parms = GetHandlerParameters(handler);
             var leafCommand = GetCommand(rootCommand, def, parms);
@@ -72,11 +70,10 @@ namespace ConsoleSupport
 
         }
 
-
         public static Command Map(string def,
                         Command rootCommand,
                         Expression<Action> handler,
-                        IEnumerable<Type> diTypes)
+                        IEnumerable<Type>? diTypes = default)
         {
             var parms = GetHandlerParameters(handler);
             var leafCommand = GetCommand(rootCommand, def, parms);
@@ -94,8 +91,8 @@ namespace ConsoleSupport
         {
             rootCommand ??= new RootCommand();
             var (_, leafCommand, status, message) = FillCommandAndReturnNextPos(rootCommand, CommandLineStringSplitter.Instance.Split(def), parms);
-            return status == Status.Error 
-                        ? throw new InvalidOperationException(message) 
+            return status == Status.Error
+                        ? throw new InvalidOperationException(message)
                         : leafCommand;
         }
 
@@ -117,6 +114,10 @@ namespace ConsoleSupport
                 if (status == Status.Error)
                 {
 
+                }
+                if (symbol is not null)
+                {
+                    command.Add(symbol);
                 }
                 if (status == Status.EndOfDefinition) // if we support -- EODef won't always be rest is empty
                 {
