@@ -17,7 +17,7 @@ namespace JackFruit
 
             app.Map("", () => "Hello World {something interest}");
             app.Map("hello", () => new { Hello = "World" });
-            app.Map("throw", () => app.Throw(new Exception("uh oh")));
+            //app.Map("throw", () => app.Throw(new Exception("uh oh")));
             app.Map("error", () => "An error occurred. This should probably be formatted as Problem Details.");
             app.Map("todos sample", () => new[] {
                     new Todo { Id = 1, Title = "Do this" },

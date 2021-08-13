@@ -2,25 +2,33 @@
 {
     public class Results
     {
+        public string? Message { get; }
+
+        public Results(string? message)
+            => Message = message;
 
         public static Results Ok<T>(T value)
-        {
-            return new Results<T>(value);
-        }
+            => new ResultsOk<T>(value);
 
-        public static Results NotFound()
-        {
-            return new Results();
-        }
+        public static Results NotFound(string? message = null)
+            => new ResultsError(message ?? "Not found");
+
+        public static Results Error(string? message = null)
+            => new ResultsError(message ?? "Unknown error");
 
     }
 
-    public class Results<T> : Results
+    public class ResultsOk<T> : Results
     {
-        public Results(T value)
-        {
-            Value = value;
-        }
+        public ResultsOk(T value)
+            : base(null)
+            => Value = value;
+
         public T Value { get; }
+    }
+    public class ResultsError : Results
+    {
+        public ResultsError(string message)
+            : base(message) { }
     }
 }
