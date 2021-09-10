@@ -33,7 +33,8 @@ namespace JackFruit
             return 42;
         }
 
-        public static int RunAddPackage(string packageName, 
+        public static int RunAddPackage(FileInfo project, 
+                                        string packageName, 
                                         string version,
                                         string framework,
                                         bool noRestore,
@@ -45,14 +46,15 @@ namespace JackFruit
             return 43;
         }
 
-        public static int RunAddReference(DirectoryInfo ProjectPath, 
+        public static int RunAddReference(FileInfo project,
+                                          DirectoryInfo ProjectPath, 
                                           string framework,
                                           bool interactive)
         {
             return 44;
         }
 
-        public static int RunBuild(FileInfo project_solution,
+        public static int RunBuild(FileInfo projecOrSolution,
                                    bool useCurrentRuntime,
                                    string framework,
                                    string configuration,

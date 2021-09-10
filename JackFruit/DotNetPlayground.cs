@@ -38,7 +38,7 @@ namespace JackFruit
             app.MapInferred("add <PROJECT>", null); // null means command won't be run alone. If you need types, use a dummy delegate
             app.MapInferred("add package <PACKAGE_NAME>", Dotnet.RunAddPackage);
             app.MapInferred("add reference <PROJECT_PATH>", Dotnet.RunAddReference);
-            app.MapInferred("build <PROJECT|SOLUTION> " +
+            app.MapInferred("build <PROJECT_OR_SOLUTION> " +
                             "--runtime <RUNTIME_IDENTIFIER> " +
                             "--output <OUTPUT_DIR>", Dotnet.RunBuild);
 
