@@ -1,4 +1,4 @@
- module Tests
+module Tests
 
     open Xunit
     open FsUnit.Xunit
@@ -27,26 +27,57 @@
     type ``When parsing archetypes``() =
 
         [<Fact>]
-        member _.``Info is created from a simple archetype`` () =
-            let actual = parseArchetype "\"first\""
+        member _.``CommandDef is created from a empty archetype`` () =
+            let actual = parseArchetype "\"\""
 
-            actual.commandName |> should equal "first"
-           // Assert.Equal ("first", actual.commandName)
+            actual.CommandName |> should equal ""
 
         [<Fact>]
-        member _.``Parents are parsed from the archetype`` () =
+        member _.``CommandDef is created from a simple archetype`` () =
+            let actual = parseArchetype "\"first\""
+
+            actual.CommandName |> should equal "first"
+
+        [<Fact>]
+        member _.``Parents are parsed`` () =
             let expectedParentCommands = ["first"; "second"]
             let expectedCommandName = "third"
 
             let actual = parseArchetype "\"first second third\""
 
-            actual.commandName |> should equal expectedCommandName
-            actual.parentCommandNames |> should matchList expectedParentCommands
+            actual.CommandName |> should equal expectedCommandName
+            actual.ParentCommandNames |> should matchList expectedParentCommands
+        
+        [<Fact>]
+        member _.``Argument is parsed`` () =
+            let actual = parseArchetype "\"<arg1>\""
+            let expected = Some {ArgName = "arg1"; TypeName = None}
 
-            //Assert.Equal (expected.Length - 1, actual.parentCommandNames.Length)
-            //Assert.Equal (expected.[0], actual.commandName)
-            //Assert.Equal (expected.[1], actual.parentCommandNames.[0])
-            //Assert.Equal (expected.[2], actual.parentCommandNames.[1])
+            actual.Arg |> shouldEqual expected
+
+        [<Fact>]
+        member _.``Option is parsed`` () =
+            let actual = parseArchetype "\"--opt1\""
+            let expected = [{OptionName = "opt1"; TypeName = None}]
+
+            actual.Options |> should matchList expected
+
+        [<Fact>]
+        member _.``Complex archetype is parsed`` () =
+            let expectedParentCommands = ["first"; "second"]
+            let expectedCommandName = "third"
+            let expectedArg = {ArgName = "arg1" ; TypeName=None}
+            let expectedOptions =  [{OptionName = "opt1"; TypeName = None}; {OptionName="opt2"; TypeName=None}]
+            let parents = String.concat " " expectedParentCommands
+            let optionNames = String.concat "" [for o in expectedOptions do " --" + o.OptionName]
+            let archetype = $"{parents} {expectedCommandName} <{expectedArg.ArgName}> {optionNames}"
+
+            let actual = parseArchetype archetype
+
+            actual.CommandName |> should equal expectedCommandName
+            actual.ParentCommandNames |> should matchList expectedParentCommands
+            actual.Options |> should matchList expectedOptions
+
 
     type ``When creating commandDefs``() =
         [<Fact>]
@@ -57,7 +88,6 @@
             let actual = commandInfo tree
 
             actual |> should matchList noMappingCommandNames
-            //Assert.Equal (0, actual.Length)
 
         [<Fact>]
         member _.``One is found when there is one mapping`` () =
@@ -67,10 +97,9 @@
 
             let actual = commandInfo tree
             let actualNames = [ for c in actual do
-                                    c.archetype.commandName ]
+                                    c.Archetype.CommandName ]
 
             actualNames |> should matchList oneMappingCommandNames
-            // Assert.Equal (1, actual.Length)
 
         [<Fact>]
         member _.``Multiples are found when there are multiple mappings`` () =
@@ -80,10 +109,9 @@
 
             let actual = commandInfo tree
             let actualNames = [ for c in actual do
-                                    c.archetype.commandName ]
+                                    c.Archetype.CommandName ]
 
             actualNames |> should matchList threeMappingsCommandNames
-            //Assert.Equal (3, actual.Length)
 
 
         [<Fact>]

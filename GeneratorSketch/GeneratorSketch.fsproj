@@ -10,7 +10,6 @@
     <Compile Include="RoslynPatterns.fs" />
     <Compile Include="Patterns.fs" />
     <Compile Include="SyntaxVisitor.fs" />
-    <Compile Include="Cli.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
 

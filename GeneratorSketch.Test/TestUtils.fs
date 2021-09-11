@@ -6,6 +6,7 @@
     open System.Linq
     open GeneratorSketch.Generator
     open CSharpTestCode
+    open Xunit
 
     let testNamespace = "TestCode"
     let handlerMethod = "public static void MapInferred(string archetype, Delegate handler) {}"
@@ -75,8 +76,10 @@
                         | Error e -> invalidOp "Semantic model creation failed"
         let commandInfo = commandInfo tree
                          |> List.exactlyOne
-        evaluateHandler model commandInfo.handlerExpression
+        evaluateHandler model commandInfo.HandlerExpression
 
-
-
-
+    let shouldEqual (expected: 'a) (actual: 'a) =     
+        try
+            Assert.Equal<'a>(expected, actual)
+        with
+            | _ -> printf "Expected: %A\nActual: %A" expected actual 

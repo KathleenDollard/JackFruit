@@ -44,7 +44,7 @@ namespace JackFruit
 
         }
 
-        public Dictionary<string, string> GetDescriptions()
+        public static Dictionary<string, string> GetDescriptions()
            => new()
            {
                ["--additionalprobingpath"] = "Path containing probing policy and assemblies to probe for.",
