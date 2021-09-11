@@ -21,12 +21,11 @@
            }
         }"
             let actual = getSemanticModelFromSource source []
-            let concatErrors errors = String.concat "\n\r" [ for error in errors do
-                                                                    error.ToString() ]
             // KAD: How to do this reasonably
             let pass = match actual with
                         | Ok _ ->  true
                         | _ -> false
+
 
             Assert.True(pass)
 

@@ -3,11 +3,14 @@
     open FsUnit
     open Xunit
 
-    let createMethod name code = @$"
+    let createMethod name (statements: string list) = 
+        let code = String.concat "\r" statements 
+        @$"
         public void {name}()
         {{
             {code}
-        }}"
+        }}
+        "
 
     let createClass name code = @$"
         public class {name}

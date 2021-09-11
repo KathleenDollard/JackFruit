@@ -1,12 +1,11 @@
 ﻿
 // START HERE: Handle arguments specified as parts on options and aliases on options.
 
-using System.Collections.Generic;
 using System.CommandLine.Parsing;
 
 namespace ConsoleSupport
 {
-    internal class BuilderInferredParser
+    public class BuilderInferredParser
     {
         // !!!!!!!!!!! THIS FILLS INFO RECORDS INSTEAD OF BUILDING SYMBOLS BECAUSE IT WILL CHANGE TO SOURCE GENERATION !!!!!!!!!!!!
 
@@ -16,7 +15,7 @@ namespace ConsoleSupport
         internal void AddDIType(Type diType)
             => diTypes.Add(diType);
 
-        internal CommandInfo MapInferred(string def, Delegate? del)
+        public CommandInfo MapInferred(string def, Delegate? del)
         {
             var commandInfo = del is null
                                 ? GetParentOnlyCommand(def)

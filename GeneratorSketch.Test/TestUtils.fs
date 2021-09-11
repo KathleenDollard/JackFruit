@@ -9,24 +9,40 @@
     open Xunit
 
     let testNamespace = "TestCode"
-    let handlerMethod = "public static void MapInferred(string archetype, Delegate handler) {}"
 
-    let addMapStatementToTestCode (statement:string) =
-        let methods = [ createMethod "MethodA" statement; handlerMethod ]
+    let concatErrors errors = String.concat "\n\r" [ for error in errors do
+                                                            error.ToString() ]
+
+    let addMapStatementToTestCode (statements:string list) =
+        let methods = [ createMethod "MethodA" statements ]
         // KAD: can this pipe? I did not make that work
         let x = (String.concat "" (List.toSeq methods))
         createNamespace [] testNamespace (createClass "ClassA" x)
 
     let handlerSource = readCodeFromFile "..\..\..\TestHandlers.cs"
-    let oneMapping = addMapStatementToTestCode """MapInferred("", Handlers.A);"""
+    let oneMapping = addMapStatementToTestCode ["""var x = new ConsoleSupport.BuilderInferredParser(); x.MapInferred("", Handlers.A);"""]
 
-    let getCompilation (trees:SyntaxTree list) =
-        let baseCompilation = CSharpCompilation.Create("foo", options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
-        // KAD: Is there a way to combine these? 
-        let compilation2 = baseCompilation.AddSyntaxTrees (List.toArray trees)
-        compilation2.AddReferences(MetadataReference.CreateFromFile(typeof<Object>.Assembly.Location))
+
 
     let getSemanticModelFromFirstTree (trees:SyntaxTree list) =
+        let getCompilation (trees:SyntaxTree list) =
+            // KAD: Is there a better way to do this
+            let addReference r (compilation: CSharpCompilation) =
+                compilation.AddReferences([r])
+            let addSyntaxTrees trees (compilation: CSharpCompilation) =
+                compilation.AddSyntaxTrees(trees)
+            let core = typeof<obj>.Assembly.Location
+            let dir = IO.Path.GetDirectoryName(core)
+            let runtime = IO.Path.Combine(dir, "System.Runtime.dll")
+            let compilation = CSharpCompilation.Create(
+                                    "test", 
+                                    options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+                                    |> addReference (MetadataReference.CreateFromFile(core))
+                                    |> addReference (MetadataReference.CreateFromFile(runtime))
+                                    |> addReference (MetadataReference.CreateFromFile(@"ConsoleSupport.dll"))
+                                    |> addSyntaxTrees (trees.ToArray())
+            compilation  
+
         let compilation = getCompilation trees
         let errors = [ for diag in compilation.GetDiagnostics() do
                           if diag.Severity = DiagnosticSeverity.Error then
@@ -74,7 +90,7 @@
         let model = match modelResult with 
                         | Ok m -> m
                         | Error e -> invalidOp "Semantic model creation failed"
-        let commandInfo = commandInfo tree
+        let commandInfo = archetypeInfoFrom (SyntaxTree tree)
                          |> List.exactlyOne
         evaluateHandler model commandInfo.HandlerExpression
 

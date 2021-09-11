@@ -36,7 +36,7 @@ module Patterns =
         | _ -> None
 
     
-    let memberInvocations (syntaxTree: SyntaxTree) =
+    let mapInferredInvocations (syntaxTree: SyntaxTree) =
         [ for node in syntaxTree.GetRoot().DescendantNodes() do
              match node with 
              | SimpleInvocationByName "MapInferred" t -> t

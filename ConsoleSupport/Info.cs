@@ -1,13 +1,13 @@
 ﻿namespace ConsoleSupport
 {
-    internal record Info();
+    public record Info();
 
-    internal record OptionInfo : Info
+    public record OptionInfo : Info
     {
         private readonly List<string> aliases = new();
 
 
-        internal OptionInfo(string name, Type type, string? alias = null, string? argHelpName = null)
+        public OptionInfo(string name, Type type, string? alias = null, string? argHelpName = null)
         {
             Name = name;
             Type = type;
@@ -18,34 +18,34 @@
             ArgHelpName = argHelpName;
         }
 
-        internal void AddAlias(string alias) 
+        public void AddAlias(string alias) 
             => aliases.Add(alias);
 
-        internal string Name { get; init; }
-        internal Type Type { get; init; }
-        internal string? ArgHelpName { get; init; }
-        internal IEnumerable<string> Aliases => aliases;
+        public string Name { get; init; }
+        public Type Type { get; init; }
+        public string? ArgHelpName { get; init; }
+        public IEnumerable<string> Aliases => aliases;
     }
-    internal record ArgInfo : Info
+    public record ArgInfo : Info
     {
 
-        internal ArgInfo(string name, Type type)
+        public ArgInfo(string name, Type type)
         {
             Name = name;
             Type = type;
         }
 
-        internal string Name { get; init; }
-        internal Type Type { get; init; }
+        public string Name { get; init; }
+        public Type Type { get; init; }
     }
-    internal record CommandInfo : Info
+    public record CommandInfo : Info
     {
         private readonly List<ArgInfo> arguments = new();
         private readonly List<OptionInfo> options = new();
         private readonly List<CommandInfo> parents = new();
         private readonly List<string> aliases = new();
 
-        internal CommandInfo(string name, string? alias = null)
+        public CommandInfo(string name, string? alias = null)
         {
             Name = name;
             if (alias is not null)
@@ -54,7 +54,7 @@
             }
         }
 
-        internal void Add(Info info)
+        public void Add(Info info)
         {
             switch (info)
             {
@@ -69,15 +69,15 @@
             }
         }
 
-        internal void AddParents(IEnumerable<CommandInfo> parents)
+        public void AddParents(IEnumerable<CommandInfo> parents)
             => this.parents.AddRange(parents);
 
-        internal string Name { get; init; }
-        internal Delegate? Delegate { get; set; }
-        internal IEnumerable<string> Aliases => aliases;
-        internal IEnumerable<OptionInfo> Options => options;
-        internal IEnumerable<CommandInfo> Parents => parents;
-        internal IEnumerable<ArgInfo> Arguments => arguments;
+        public string Name { get; init; }
+        public Delegate? Delegate { get; set; }
+        public IEnumerable<string> Aliases => aliases;
+        public IEnumerable<OptionInfo> Options => options;
+        public IEnumerable<CommandInfo> Parents => parents;
+        public IEnumerable<ArgInfo> Arguments => arguments;
     }
 
 }

@@ -23,13 +23,17 @@ module Generator =
           Arg: ArgDef option
           Options: OptionDef list }
 
-    type CommandInfo =
+    type ArchetypeInfo =
         { Archetype: CommandDef
           HandlerExpression: ExpressionSyntax }
 
     type HandlerIdentifier =
         { HandlerName: string
           Parents: string list }
+
+    type Source =
+        | SyntaxTree of SyntaxTree
+        | Code of string
 
     let (|Command|Arg|Option|) (part: string) =
         match part.Trim().ToCharArray() with
@@ -97,7 +101,7 @@ module Generator =
           Arg = argDef
           Options = optionDefs }
 
-    let commandInfo (syntaxTree: SyntaxTree) =
+    let archetypeInfoFrom (source: Source) =
         let archetypeFromArgument (arg: ExpressionSyntax) =
             let argString =
                 match arg with
@@ -106,15 +110,19 @@ module Generator =
 
             parseArchetype argString
 
-        let invocations = Patterns.memberInvocations syntaxTree
+        let archetypeFromSyntaxTree (tree: SyntaxTree) =
+            let invocations = Patterns.mapInferredInvocations tree
 
-        [ for invoke in invocations do
-              match invoke.args with
-              | [ a; d ] ->
-                  { Archetype = (archetypeFromArgument a.Expression)
-                    HandlerExpression = d.Expression }
-              | _ -> () ]
+            [ for invoke in invocations do
+                  match invoke.args with
+                  | [ a; d ] ->
+                      { Archetype = (archetypeFromArgument a.Expression)
+                        HandlerExpression = d.Expression }
+                  | _ -> () ]
 
+        match source with
+        | SyntaxTree tree -> archetypeFromSyntaxTree tree
+        | Code code -> archetypeFromSyntaxTree (CSharpSyntaxTree.ParseText( code))
 
     // Probably do not ned this
     let rec splitHandlerExpression expression =
@@ -163,7 +171,7 @@ module Generator =
                     Seq.toList context.Compilation.SyntaxTrees
 
                 for tree in syntaxTrees do
-                    let commands = commandInfo tree
+                    let commands = archetypeInfoFrom (Source.SyntaxTree tree)
 
                     let model =
                         context.Compilation.GetSemanticModel tree
