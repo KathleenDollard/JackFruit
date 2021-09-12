@@ -88,20 +88,18 @@
             invalidOp "Compilation failed during Arrange"
         tree
 
-    //let buildHandler mapping handlerSource =
-    //    let tree = parseTreeThrowOnErrors mapping
-    //    let handlerTree = parseTreeThrowOnErrors handlerSource
+    let modelFrom (source: Source) (handlerSource: Source) =
+        let tree = match syntaxTreeResult source with
+                   | Ok tr -> tr
+                   | Error errors -> invalidOp (concatErrors errors)
+        let handlerTree = match syntaxTreeResult handlerSource with
+                   | Ok tr -> tr
+                   | Error errors -> invalidOp (concatErrors errors)
 
-    //    let modelResult = getSemanticModelFromFirstTree [tree; handlerTree]
-    //    let model = match modelResult with 
-    //                    | Ok m -> m
-    //                    | Error e -> invalidOp "Semantic model creation failed"
-    //    let archetypeInfoResult = archetypeInfoFrom (SyntaxTree tree)
-    //    let archetypeInfo = match archetypeInfoResult with
-    //                        | Ok arch -> List.exactlyOne arch
-    //                        | Error errors -> invalidOp (concatErrors errors)
-
-    //    evaluateHandler model archetypeInfo.HandlerExpression
+        let modelResult = getSemanticModelFromFirstTree [tree; handlerTree]
+        match modelResult with 
+              | Ok model -> model
+              | Error e -> invalidOp "Semantic model creation failed"
 
     let shouldEqual (expected: 'a) (actual: 'a) =     
         try

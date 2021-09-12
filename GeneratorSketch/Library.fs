@@ -44,7 +44,10 @@ module Generator =
             | '-' -> Option
             | _ -> Command
 
-    let getSyntaxTreeResult  (tree: SyntaxTree) =
+    let syntaxTreeResult  (source: Source) =
+        let tree = match source with 
+                   | SyntaxTree tree -> tree
+                   | Code code -> CSharpSyntaxTree.ParseText code
         let errors = [ for diag in tree.GetDiagnostics() do
                         if diag.Severity = DiagnosticSeverity.Error then diag]
         if errors.IsEmpty then Ok tree
@@ -126,16 +129,11 @@ module Generator =
                           HandlerExpression = d.Expression }
                     | _ -> () ]
 
-        let archetypeFromSyntaxTree (tree: SyntaxTree) =
 
-            let result = getSyntaxTreeResult tree
-            match result with
-            | Ok _ -> Ok (archetypesFromInvocatios tree)
-            | Error errors -> Error errors
-
-        match source with
-        | SyntaxTree tree -> archetypeFromSyntaxTree tree
-        | Code code -> archetypeFromSyntaxTree (CSharpSyntaxTree.ParseText( code))
+        let result = syntaxTreeResult source
+        match result with
+        | Ok tree -> Ok (archetypesFromInvocatios tree)
+        | Error errors -> Error errors
 
     // Probably do not ned this
     let rec splitHandlerExpression expression =

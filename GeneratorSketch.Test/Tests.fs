@@ -135,17 +135,26 @@ type ``When creating archetypeInfo from mapping``() =
 
 
  type ``When creating commandDefs from handlers``() =
+    let archetypesFromSource source =
+        let source = addMapStatements false source
+        let model = modelFrom (Code source) (Code handlerSource)
+
+        match archetypeInfoFrom (Source.SyntaxTree model.SyntaxTree) with
+        | Ok archetype -> archetype
+        | Error errors -> invalidOp (concatErrors errors)
 
     [<Fact>]
     member _.``Handler name is found as method in separate class``() =
+        let actual = archetypesFromSource oneMapping
+                    |> List.exactlyOne
+        let source = addMapStatements false oneMapping
+        let model = modelFrom (Code source) (Code handlerSource)
 
-        let source = addMapStatements true oneMapping
-        let modelResult = getSemanticModelFromFirstTree [tree; handlerTree]
-        let model = match modelResult with 
-                    | Ok m -> m
-                    | Error e -> invalidOp "Semantic model creation failed"
+        let archetypeInfo = match archetypeInfoFrom (Source.SyntaxTree model.SyntaxTree) with
+                            | Ok archetype -> archetype
+                            | Error errors -> invalidOp (concatErrors errors)
+                            |> List.exactlyOne
 
-        let archetypeInfo = archetypeInfoFrom (Code source)
         let handler = evaluateHandler model archetypeInfo.HandlerExpression
 
         handler |> should not' (be Null)
@@ -153,4 +162,5 @@ type ``When creating archetypeInfo from mapping``() =
         handler.ToString()
         |> should haveSubstring "Handlers.A"
 
-    //    handler.Parameters.Count() |> should equal 2
+    [<Fact>]
+    member _.``Option and Argument types are updated on command``() =
