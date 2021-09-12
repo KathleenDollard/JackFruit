@@ -44,6 +44,12 @@ module Generator =
             | '-' -> Option
             | _ -> Command
 
+    let getSyntaxTreeResult  (tree: SyntaxTree) =
+        let errors = [ for diag in tree.GetDiagnostics() do
+                        if diag.Severity = DiagnosticSeverity.Error then diag]
+        if errors.IsEmpty then Ok tree
+        else Error errors
+
     let parseArchetype (archetype: string) =
         let cleanArchetype (arch: string) =
             // KAD: How to simplify code in this method
@@ -110,15 +116,22 @@ module Generator =
 
             parseArchetype argString
 
-        let archetypeFromSyntaxTree (tree: SyntaxTree) =
+        let archetypesFromInvocatios tree = 
             let invocations = Patterns.mapInferredInvocations tree
-
+            
             [ for invoke in invocations do
-                  match invoke.args with
-                  | [ a; d ] ->
-                      { Archetype = (archetypeFromArgument a.Expression)
-                        HandlerExpression = d.Expression }
-                  | _ -> () ]
+                    match invoke.args with
+                    | [ a; d ] ->
+                        { Archetype = (archetypeFromArgument a.Expression)
+                          HandlerExpression = d.Expression }
+                    | _ -> () ]
+
+        let archetypeFromSyntaxTree (tree: SyntaxTree) =
+
+            let result = getSyntaxTreeResult tree
+            match result with
+            | Ok _ -> Ok (archetypesFromInvocatios tree)
+            | Error errors -> Error errors
 
         match source with
         | SyntaxTree tree -> archetypeFromSyntaxTree tree
@@ -167,15 +180,28 @@ module Generator =
                 ()
 
             member ISourceGenerator.Execute(context: GeneratorExecutionContext) : unit =
-                let syntaxTrees =
-                    Seq.toList context.Compilation.SyntaxTrees
+            //    let syntaxTrees = Seq.toList context.Compilation.SyntaxTrees
 
-                for tree in syntaxTrees do
-                    let commands = archetypeInfoFrom (Source.SyntaxTree tree)
+            //    let commandsFromHandler = 
+            //        let model =
+            //            context.Compilation.GetSemanticModel tree
 
-                    let model =
-                        context.Compilation.GetSemanticModel tree
+            //        for command in commands do
+            //            generate model command
+                ()                    
 
-                    for command in commands do
-                        generate model command
-                        ()
+            //    let archetypeInfos = [for tree in syntaxTrees do
+            //                            archetypeInfoFrom (Source.SyntaxTree tree)]
+            //    let archetypes = [for archInfos in archetypeInfos do 
+            //                        match archInfos with 
+            //                        | Ok arch -> arch 
+            //                        | Error _ -> () ]
+
+            //    let syntaxErrors = [for archInfos in archetypeInfos do 
+            //                            match archInfos with 
+            //                            | Ok _ -> () 
+            //                            | Error errors -> errors ]
+                
+
+
+

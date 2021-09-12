@@ -13,6 +13,12 @@
     let concatErrors errors = String.concat "\n\r" [ for error in errors do
                                                             error.ToString() ]
 
+    let CommandNamesFromArchetypeInfo (result: Result<ArchetypeInfo list, Diagnostic list>) = 
+        match result with 
+        | Ok archetypes -> [for arch in archetypes do
+                                arch.Archetype.CommandName ]
+        | Error errors-> invalidOp (concatErrors errors)
+
     let addMapStatementToTestCode (statements:string list) =
         let methods = [ createMethod "MethodA" statements ]
         // KAD: can this pipe? I did not make that work
@@ -82,17 +88,20 @@
             invalidOp "Compilation failed during Arrange"
         tree
 
-    let buildHandler mapping handlerSource =
-        let tree = parseTreeThrowOnErrors mapping
-        let handlerTree = parseTreeThrowOnErrors handlerSource
+    //let buildHandler mapping handlerSource =
+    //    let tree = parseTreeThrowOnErrors mapping
+    //    let handlerTree = parseTreeThrowOnErrors handlerSource
 
-        let modelResult = getSemanticModelFromFirstTree [tree; handlerTree]
-        let model = match modelResult with 
-                        | Ok m -> m
-                        | Error e -> invalidOp "Semantic model creation failed"
-        let commandInfo = archetypeInfoFrom (SyntaxTree tree)
-                         |> List.exactlyOne
-        evaluateHandler model commandInfo.HandlerExpression
+    //    let modelResult = getSemanticModelFromFirstTree [tree; handlerTree]
+    //    let model = match modelResult with 
+    //                    | Ok m -> m
+    //                    | Error e -> invalidOp "Semantic model creation failed"
+    //    let archetypeInfoResult = archetypeInfoFrom (SyntaxTree tree)
+    //    let archetypeInfo = match archetypeInfoResult with
+    //                        | Ok arch -> List.exactlyOne arch
+    //                        | Error errors -> invalidOp (concatErrors errors)
+
+    //    evaluateHandler model archetypeInfo.HandlerExpression
 
     let shouldEqual (expected: 'a) (actual: 'a) =     
         try

@@ -7,6 +7,7 @@ open Microsoft.CodeAnalysis.CSharp
 open System.Linq
 open TestUtils
 open CSharpTestCode
+open Microsoft.CodeAnalysis
 
 let badMapping = """MapInferredX("", Handlers.X);"""
 
@@ -103,61 +104,53 @@ type ``When parsing archetypes``() =
         actual.Options |> should matchList expectedOptions
 
 
-type ``When creating commandDefs from mapping``() =
+type ``When creating archetypeInfo from mapping``() =
     [<Fact>]
     member _.``None are found when there are none``() =
         let source = addMapStatements true noMapping
-        let tree = CSharpSyntaxTree.ParseText(source)
 
-        let actual = archetypeInfoFrom (SyntaxTree tree)
+        let actual = archetypeInfoFrom (Code source)
+        let actualNames =CommandNamesFromArchetypeInfo actual
 
-        actual |> should matchList noMappingCommandNames
+        actualNames |> should matchList noMappingCommandNames
 
     [<Fact>]
     member _.``One is found when there is one``() =
         let source = addMapStatements true oneMapping
-        let tree = CSharpSyntaxTree.ParseText(source)
 
-        if tree.GetDiagnostics().Count() > 0 then
-            invalidOp "Compilation failed during Arrange"
-
-        let actual = archetypeInfoFrom (SyntaxTree tree)
-
-        let actualNames =
-            [ for c in actual do
-                  c.Archetype.CommandName ]
+        let actual = archetypeInfoFrom (Code source)
+        let actualNames =CommandNamesFromArchetypeInfo actual
 
         actualNames |> should matchList oneMappingCommandNames
 
     [<Fact>]
     member _.``Multiples are found when there are multiple``() =
         let source = addMapStatements true threeMappings
-        let tree = CSharpSyntaxTree.ParseText(source)
 
-        if tree.GetDiagnostics().Count() > 0 then
-            invalidOp "Compilation failed during Arrange"
-
-        let actual = archetypeInfoFrom (SyntaxTree tree)
-
-        let actualNames =
-            [ for c in actual do
-                  c.Archetype.CommandName ]
+        let actual = archetypeInfoFrom (Code source)
+        let actualNames =CommandNamesFromArchetypeInfo actual
 
         actualNames
         |> should matchList threeMappingsCommandNames
 
 
- //type ``When creating commandDefs from handlers``() =
-    //let handlerExpr = 
+ type ``When creating commandDefs from handlers``() =
 
-    //[<Fact>]
-    //member _.``Handler name is found as method in separate class``() =
+    [<Fact>]
+    member _.``Handler name is found as method in separate class``() =
 
-    //    let handler = buildHandler oneMapping handlerSource
+        let source = addMapStatements true oneMapping
+        let modelResult = getSemanticModelFromFirstTree [tree; handlerTree]
+        let model = match modelResult with 
+                    | Ok m -> m
+                    | Error e -> invalidOp "Semantic model creation failed"
 
-    //    handler |> should not' (be Null)
+        let archetypeInfo = archetypeInfoFrom (Code source)
+        let handler = evaluateHandler model archetypeInfo.HandlerExpression
 
-    //    handler.ToString()
-    //    |> should haveSubstring "Handlers.A"
+        handler |> should not' (be Null)
+
+        handler.ToString()
+        |> should haveSubstring "Handlers.A"
 
     //    handler.Parameters.Count() |> should equal 2
