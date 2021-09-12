@@ -135,25 +135,18 @@ type ``When creating archetypeInfo from mapping``() =
 
 
  type ``When creating commandDefs from handlers``() =
-    let archetypesFromSource source =
+    let archetypesAndModelFromSource source =
         let source = addMapStatements false source
         let model = modelFrom (Code source) (Code handlerSource)
 
         match archetypeInfoFrom (Source.SyntaxTree model.SyntaxTree) with
-        | Ok archetype -> archetype
+        | Ok archetypes -> (archetypes, model)
         | Error errors -> invalidOp (concatErrors errors)
 
     [<Fact>]
     member _.``Handler name is found as method in separate class``() =
-        let actual = archetypesFromSource oneMapping
-                    |> List.exactlyOne
-        let source = addMapStatements false oneMapping
-        let model = modelFrom (Code source) (Code handlerSource)
-
-        let archetypeInfo = match archetypeInfoFrom (Source.SyntaxTree model.SyntaxTree) with
-                            | Ok archetype -> archetype
-                            | Error errors -> invalidOp (concatErrors errors)
-                            |> List.exactlyOne
+        let (archetypes, model) = archetypesAndModelFromSource oneMapping
+        let archetypeInfo = archetypes |> List.exactlyOne 
 
         let handler = evaluateHandler model archetypeInfo.HandlerExpression
 
@@ -162,5 +155,5 @@ type ``When creating archetypeInfo from mapping``() =
         handler.ToString()
         |> should haveSubstring "Handlers.A"
 
-    [<Fact>]
-    member _.``Option and Argument types are updated on command``() =
+    //[<Fact>]
+    //member _.``Option and Argument types are updated on command``() =
