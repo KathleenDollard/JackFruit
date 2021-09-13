@@ -37,6 +37,10 @@ module Generator =
         | Code of string
 
     let (|Command|Arg|Option|) (part: string) =
+        // KAD: For arg and option, it seems easiest to return the ArgDef and OptionDef currently created
+        //      in parseArchteype. However, I do not have enough info here to return the full CommandDef
+        //      and it seems anti-symmetric to either return just the Command name, or to return a partially
+        //      created Command that is not yet valid. 
         let part = part.Trim()
 
         if part.Length = 0 then
@@ -68,8 +72,6 @@ module Generator =
             Error errors
 
     let parseArchetype (archetype: string) =
-
-
         let stringSplitOptions =
             System.StringSplitOptions.RemoveEmptyEntries
             ||| System.StringSplitOptions.TrimEntries
@@ -79,6 +81,10 @@ module Generator =
                 .Split(' ', stringSplitOptions)
             |> Array.toList
 
+        // This is the Commands in reverse order so the actual command is first
+        // Given 'dotnet add package'
+        //      The actual command is 'package'
+        //      It's parent is 'add' and it's grandparent is 'dotnet'
         let commandParts =
             [ for part in parts do
                   match part with
@@ -86,6 +92,7 @@ module Generator =
                   | _ -> () ]
             |> List.rev
 
+        // The root command does not have to be stated, and it may have options/args
         let commandName =
             if commandParts.IsEmpty then
                 ""
@@ -115,7 +122,7 @@ module Generator =
           Options = optionDefs }
 
     let archetypeInfoFrom (source: Source) =
-        let archetypeFromArgument (arg: ExpressionSyntax) =
+        let archetypeFromStringExpression (arg: ExpressionSyntax) =
             let argString =
                 match arg with
                 | StringLiteralExpression -> arg.ToFullString()
@@ -123,35 +130,22 @@ module Generator =
 
             parseArchetype argString
 
-        let archetypesFromInvocatios tree =
+        let archetypesFromInvocations tree =
             let invocations = Patterns.mapInferredInvocations tree
 
             [ for invoke in invocations do
                   match invoke.args with
                   | [ a; d ] ->
-                      { Archetype = (archetypeFromArgument a.Expression)
+                      { Archetype = (archetypeFromStringExpression a.Expression)
                         HandlerExpression = d.Expression }
                   | _ -> () ]
 
-
-        let result = syntaxTreeResult source
-
-        match result with
-        | Ok tree -> Ok(archetypesFromInvocatios tree)
+        match syntaxTreeResult source with
+        | Ok tree -> Ok(archetypesFromInvocations tree)
         | Error errors -> Error errors
 
-    // Probably do not ned this
-    let rec splitHandlerExpression expression =
-        match expression with
-        | SimpleMemberAccessExpression (leftExpression, identifier) ->
-            identifier.ToString()
-            :: splitHandlerExpression leftExpression
-        | IdentifierNameSyntax (_, identifier) -> [ identifier.ToString() ]
-        | _ -> invalidOp "Unexpected handler expression, for example lambdas aren't supported"
 
     let methodFromHandler (model: SemanticModel) expression =
-        let identifier = splitHandlerExpression expression
-
         let handler =
             model.GetSymbolInfo(expression: ExpressionSyntax)
 
