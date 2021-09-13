@@ -106,3 +106,16 @@
             Assert.Equal<'a>(expected, actual)
         with
             | _ -> printf "Expected: %A\nActual: %A" expected actual 
+
+    let shouldBeSome (expected: 'a) (actual: Option<'a>) = 
+        match actual with 
+        | Some v -> Assert.Equal<'a>(expected, v)
+        | None -> Assert.Equal("Some", "None") //hack
+
+    let shouldBeNone (actual: Option<'a>) = 
+        match actual with 
+        | Some _ -> Assert.Equal("None", "Some") //hack
+        | None -> ()
+
+
+    

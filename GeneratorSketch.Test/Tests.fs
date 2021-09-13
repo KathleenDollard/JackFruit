@@ -2,6 +2,7 @@ module Tests
 
 open Xunit
 open FsUnit.Xunit
+open FsUnit.CustomMatchers
 open GeneratorSketch.Generator
 open Microsoft.CodeAnalysis.CSharp
 open System.Linq
@@ -148,12 +149,22 @@ type ``When creating archetypeInfo from mapping``() =
         let (archetypes, model) = archetypesAndModelFromSource oneMapping
         let archetypeInfo = archetypes |> List.exactlyOne 
 
-        let handler = evaluateHandler model archetypeInfo.HandlerExpression
+        let actual = methodFromHandler model archetypeInfo.HandlerExpression
 
-        handler |> should not' (be Null)
+        actual |> should not' (be Null)
 
-        handler.ToString()
+        actual.ToString()
         |> should haveSubstring "Handlers.A"
 
-    //[<Fact>]
-    //member _.``Option and Argument types are updated on command``() =
+    [<Fact>]
+    member _.``Option and Argument types are updated on command``() =
+        let (archetypes, model) = archetypesAndModelFromSource oneMapping
+        let archetypeInfo = archetypes |> List.exactlyOne 
+        let methodSymbol = methodFromHandler model archetypeInfo.HandlerExpression
+
+        let actual = copyUpdateArchetypeInfoFromSymbol archetypeInfo methodSymbol
+
+        actual.Archetype.Arg |> shouldBeNone
+        actual.Archetype.Options |> should haveLength 1
+        let firstOption = actual.Archetype.Options.[0]
+        firstOption |> should equal {OptionName="one"; TypeName=Some "string"}

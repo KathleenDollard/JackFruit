@@ -144,7 +144,7 @@ module Generator =
         | IdentifierNameSyntax (_, identifier) -> [ identifier.ToString() ]
         | _ -> invalidOp "Unexpected handler expression, for example lambdas aren't supported"
 
-    let evaluateHandler (model: SemanticModel) expression =
+    let methodFromHandler (model: SemanticModel) expression =
         let identifier = splitHandlerExpression expression
 
         let handler =
@@ -163,11 +163,39 @@ module Generator =
 
         methodSymbol
 
+    let copyUpdateArchetypeInfoFromSymbol archetypeInfo methodSymbol =
+        let parameterFromMethodSymbol name (methodSymbol: IMethodSymbol) =
+            let candidates = [for p in methodSymbol.Parameters do
+                                if p.Name = name then p ]
+            match candidates with 
+            | [] -> None
+            | _ -> Some candidates.[0]
+
+        let mergeArgWithParameter initialArg methodSymbol =
+            let newArg initialArg methodSymbol =
+                match parameterFromMethodSymbol initialArg.ArgName methodSymbol with
+                | Some parameter -> Some { initialArg with TypeName = Some (parameter.Type.ToString())}
+                | None -> Some initialArg
+            match initialArg with 
+            | Some arg -> newArg arg methodSymbol
+            | None -> None
+
+        let mergeOptionsWithParameters initialOptions methodSymbol =
+            [ for option in initialOptions do 
+                match parameterFromMethodSymbol option.OptionName methodSymbol with
+                | Some parameter -> { option with TypeName = Some (parameter.Type.ToString())}
+                | None -> ()]
+
+        { archetypeInfo with 
+            Archetype = 
+                {archetypeInfo.Archetype with 
+                    Arg = mergeArgWithParameter archetypeInfo.Archetype.Arg methodSymbol;
+                    Options = mergeOptionsWithParameters archetypeInfo.Archetype.Options methodSymbol }}
 
 
     let generate model commandInfo =
         let handlerDef =
-            evaluateHandler model commandInfo.HandlerExpression
+            methodFromHandler model commandInfo.HandlerExpression
         //let method = findMethod semanticModel handlerName
         ()
 
