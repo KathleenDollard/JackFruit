@@ -4,6 +4,7 @@ open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp
 open Microsoft.CodeAnalysis.CSharp.Syntax
 open FSharp.CodeAnalysis.CSharp.RoslynPatterns
+open Utils
 
 module Generator =
 
@@ -36,72 +37,75 @@ module Generator =
         | Code of string
 
     let (|Command|Arg|Option|) (part: string) =
-        match part.Trim().ToCharArray() with
-        | [||] -> Command
-        | _ ->
-            match part.[0] with
-            | '<' -> Arg
-            | '-' -> Option
-            | _ -> Command
+        let part = part.Trim()
 
-    let syntaxTreeResult  (source: Source) =
-        let tree = match source with 
-                   | SyntaxTree tree -> tree
-                   | Code code -> CSharpSyntaxTree.ParseText code
-        let errors = [ for diag in tree.GetDiagnostics() do
-                        if diag.Severity = DiagnosticSeverity.Error then diag]
-        if errors.IsEmpty then Ok tree
-        else Error errors
+        if part.Length = 0 then
+            Command part
+        else
+            match part.[0] with
+            | '<' when part.[part.Length - 1] = '>' ->
+                Arg(removeLeadingTrailing '<' '>' part.[1..part.Length - 2])
+            | '<' -> invalidOp "Unmatched '<' found"
+            | '-' when part.Length = 1 -> invalidOp "Options must have a name, extra '-' found."
+            | '-' when part.[1] = '-' -> Option part.[2..]
+            | '-' -> Option part.[1..]
+            | _ -> Command part
+
+    let syntaxTreeResult (source: Source) =
+        let tree =
+            match source with
+            | SyntaxTree tree -> tree
+            | Code code -> CSharpSyntaxTree.ParseText code
+
+        let errors =
+            [ for diag in tree.GetDiagnostics() do
+                  if diag.Severity = DiagnosticSeverity.Error then
+                      diag ]
+
+        if errors.IsEmpty then
+            Ok tree
+        else
+            Error errors
 
     let parseArchetype (archetype: string) =
-        let cleanArchetype (arch: string) =
-            // KAD: How to simplify code in this method
-            // KAD: Why do I need to specify the type if the first line is Trim?
-            let temp = arch.Trim()
 
-            let temp1 =
-                if temp.[0] = '"' then
-                    temp.[1..]
-                else
-                    temp
 
-            let pos = temp1.Length - 1
+        let stringSplitOptions =
+            System.StringSplitOptions.RemoveEmptyEntries
+            ||| System.StringSplitOptions.TrimEntries
 
-            if temp1.[pos] = '"' then
-                temp1.[0..pos - 1]
-            else
-                temp1
-        let cleanArgName (name: string) =
-            match name.[0] with
-            | '<' -> name.[1..name.Length-2]  // assume if open angle, also close angle
-            | _ -> name
-        let cleanOptionName(name: string) =
-            match (name.[0], name.[1]) with
-            | ('-','-') -> name.[2..]
-            | ('-', _ ) -> name.[1..]
-            | _ -> name
-
-        let stringSplitOptions = System.StringSplitOptions.RemoveEmptyEntries ||| System.StringSplitOptions.TrimEntries
         let parts =
-            (cleanArchetype archetype).Split(' ',stringSplitOptions)  |> Array.toList
+            (removeLeadingTrailingDoubleQuote archetype)
+                .Split(' ', stringSplitOptions)
+            |> Array.toList
+
         let commandParts =
             [ for part in parts do
                   match part with
-                  | Command -> part
+                  | Command commandName -> commandName
                   | _ -> () ]
             |> List.rev
-        let commandName = if commandParts.IsEmpty then "" else commandParts.[0]
+
+        let commandName =
+            if commandParts.IsEmpty then
+                ""
+            else
+                commandParts.[0]
+
         let argDef =
             [ for part in parts do
                   match part with
-                  | Arg -> { ArgName = cleanArgName part; TypeName = Some "" }
+                  | Arg argName ->
+                      { ArgName = argName
+                        TypeName = Some "" }
                   | _ -> () ]
             |> List.tryExactlyOne
+
         let optionDefs =
             [ for part in parts do
                   match part with
-                  | Option ->
-                      { OptionName = cleanOptionName part
+                  | Option optionName ->
+                      { OptionName = optionName
                         TypeName = None }
                   | _ -> () ]
 
@@ -119,20 +123,21 @@ module Generator =
 
             parseArchetype argString
 
-        let archetypesFromInvocatios tree = 
+        let archetypesFromInvocatios tree =
             let invocations = Patterns.mapInferredInvocations tree
-            
+
             [ for invoke in invocations do
-                    match invoke.args with
-                    | [ a; d ] ->
-                        { Archetype = (archetypeFromArgument a.Expression)
-                          HandlerExpression = d.Expression }
-                    | _ -> () ]
+                  match invoke.args with
+                  | [ a; d ] ->
+                      { Archetype = (archetypeFromArgument a.Expression)
+                        HandlerExpression = d.Expression }
+                  | _ -> () ]
 
 
         let result = syntaxTreeResult source
+
         match result with
-        | Ok tree -> Ok (archetypesFromInvocatios tree)
+        | Ok tree -> Ok(archetypesFromInvocatios tree)
         | Error errors -> Error errors
 
     // Probably do not ned this
@@ -165,32 +170,40 @@ module Generator =
 
     let copyUpdateArchetypeInfoFromSymbol archetypeInfo methodSymbol =
         let parameterFromMethodSymbol name (methodSymbol: IMethodSymbol) =
-            let candidates = [for p in methodSymbol.Parameters do
-                                if p.Name = name then p ]
-            match candidates with 
+            let candidates =
+                [ for p in methodSymbol.Parameters do
+                      if p.Name = name then p ]
+
+            match candidates with
             | [] -> None
             | _ -> Some candidates.[0]
 
         let mergeArgWithParameter initialArg methodSymbol =
             let newArg initialArg methodSymbol =
                 match parameterFromMethodSymbol initialArg.ArgName methodSymbol with
-                | Some parameter -> Some { initialArg with TypeName = Some (parameter.Type.ToString())}
+                | Some parameter ->
+                    Some
+                        { initialArg with
+                              TypeName = Some(parameter.Type.ToString()) }
                 | None -> Some initialArg
-            match initialArg with 
+
+            match initialArg with
             | Some arg -> newArg arg methodSymbol
             | None -> None
 
         let mergeOptionsWithParameters initialOptions methodSymbol =
-            [ for option in initialOptions do 
-                match parameterFromMethodSymbol option.OptionName methodSymbol with
-                | Some parameter -> { option with TypeName = Some (parameter.Type.ToString())}
-                | None -> ()]
+            [ for option in initialOptions do
+                  match parameterFromMethodSymbol option.OptionName methodSymbol with
+                  | Some parameter ->
+                      { option with
+                            TypeName = Some(parameter.Type.ToString()) }
+                  | None -> () ]
 
-        { archetypeInfo with 
-            Archetype = 
-                {archetypeInfo.Archetype with 
-                    Arg = mergeArgWithParameter archetypeInfo.Archetype.Arg methodSymbol;
-                    Options = mergeOptionsWithParameters archetypeInfo.Archetype.Options methodSymbol }}
+        { archetypeInfo with
+              Archetype =
+                  { archetypeInfo.Archetype with
+                        Arg = mergeArgWithParameter archetypeInfo.Archetype.Arg methodSymbol
+                        Options = mergeOptionsWithParameters archetypeInfo.Archetype.Options methodSymbol } }
 
 
     let generate model commandInfo =
@@ -206,28 +219,24 @@ module Generator =
                 ()
 
             member ISourceGenerator.Execute(context: GeneratorExecutionContext) : unit =
-            //    let syntaxTrees = Seq.toList context.Compilation.SyntaxTrees
+                //    let syntaxTrees = Seq.toList context.Compilation.SyntaxTrees
 
-            //    let commandsFromHandler = 
-            //        let model =
-            //            context.Compilation.GetSemanticModel tree
+                //    let commandsFromHandler =
+                //        let model =
+                //            context.Compilation.GetSemanticModel tree
 
-            //        for command in commands do
-            //            generate model command
-                ()                    
+                //        for command in commands do
+                //            generate model command
+                ()
 
-            //    let archetypeInfos = [for tree in syntaxTrees do
-            //                            archetypeInfoFrom (Source.SyntaxTree tree)]
-            //    let archetypes = [for archInfos in archetypeInfos do 
-            //                        match archInfos with 
-            //                        | Ok arch -> arch 
-            //                        | Error _ -> () ]
+//    let archetypeInfos = [for tree in syntaxTrees do
+//                            archetypeInfoFrom (Source.SyntaxTree tree)]
+//    let archetypes = [for archInfos in archetypeInfos do
+//                        match archInfos with
+//                        | Ok arch -> arch
+//                        | Error _ -> () ]
 
-            //    let syntaxErrors = [for archInfos in archetypeInfos do 
-            //                            match archInfos with 
-            //                            | Ok _ -> () 
-            //                            | Error errors -> errors ]
-                
-
-
-
+//    let syntaxErrors = [for archInfos in archetypeInfos do
+//                            match archInfos with
+//                            | Ok _ -> ()
+//                            | Error errors -> errors ]
