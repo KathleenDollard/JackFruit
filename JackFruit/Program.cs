@@ -1,59 +1,28 @@
 ﻿using ConsoleSupport;
 
-var builder = ConsoleApplication.CreateBuilder(args);
-var app = builder.Build(); // Optional. Can appear anywhere before Run
+var builder = ConsoleApplication.CreateBuilder();
+// Add Services here
+var app = builder.Build(); 
 app.UseExceptionHandler();
 
-app.AddDescriptions(GetDescriptions());
-app.AddAliases(GetAliases());
+// Reasons to not just infer: 
+// * Avoid coupling, or recover from conflicts when names do not match
+// * Alias
+//      `--output|-o`
+// * Option argument name differs from option name
+//      `--output <outpuPath>`
+// * Specifying DI (ideas)
+//      Infer from type (at least do this, maybe do another) 
+//      `<DI:service`
+//      `[service` // conflicts with directives
+//      `{serviceName}`            // confusing with interpolated strings
+//      attributes on parameter    // would couple methods via delegates and uglify lambdas
+//      parameter `di_servicename` // some convention
+//      Additional parameters on Map/MapInferred methods
 
-//app.Map("todos <id>", (int id, TodoDb db) => Todo.GetTodo(id, db));
-//app.Map("todos --id <identity>", (int id, TodoDb db) => Todo.GetTodo(id, db));
-//app.Map("todos", (int id, TodoDb db) => Todo.GetTodo(id, db));
-//app.Map("todos --x --y", (int id, TodoDb db) => Todo.GetTodo(id, db));
-//app.Map("todos --a --b", (int id, TodoDb db) => Todo.GetTodo(id, db));
+//FirstPlayground.DefineCli(app);
+DotNetPlayground.DefineCli(app);
 
-app.Map("/",() => "Hello World {something interest}");
-app.Map("/hello", () => new { Hello = "World" });
-app.Map("/throw", () => throw new Exception("uh oh"));
-app.Map("/error", () => "An error occurred. This should probably be formatted as Problem Details.");
-app.Map("/todos/sample", () => new[] {
-    new Todo { Id = 1, Title = "Do this" },
-    new Todo { Id = 2, Title = "Do this too" }
-});
-app.Map("/todos/{id}", (int id, TodoDb db) => Todo.GetTodo(id, db));
+// Use app.Run(args) to just run once
+return app.RunInLoop(args);
 
-// You can just run, but this lets you play around. Definitely try help.
-while (true)
-{
-    var input = Console.ReadLine();
-    app.Run(input);
-}
-
-Dictionary<string, string> GetDescriptions()
-    => new()
-    {
-        ["/"] = "Simple Hello world",
-        ["/hello"] = "Fancy Hello world",
-        ["/throw"] = "Throw for testing",
-        ["/error"] = "Display error, later from handler (may not make sense at Console)",
-        ["/todos/sample"] = "Display sample data",
-        ["/todos"] = "List todos",
-        ["/todos/incomplete"] = "List things you still need to do",
-        ["/todos/complete"] = "List things you have done",
-        ["/todos/{id}"] = "Display details for one to do item"
-    };
-
-Dictionary<string, string> GetAliases()
-    => new()
-    {
-        ["/"] = null,
-        ["/hello"] = null,
-        ["/throw"] = null,
-        ["/error"] = null,
-        ["/todos/sample"] = "s",
-        ["/todos"] = null,
-        ["/todos/incomplete"] = null,
-        ["/todos/complete"] = null,
-        ["/todos/{id}"] = null
-    };

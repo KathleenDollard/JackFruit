@@ -11,11 +11,9 @@ namespace ConsoleSupport
         public static (string first, string rest) Split(string input)
         {
             var pos = input.IndexOf('/');
-            if (pos < 0)
-            {
-                return (input, "");
-            }
-            return (input[..pos], input[(pos + 1)..]);
+            return pos < 0 
+                ? (input, "") 
+                : (input[..pos], input[(pos + 1)..]);
         }
     }
 }
