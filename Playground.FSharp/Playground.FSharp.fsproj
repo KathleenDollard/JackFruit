@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <WarnOn>3390;$(WarnOn)</WarnOn>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
@@ -15,10 +15,6 @@
 
   <ItemGroup>
     <PackageReference Include="FSharp.Core.Fluent-4.0" Version="1.0.0.6" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Playground\Playground.csproj" />
   </ItemGroup>
 
 </Project>

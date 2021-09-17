@@ -179,7 +179,6 @@ let c = {id = 42; faveColor = "yellow"; active = true}
 let main argv =
 
     FSharp6.Test
-    Playground.Program.Index()
 
     let a = true
     let x = 42    // inferred as integer 

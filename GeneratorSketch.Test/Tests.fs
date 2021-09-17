@@ -160,9 +160,12 @@ type ``When creating archetypeInfo from mapping``() =
     member _.``Option and Argument types are updated on command``() =
         let (archetypes, model) = archetypesAndModelFromSource oneMapping
         let archetypeInfo = archetypes |> List.exactlyOne 
-        let methodSymbol = methodFromHandler model archetypeInfo.HandlerExpression
+        let methodSymbolResult = methodFromHandler model archetypeInfo.HandlerExpression
 
-        let actual = copyUpdateArchetypeInfoFromSymbol archetypeInfo methodSymbol
+        let actual = 
+            match methodSymbolResult with 
+            | Some methodSymbol -> copyUpdateArchetypeInfoFromSymbol archetypeInfo methodSymbol
+            | None -> invalidOp "Method symbol not found during arrange"
 
         actual.Archetype.Arg |> shouldBeNone
         actual.Archetype.Options |> should haveLength 1

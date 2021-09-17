@@ -20,10 +20,10 @@
         | Error errors-> invalidOp (concatErrors errors)
 
     let addMapStatementToTestCode (statements:string list) =
-        let methods = [ createMethod "MethodA" statements ]
-        // KAD: can this pipe? I did not make that work
-        let x = (String.concat "" (List.toSeq methods))
-        createNamespace [] testNamespace (createClass "ClassA" x)
+        let methods = 
+            [ createMethod "MethodA" statements ]
+            |> String.concat ""
+        createNamespace [] testNamespace (createClass "ClassA" methods)
 
     let handlerSource = readCodeFromFile "..\..\..\TestHandlers.cs"
     let oneMapping = addMapStatementToTestCode ["""var x = new ConsoleSupport.BuilderInferredParser(); x.MapInferred("", Handlers.A);"""]
@@ -31,30 +31,24 @@
 
 
     let getSemanticModelFromFirstTree (trees:SyntaxTree list) =
-        let getCompilation (trees:SyntaxTree list) =
-            // KAD: Is there a better way to do this
-            let addReference r (compilation: CSharpCompilation) =
-                compilation.AddReferences([r])
-            let addSyntaxTrees trees (compilation: CSharpCompilation) =
-                compilation.AddSyntaxTrees(trees)
+        let compilation = 
             let core = typeof<obj>.Assembly.Location
-            let dir = IO.Path.GetDirectoryName(core)
-            let runtime = IO.Path.Combine(dir, "System.Runtime.dll")
-            let compilation = CSharpCompilation.Create(
-                                    "test", 
-                                    options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
-                                    |> addReference (MetadataReference.CreateFromFile(core))
-                                    |> addReference (MetadataReference.CreateFromFile(runtime))
-                                    |> addReference (MetadataReference.CreateFromFile(@"ConsoleSupport.dll"))
-                                    |> addSyntaxTrees (trees.ToArray())
-            compilation  
+            let runtime = 
+                let dir = IO.Path.GetDirectoryName(core)
+                IO.Path.Combine(dir, "System.Runtime.dll")
+            CSharpCompilation.Create(
+                "test", 
+                syntaxTrees = trees,
+                references = [
+                        MetadataReference.CreateFromFile(core)
+                        MetadataReference.CreateFromFile(runtime)
+                        MetadataReference.CreateFromFile(@"ConsoleSupport.dll")],
+                options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
 
-        let compilation = getCompilation trees
-        let errors = [ for diag in compilation.GetDiagnostics() do
+        let errors = 
+            [ for diag in compilation.GetDiagnostics() do
                           if diag.Severity = DiagnosticSeverity.Error then
-                              diag
-                          else
-                              ()]
+                              diag]
         if errors.IsEmpty then
             match trees with 
                         | [] -> invalidOp "Model not found for tree"
@@ -62,16 +56,37 @@
         else
             Error errors
 
-    let getSemanticModelFromSource (code:string) (otherCode:string list) =
-        let trees = (CSharpSyntaxTree.ParseText code)::
-                                [ for source in otherCode do
-                                    (CSharpSyntaxTree.ParseText source) ]
-        getSemanticModelFromFirstTree trees
+
+    let getSemanticModelFromSource (source: Source) (otherSources:Source list) =
+        let treeResults = 
+            syntaxTreeResult source::
+            [ for src in otherSources do
+                syntaxTreeResult src]
+
+        // KAD: Is there an easier way to tease these apart than traversing the list twice
+        let errors = 
+            [ for result in treeResults do 
+                match result with 
+                | Error resultErrors -> 
+                    for error in resultErrors do
+                        error
+                | Ok _ -> ()]
+
+        if errors.IsEmpty then
+            getSemanticModelFromFirstTree 
+                [ for result in treeResults do 
+                    match result with 
+                    | Ok tree -> tree
+                    | Error _ -> ()]
+        else
+            Error errors
+
 
     let isResultOk result = 
         match result with 
         | Ok _ -> true
         | Error e -> false
+
 
     let isModelOk modelResult =
         let errorMessages =
@@ -82,11 +97,13 @@
         printfn "%s" errorMessages
         isResultOk modelResult
 
+
     let parseTreeThrowOnErrors (source: string) =
         let tree = CSharpSyntaxTree.ParseText(source)     
         if tree.GetDiagnostics().Count() > 0 then 
             invalidOp "Compilation failed during Arrange"
         tree
+
 
     let modelFrom (source: Source) (handlerSource: Source) =
         let tree = match syntaxTreeResult source with
@@ -101,16 +118,19 @@
               | Ok model -> model
               | Error e -> invalidOp "Semantic model creation failed"
 
+
     let shouldEqual (expected: 'a) (actual: 'a) =     
         try
             Assert.Equal<'a>(expected, actual)
         with
             | _ -> printf "Expected: %A\nActual: %A" expected actual 
 
+
     let shouldBeSome (expected: 'a) (actual: Option<'a>) = 
         match actual with 
         | Some v -> Assert.Equal<'a>(expected, v)
         | None -> Assert.Equal("Some", "None") //hack
+
 
     let shouldBeNone (actual: Option<'a>) = 
         match actual with 

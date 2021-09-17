@@ -10,19 +10,23 @@ module Generator =
 
     let initialize () = ()
 
+
     type ArgDef =
         { ArgName: string
           TypeName: string option }
 
+
     type OptionDef =
         { OptionName: string
           TypeName: string option }
+
 
     type CommandDef =
         { CommandName: string
           ParentCommandNames: string list
           Arg: ArgDef option
           Options: OptionDef list }
+
 
     type ArchetypeInfo =
         { Archetype: CommandDef
@@ -36,24 +40,25 @@ module Generator =
         | SyntaxTree of SyntaxTree
         | Code of string
 
+
     let (|Command|Arg|Option|) (part: string) =
         // KAD: For arg and option, it seems easiest to return the ArgDef and OptionDef currently created
         //      in parseArchteype. However, I do not have enough info here to return the full CommandDef
         //      and it seems anti-symmetric to either return just the Command name, or to return a partially
-        //      created Command that is not yet valid. 
+        //      created Command that is not yet valid.
         let part = part.Trim()
 
         if part.Length = 0 then
             Command part
         else
             match part.[0] with
-            | '<' when part.[part.Length - 1] = '>' ->
-                Arg(removeLeadingTrailing '<' '>' part.[1..part.Length - 2])
+            | '<' when part.[part.Length - 1] = '>' -> Arg(removeLeadingTrailing '<' '>' part.[1..part.Length - 2])
             | '<' -> invalidOp "Unmatched '<' found"
             | '-' when part.Length = 1 -> invalidOp "Options must have a name, extra '-' found."
             | '-' when part.[1] = '-' -> Option part.[2..]
             | '-' -> Option part.[1..]
             | _ -> Command part
+
 
     let syntaxTreeResult (source: Source) =
         let tree =
@@ -63,13 +68,14 @@ module Generator =
 
         let errors =
             [ for diag in tree.GetDiagnostics() do
-                  if diag.Severity = DiagnosticSeverity.Error then
-                      diag ]
+                if diag.Severity = DiagnosticSeverity.Error then
+                     diag ]
 
         if errors.IsEmpty then
             Ok tree
         else
             Error errors
+
 
     let parseArchetype (archetype: string) =
         let stringSplitOptions =
@@ -121,6 +127,7 @@ module Generator =
           Arg = argDef
           Options = optionDefs }
 
+
     let archetypeInfoFrom (source: Source) =
         let archetypeFromStringExpression (arg: ExpressionSyntax) =
             let argString =
@@ -155,12 +162,10 @@ module Generator =
             | null -> handler.CandidateSymbols.[0]
             | _ -> handler.Symbol
 
-        let methodSymbol =
-            match symbol with
-            | :? IMethodSymbol as m -> m
-            | _ -> invalidOp "Symbol not method type"
+        match symbol with
+        | :? IMethodSymbol as m -> Some m
+        | _ -> None
 
-        methodSymbol
 
     let copyUpdateArchetypeInfoFromSymbol archetypeInfo methodSymbol =
         let parameterFromMethodSymbol name (methodSymbol: IMethodSymbol) =
@@ -192,7 +197,8 @@ module Generator =
                       { option with
                             TypeName = Some(parameter.Type.ToString()) }
                   | None -> () ]
-
+        // KAD: The logic for options is backward, peruse the method parameters and attempt match
+        //      If the method does not take the parameter, we do not care. 
         { archetypeInfo with
               Archetype =
                   { archetypeInfo.Archetype with
