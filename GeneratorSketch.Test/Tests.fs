@@ -9,6 +9,7 @@ open System.Linq
 open TestUtils
 open CSharpTestCode
 open Microsoft.CodeAnalysis
+open Model
 
 let badMapping = """MapInferredX("", Handlers.X);"""
 

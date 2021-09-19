@@ -106,17 +106,19 @@
 
 
     let modelFrom (source: Source) (handlerSource: Source) =
-        let tree = match syntaxTreeResult source with
-                   | Ok tr -> tr
-                   | Error errors -> invalidOp (concatErrors errors)
-        let handlerTree = match syntaxTreeResult handlerSource with
-                   | Ok tr -> tr
-                   | Error errors -> invalidOp (concatErrors errors)
+        let tree = 
+            match syntaxTreeResult source with
+            | Ok tr -> tr
+            | Error errors -> invalidOp (concatErrors errors)
+        let handlerTree = 
+            match syntaxTreeResult handlerSource with
+            | Ok tr -> tr
+            | Error errors -> invalidOp (concatErrors errors)
 
         let modelResult = getSemanticModelFromFirstTree [tree; handlerTree]
         match modelResult with 
-              | Ok model -> model
-              | Error e -> invalidOp "Semantic model creation failed"
+        | Ok model -> model
+        | Error e -> invalidOp "Semantic model creation failed"
 
 
     let shouldEqual (expected: 'a) (actual: 'a) =     

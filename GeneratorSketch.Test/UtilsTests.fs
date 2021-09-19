@@ -3,7 +3,7 @@
 open Xunit
 open FsUnit.Xunit
 open FsUnit.CustomMatchers
-open Utils
+open GeneratorSketch.Utils
 
 type ``When removing leading and trailing characters``() =
 

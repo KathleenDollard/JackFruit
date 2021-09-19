@@ -5,10 +5,9 @@ open Microsoft.CodeAnalysis.CSharp
 open Microsoft.CodeAnalysis.CSharp.Syntax
 open FSharp.CodeAnalysis.CSharp.RoslynPatterns
 open Utils
+open Model
 
 module Generator =
-
-    let initialize () = ()
 
 
     type ArgDef =
@@ -27,14 +26,13 @@ module Generator =
           Arg: ArgDef option
           Options: OptionDef list }
 
-
     type ArchetypeInfo =
         { Archetype: CommandDef
           HandlerExpression: ExpressionSyntax }
 
-    type HandlerIdentifier =
-        { HandlerName: string
-          Parents: string list }
+    //type HandlerIdentifier =
+    //    { HandlerName: string
+    //      Parents: string list }
 
     type Source =
         | SyntaxTree of SyntaxTree
@@ -215,7 +213,6 @@ module Generator =
     type Generator =
         interface ISourceGenerator with
             member ISourceGenerator.Initialize(context: GeneratorInitializationContext) : unit =
-                initialize ()
                 ()
 
             member ISourceGenerator.Execute(context: GeneratorExecutionContext) : unit =
