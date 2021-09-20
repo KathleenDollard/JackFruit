@@ -32,31 +32,48 @@ module Utils =
     //  fIsLeaf -> Do we need to look any further
 
     let treeFromList 
-        fGroup
+        fGroupBy
         (fIsLeaf: 'groupId option->'item->bool)
         (fMapLeaf: 'groupId option->'item->'r) // without the type annotation these try to retun unit
-        (fMapBranch: 'groupId option->'item->'r list->'r)
+        (fMapBranch: 'groupId option->'item option->'r list->'r)
         list =
 
         // This uses closures at present
         // This intenitionally shadows list
-        let rec recurse (groupId: 'groupId option) list = 
+        let rec recurse (groupId: 'groupId option) (list: 'item list) = 
             match list with 
             | []
-            | _ -> // Find groups that define children
-                let groups = list |> List.groupBy (fGroup groupId)
+            | _ -> 
+                // Find groups that define children
+                let (leaves, notLeaves) = list |> List.partition (fIsLeaf groupId)
+                let groups = notLeaves |> List.groupBy (fGroupBy groupId)
 
                 // For each child, determine if it is a leaf and otherwise recurse
-                [
-                    for g in groups do
+                [ for leaf in leaves do 
+                    fMapLeaf groupId leaf
+
+                  for g in groups do
                         let (gId, childList) = g
-                        for item in childList do 
-                            if fIsLeaf (Some gId) item then
-                                fMapLeaf (Some gId) item
-                            else
-                                let children = recurse (Some gId) childList
-                                for c in children do
-                                    c]
+                        let someGId = Some gId
+                        let (branchRoots, childNodes) = childList |> List.partition (fIsLeaf (someGId))
+                        let branchRoot = 
+                            match branchRoots with
+                            | [] -> None
+                            | [root] -> Some root
+                            | _ -> invalidOp "Duplicate entries"
+                        let children = recurse (someGId) childNodes
+                        fMapBranch (someGId) branchRoot children 
+                  ]
+
+                //// For each child, determine if it is a leaf and otherwise recurse
+                //[ for g in groups do
+                //        let (gId, childList) = g
+                //        for item in childList do 
+                //            if fIsLeaf (Some gId) item then
+                //                fMapLeaf (Some gId) item
+                //        let children = recurse (Some gId) childList
+                //        for c in children do
+                //            c]
         recurse None list
 
 
