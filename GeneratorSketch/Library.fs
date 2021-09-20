@@ -35,78 +35,98 @@ module Generator =
         | SyntaxTree of SyntaxTree
         | Code of string
 
+
+    /// Categorize a command line parameter as command, argument or option
+    //    "<a>" --> Arg "a"
+    //    "" --> TODO - give an error
+    //    "-" --> TODO - give an error
+    //    "-foo" --> Option foo
+    //    "--foo" --> Option foo
+    //    "---foo" --> TODO - give an error
+
     let (|Command|Arg|Option|) (part: string) =
-        match part.Trim().ToCharArray() with
-        | [||] -> Command
+        let trimmed = part.Trim()
+        match trimmed with
+        | "" -> 
+            Command ""
         | _ ->
-            match part.[0] with
-            | '<' -> Arg
-            | '-' -> Option
-            | _ -> Command
+            match trimmed.[0] with
+            | '<' when trimmed.[trimmed.Length-2] = '>' ->
+                // Extract the useful part of the argument as the result of the active pattern
+                let argText = trimmed.[1..trimmed.Length-2]
+                Arg argText
+
+            | '-' when trimmed.Length > 1 -> 
+                let optionText =
+                    match (trimmed.[0], trimmed.[1]) with
+                    | ('-','-') -> trimmed.[2..]
+                    | ('-', _ ) -> trimmed.[1..]
+                    | _ -> trimmed
+                Option optionText
+
+            | _ ->
+                Command trimmed
 
     let syntaxTreeResult  (source: Source) =
-        let tree = match source with 
-                   | SyntaxTree tree -> tree
-                   | Code code -> CSharpSyntaxTree.ParseText code
-        let errors = [ for diag in tree.GetDiagnostics() do
-                        if diag.Severity = DiagnosticSeverity.Error then diag]
+        let tree =
+            match source with 
+            | SyntaxTree tree -> tree
+            | Code code -> CSharpSyntaxTree.ParseText code
+        let errors =
+            [ for diag in tree.GetDiagnostics() do
+                if diag.Severity = DiagnosticSeverity.Error then diag]
         if errors.IsEmpty then Ok tree
         else Error errors
 
     let parseArchetype (archetype: string) =
-        let cleanArchetype (arch: string) =
+
+        let clean = 
             // KAD: How to simplify code in this method
             // KAD: Why do I need to specify the type if the first line is Trim?
-            let temp = arch.Trim()
+            let temp = archetype.Trim()
 
-            let temp1 =
-                if temp.[0] = '"' then
-                    temp.[1..]
-                else
-                    temp
-
-            let pos = temp1.Length - 1
-
-            if temp1.[pos] = '"' then
-                temp1.[0..pos - 1]
+            if temp.Length > 1 && temp.[0] = '"' && temp.[temp.Length-2] = '"' then
+                temp.[1..temp.Length - 2]
             else
-                temp1
-        let cleanArgName (name: string) =
-            match name.[0] with
-            | '<' -> name.[1..name.Length-2]  // assume if open angle, also close angle
-            | _ -> name
-        let cleanOptionName(name: string) =
-            match (name.[0], name.[1]) with
-            | ('-','-') -> name.[2..]
-            | ('-', _ ) -> name.[1..]
-            | _ -> name
+                temp
 
         let stringSplitOptions = System.StringSplitOptions.RemoveEmptyEntries ||| System.StringSplitOptions.TrimEntries
+
         let parts =
-            (cleanArchetype archetype).Split(' ',stringSplitOptions)  |> Array.toList
-        let commandParts =
+            clean.Split(' ',stringSplitOptions)  |> Array.toList
+
+        // parts "dotnet add pacakge"
+        //   Command3 --> package
+        //   Command2  --> add
+        //   Command1 --> dotnet
+        let commandPartsReversed =
             [ for part in parts do
-                  match part with
-                  | Command -> part
-                  | _ -> () ]
+                match part with
+                | Command command -> command
+                | _ -> () ]
             |> List.rev
-        let commandName = if commandParts.IsEmpty then "" else commandParts.[0]
+
+        let finalCommandName = if commandPartsReversed.IsEmpty then "" else commandPartsReversed.[0]
+
         let argDef =
             [ for part in parts do
-                  match part with
-                  | Arg -> { ArgName = cleanArgName part; TypeName = Some "" }
-                  | _ -> () ]
+                match part with
+                | Arg arg -> 
+                    { ArgName = arg; TypeName = Some "" }
+                | _ -> () ]
             |> List.tryExactlyOne
+            // TODO: multiple arguments
+
         let optionDefs =
             [ for part in parts do
-                  match part with
-                  | Option ->
-                      { OptionName = cleanOptionName part
-                        TypeName = None }
-                  | _ -> () ]
+                match part with
+                | Option option ->
+                    { OptionName = option
+                      TypeName = None }
+                | _ -> () ]
 
-        { CommandName = commandName
-          ParentCommandNames = commandParts.[1..]
+        { CommandName = finalCommandName
+          ParentCommandNames = commandPartsReversed.[1..]
           Arg = argDef
           Options = optionDefs }
 
@@ -119,20 +139,19 @@ module Generator =
 
             parseArchetype argString
 
-        let archetypesFromInvocatios tree = 
+        let archetypesFromInvocations tree = 
             let invocations = Patterns.mapInferredInvocations tree
             
             [ for invoke in invocations do
-                    match invoke.args with
-                    | [ a; d ] ->
-                        { Archetype = (archetypeFromArgument a.Expression)
-                          HandlerExpression = d.Expression }
-                    | _ -> () ]
-
+                match invoke.args with
+                | [ a; d ] ->
+                    { Archetype = archetypeFromArgument a.Expression
+                      HandlerExpression = d.Expression }
+                | _ -> () ]
 
         let result = syntaxTreeResult source
         match result with
-        | Ok tree -> Ok (archetypesFromInvocatios tree)
+        | Ok tree -> Ok (archetypesFromInvocations tree)
         | Error errors -> Error errors
 
     // Probably do not ned this
@@ -144,11 +163,10 @@ module Generator =
         | IdentifierNameSyntax (_, identifier) -> [ identifier.ToString() ]
         | _ -> invalidOp "Unexpected handler expression, for example lambdas aren't supported"
 
-    let methodFromHandler (model: SemanticModel) expression =
-        let identifier = splitHandlerExpression expression
+    let methodFromHandler (model: SemanticModel) (expression: ExpressionSyntax) =
 
         let handler =
-            model.GetSymbolInfo(expression: ExpressionSyntax)
+            model.GetSymbolInfo(expression)
 
         let symbol =
             match handler.Symbol with
