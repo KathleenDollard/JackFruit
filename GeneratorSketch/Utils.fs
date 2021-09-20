@@ -3,7 +3,8 @@
 
 module Utils =
 
-    let removeLeadingTrailing startChar endChar (input:string) =
+    /// Removes leading and trailing characters
+    let RemoveLeadingTrailing startChar endChar (input:string) =
         let temp = input.Trim()
 
         if temp.Length < 2 then
@@ -12,29 +13,18 @@ module Utils =
             temp.[1..temp.Length-2]
         else
             temp
-        
 
-                
-    let removeLeadingTrailingDoubleQuote (input:string) =
-        removeLeadingTrailing '"' '"' input
 
-    // a
-    // a b c
-    // a b
-    // b d e
-
-    //type Tree<'Data> =
-    //    | Leaf of 'Data
-    //    | Branch of 'Data * 'Data list
-
-    // Given a data, create either a leaf or depending on 
-    //  fGroup -> How to group a list into the children at that level
-    //  fIsLeaf -> Do we need to look any further
-
-    let treeFromList 
-        fGroupBy
+    /// Removes leading and trailing double 
+    let RemoveLeadingTrailingDoubleQuote (input:string) =
+        RemoveLeadingTrailing '"' '"' input
+    
+    
+    let TreeFromList 
+        // KAD: for code like this that could infer, but it might be clearer if not, Info CodeFix that allows switching between
+        (fGroupBy: 'groupId option -> 'item -> 'groupId)
         (fIsLeaf: 'groupId option->'item->bool)
-        (fMapLeaf: 'groupId option ->'item->'r) // without the type annotation these try to retun unit
+        (fMapLeaf: 'groupId option ->'item->'r) // without the type annotation these try to return unit
         (fMapBranch: 'groupId ->'item option->'r list->'r)
         list =
 
@@ -66,26 +56,3 @@ module Utils =
                   ]
 
         recurse None list
-
-
-
-    //let rec makeTree fLeaf fNode (tree:Tree<'LeafData,'INodeData>) :'r = 
-    //     let recurse = makeTree fLeaf fNode  
-    //     match tree with
-    //     | LeafNode leafInfo -> 
-    //         fLeaf leafInfo 
-    //     | InternalNode (nodeInfo, subtrees) -> 
-    //         fNode nodeInfo (subtrees |> List.map recurse)
-
-    //let rec flattenTree fLeaf fNode acc (tree:Tree<'LeafData,'INodeData>) :'r = 
-    //    let recurse = flattenTree fLeaf fNode  
-    //    match tree with
-    //    | LeafNode leafInfo -> 
-    //        fLeaf acc leafInfo 
-    //    | InternalNode (nodeInfo,subtrees) -> 
-    //        // determine the local accumulator at this level
-    //        let localAccum = fNode acc nodeInfo
-    //        // thread the local accumulator through all the subitems using Seq.fold
-    //        let finalAccum = subtrees |> Seq.fold recurse localAccum 
-    //        // ... and return it
-    //        finalAccum

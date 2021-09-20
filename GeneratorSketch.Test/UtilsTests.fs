@@ -11,7 +11,7 @@ type ``When removing leading and trailing characters``() =
     member _.``Empty string returns empty string``() =
         let source = ""
 
-        let actual = removeLeadingTrailing '<' '>' source
+        let actual = RemoveLeadingTrailing '<' '>' source
 
         actual |> should equal ""
 
@@ -19,7 +19,7 @@ type ``When removing leading and trailing characters``() =
     member _.``Just delimiters string returns empty string``() =
         let source = "<>"
 
-        let actual = removeLeadingTrailing '<' '>' source
+        let actual = RemoveLeadingTrailing '<' '>' source
 
         actual |> should equal ""
 
@@ -27,7 +27,7 @@ type ``When removing leading and trailing characters``() =
     member _.``Delimited text returns text``() =
         let source = "<Baby Yoda>"
 
-        let actual = removeLeadingTrailing '<' '>' source
+        let actual = RemoveLeadingTrailing '<' '>' source
 
         actual |> should equal "Baby Yoda"
 
@@ -36,7 +36,7 @@ type ``When removing leading and trailing characters``() =
     member _.``Not delimited text returns text``() =
         let source = "Baby Yoda"
 
-        let actual = removeLeadingTrailing '<' '>' source
+        let actual = RemoveLeadingTrailing '<' '>' source
 
         actual |> should equal "Baby Yoda"
     
@@ -44,7 +44,7 @@ type ``When removing leading and trailing characters``() =
     member _.``Partially delimited at start returns text with partial delimiter``() =
         let source = "<Baby Yoda"
 
-        let actual = removeLeadingTrailing '<' '>' source
+        let actual = RemoveLeadingTrailing '<' '>' source
 
         actual |> should equal "<Baby Yoda"
 
@@ -52,7 +52,7 @@ type ``When removing leading and trailing characters``() =
     member _.``Partially delimited at end returns text with partial delimiter``() =
         let source = "Baby Yoda>"
 
-        let actual = removeLeadingTrailing '<' '>' source
+        let actual = RemoveLeadingTrailing '<' '>' source
 
         actual |> should equal "Baby Yoda>"
 
@@ -60,7 +60,7 @@ type ``When removing leading and trailing characters``() =
     member _.``Double quoted text returns text``() =
         let source = "\"Baby Yoda\""
 
-        let actual = removeLeadingTrailingDoubleQuote source
+        let actual = RemoveLeadingTrailingDoubleQuote source
 
         actual |> should equal "Baby Yoda"
 

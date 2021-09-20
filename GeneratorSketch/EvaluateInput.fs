@@ -33,7 +33,7 @@ module EvaluateInput =
             Command part
         else
             match part.[0] with
-            | '<' when part.[part.Length - 1] = '>' -> Arg(removeLeadingTrailing '<' '>' part.[1..part.Length - 2])
+            | '<' when part.[part.Length - 1] = '>' -> Arg(RemoveLeadingTrailing '<' '>' part.[1..part.Length - 2])
             | '<' -> invalidOp "Unmatched '<' found"
             | '-' when part.Length = 1 -> invalidOp "Options must have a name, extra '-' found."
             | '-' when part.[1] = '-' -> Option part.[2..]
@@ -45,7 +45,7 @@ module EvaluateInput =
         let stringSplitOptions =
             System.StringSplitOptions.RemoveEmptyEntries
             ||| System.StringSplitOptions.TrimEntries
-        (removeLeadingTrailingDoubleQuote archetype)
+        (RemoveLeadingTrailingDoubleQuote archetype)
             .Split(' ', stringSplitOptions)
         |> Array.toList
 
