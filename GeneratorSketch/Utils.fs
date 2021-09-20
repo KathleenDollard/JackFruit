@@ -62,18 +62,9 @@ module Utils =
                             | [root] -> Some root
                             | _ -> invalidOp $"Duplicate entries for {gId}"
                         let children = recurse (someGId) childNodes
-                        fMapBranch (gId) branchRoot children 
+                        fMapBranch gId branchRoot children 
                   ]
 
-                //// For each child, determine if it is a leaf and otherwise recurse
-                //[ for g in groups do
-                //        let (gId, childList) = g
-                //        for item in childList do 
-                //            if fIsLeaf (Some gId) item then
-                //                fMapLeaf (Some gId) item
-                //        let children = recurse (Some gId) childList
-                //        for c in children do
-                //            c]
         recurse None list
 
 
