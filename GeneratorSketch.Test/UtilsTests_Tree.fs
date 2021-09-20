@@ -61,12 +61,11 @@ let treeNodeTypeFromInput (input: inputType list) =
     treeFromList groupByAncestors isLeaf mapLeaf mapBranch input
 
 let matches expected actual =
-    let rec recurse = for item in expected do
-        for item in expected do 
-            let actualItem = actual |> List.tryFilter
-        let hasMatch = actual |> List.exists (fun x -> x = item)
-        if not hasMatch then invalidOp $"Mismatch on {item.data}" // Figure out the right thing to throw on lack of match
-        ()
+    let rec recurse = 
+        for item in expected do
+            let hasMatch = actual |> List.exists (fun x -> x = item)
+            if not hasMatch then invalidOp $"Mismatch on {item.data}" // Figure out the right thing to throw on lack of match
+    ()
 
 
 

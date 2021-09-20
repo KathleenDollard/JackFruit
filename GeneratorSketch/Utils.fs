@@ -34,13 +34,13 @@ module Utils =
     let treeFromList 
         fGroupBy
         (fIsLeaf: 'groupId option->'item->bool)
-        (fMapLeaf: 'groupId option->'item->'r) // without the type annotation these try to retun unit
-        (fMapBranch: 'groupId option->'item option->'r list->'r)
+        (fMapLeaf: 'groupId option ->'item->'r) // without the type annotation these try to retun unit
+        (fMapBranch: 'groupId ->'item option->'r list->'r)
         list =
 
         // This uses closures at present
         // This intenitionally shadows list
-        let rec recurse (groupId: 'groupId option) (list: 'item list) = 
+        let rec recurse groupId list = 
             match list with 
             | []
             | _ -> 
@@ -55,14 +55,14 @@ module Utils =
                   for g in groups do
                         let (gId, childList) = g
                         let someGId = Some gId
-                        let (branchRoots, childNodes) = childList |> List.partition (fIsLeaf (someGId))
+                        let (branchRoots, childNodes) = childList |> List.partition (fIsLeaf someGId)
                         let branchRoot = 
                             match branchRoots with
                             | [] -> None
                             | [root] -> Some root
-                            | _ -> invalidOp "Duplicate entries"
+                            | _ -> invalidOp $"Duplicate entries for {gId}"
                         let children = recurse (someGId) childNodes
-                        fMapBranch (someGId) branchRoot children 
+                        fMapBranch (gId) branchRoot children 
                   ]
 
                 //// For each child, determine if it is a leaf and otherwise recurse
