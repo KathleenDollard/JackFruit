@@ -26,17 +26,12 @@ open Microsoft.CodeAnalysis.CSharp.Syntax
           Description: string option
           ParentCommandNames: string list
           Arg: ArgDef option
-          Options: OptionDef list }
-
-
-    type CommandInfo =
-        { Raw: string
-          Path: string
-          Arg: string
-          Options: string list
-          HandlerExpression: ExpressionSyntax }
+          Options: OptionDef list 
+          SubCommands: CommandDef list}
 
 
     type ArchetypeInfo =
         { AncestorsAndThis: string list 
-          CommandInfo: CommandInfo }
+          Raw: string list
+          Path: string
+          HandlerExpression: ExpressionSyntax }

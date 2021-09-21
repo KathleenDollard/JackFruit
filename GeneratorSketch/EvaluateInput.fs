@@ -6,8 +6,10 @@ namespace GeneratorSketch
 open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp
 open Microsoft.CodeAnalysis.CSharp.Syntax
+open FSharp.CodeAnalysis.CSharp.RoslynPatterns
 open Utils
 open Model
+open GeneratorSketch.Patterns
 
 // New algorithm:
 //  Crete the defs from the archetype, except do the commands in order, not reversed
@@ -26,48 +28,125 @@ open Model
 
 module EvaluateInput =
 
-    let (|Command|Arg|Option|) (part: string) =
+
+    let private  (|Command|Arg|Option|) (part: string) =
         let part = part.Trim()
 
         if part.Length = 0 then
             Command part
         else
             match part.[0] with
-            | '<' when part.[part.Length - 1] = '>' -> Arg(RemoveLeadingTrailing '<' '>' part.[1..part.Length - 2])
-            | '<' -> invalidOp "Unmatched '<' found"
-            | '-' when part.Length = 1 -> invalidOp "Options must have a name, extra '-' found."
-            | '-' when part.[1] = '-' -> Option part.[2..]
-            | '-' -> Option part.[1..]
+            | '<' -> Arg part
+            | '-' -> Option part
             | _ -> Command part
 
 
-    let parts archetype =
+    let private parts archetype =
         let stringSplitOptions =
             System.StringSplitOptions.RemoveEmptyEntries
             ||| System.StringSplitOptions.TrimEntries
+
         (RemoveLeadingTrailingDoubleQuote archetype)
             .Split(' ', stringSplitOptions)
         |> Array.toList
 
+    let private GetArchetypeInfoFrom archetype handler = 
+        let parts = parts archetype
 
-    //// a
-    //// a b c
-    //// a b
-    //// b d e
-    //let buildModel (archetypes: ArchetypeInfo list) (extras: (string->string->string) list) =
+        let commandParts =
+            [ for part in parts do
+                  match part with
+                  | Command commandName -> commandName
+                  | _ -> () ]
 
-    //    let rec getCommandDefs (level: int) (archetypeInfos: ArchetypeInfo list) =
-    //        let commandAt level (archetypeInfo: ArchetypeInfo) = archetypeInfo.AncestorsAndThis.[level]
-    //        let groups = 
-    //            archetypeInfos
-    //            |> List.groupBy (commandAt level)
-    //        let commandDefs = [
-    //            for group in groups do
-    //                let 
-    //                for ai in group do
-    //                    match 
-    //        ()
+        { AncestorsAndThis = commandParts
+          Raw = parts
+          Path = commandParts |> String.concat " "
+          HandlerExpression = handler }
 
-    //    ()
+
+    type Source =
+        | SyntaxTree of SyntaxTree
+        | Code of string
+
+    let syntaxTreeResult (source: Source) =
+        let tree =
+            match source with
+            | SyntaxTree tree -> tree
+            | Code code -> CSharpSyntaxTree.ParseText code
+
+        let errors =
+            [ for diag in tree.GetDiagnostics() do
+                if diag.Severity = DiagnosticSeverity.Error then
+                     diag ]
+
+        if errors.IsEmpty then
+            Ok tree
+        else
+            Error errors
+            
+    let ArchetypeInfoListFrom (source: Source) =
+        let stringFromExpression (arg: ExpressionSyntax) =
+            let argString =
+                match arg with
+                | StringLiteralExpression -> arg.ToFullString()
+                | _ -> invalidOp "Only string literals currently supported"
+
+            argString
+
+        let archetypeInfoListFromInvocations tree =
+            let invocations = Patterns.MapInferredInvocations tree
+
+            [ for invoke in invocations do
+                  match invoke.args with
+                  | [ a; d ] -> GetArchetypeInfoFrom (stringFromExpression a.Expression) d.Expression
+
+                  | _ -> () ]
+
+        match syntaxTreeResult source with
+        | Ok tree -> Ok(archetypeInfoListFromInvocations tree)
+        | Error errors -> Error errors
+
+    
+    let private groupByAncestors (current: string list option) (item: ArchetypeInfo) = 
+        match current with 
+        | Some s -> item.AncestorsAndThis.[0..s.Length] // if the current is [a b], we want to group by [a b c]
+        | None -> item.AncestorsAndThis.[0..0]          // at the start, we need everything
+    
+    let private isLeaf (current: string list option) item =
+        match current with 
+        | Some s -> item.AncestorsAndThis.Length = s.Length
+        | None -> item.AncestorsAndThis.Length = 0
+
+
+    //let CommandDefFrom (source: Source) =
+    //    let mapLeaf _ item =
+    //        { CommandId = item.InputData; Children = [] }
+            
+    //    let mapBranch _ item childList=
+    //        let Data = 
+    //            match item with 
+    //            | Some i -> i.InputData
+    //            | None ->  item.AncestorsAndThis |> String.concat ","
+    //        { Data = Data; Children = childList }        
+
+    //    let commandDefFrom (input: ArchetypeInfo list) = 
+    //        TreeFromList groupByAncestors isLeaf mapLeaf mapBranch input
+        
+    //    let archListResult = ArchetypeInfoListFrom source
+
+    //    match archListResult with 
+    //    | Ok archList -> 
+    //        try
+    //            Ok (commandDefFrom archList)
+    //        with 
+    //        | Exception ex -> Error ex
+    //    | Error diagnostics -> Error diagnostics
+
+         
+
+
+
+
             
         

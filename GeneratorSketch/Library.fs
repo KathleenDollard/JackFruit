@@ -136,7 +136,7 @@ module Generator =
             parseArchetype argString
 
         let archetypesFromInvocations tree =
-            let invocations = Patterns.mapInferredInvocations tree
+            let invocations = Patterns.MapInferredInvocations tree
 
             [ for invoke in invocations do
                   match invoke.args with

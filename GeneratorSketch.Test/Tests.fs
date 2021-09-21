@@ -130,7 +130,7 @@ type ``When creating archetypeInfo from mapping``() =
         let source = addMapStatements true threeMappings
 
         let actual = archetypeInfoFrom (Code source)
-        let actualNames =CommandNamesFromArchetypeInfo actual
+        let actualNames = CommandNamesFromArchetypeInfo actual
 
         actualNames
         |> should matchList threeMappingsCommandNames
