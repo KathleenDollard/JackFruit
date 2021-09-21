@@ -37,13 +37,12 @@ let private example1Expected = [
         { Data = "add"; Children = [
             { Data = "package"; Children = [] }
             { Data = "project"; Children = [] } ]} 
-        ]}
-    { Data = "build"; Children = []}
-    { Data = "clean"; Children = []}
-    { Data = "format"; Children = [
-        { Data = "whitespace"; Children = [] } 
-        { Data = "style"; Children = [] } 
-        { Data = "analyzers"; Children = [] }] }]
+        { Data = "build"; Children = []}
+        { Data = "clean"; Children = []}
+        { Data = "dotnet,format"; Children = [
+            { Data = "whitespace"; Children = [] } 
+            { Data = "style"; Children = [] } 
+            { Data = "analyzers"; Children = [] }] }] }]
 
 let private example2 = [
     {Parents = ["dotnet"]; InputData="dotnet"}
@@ -88,18 +87,28 @@ let private isLeaf (current: string list option) item =
     | Some s -> item.Parents.Length = s.Length
     | None -> item.Parents.Length = 0
 
-let private mapLeaf _ item =
-    { Data = item.InputData; Children = [] }
-    
-let private mapBranch Parents item childList=
-    let Data = 
+let private mapLeaf parents item =
+    let data = 
         match item with 
         | Some i -> i.InputData
-        | None ->  Parents |> String.concat ","
-    { Data = Data; Children = childList }
+        | None ->  
+            match parents with 
+            | Some list -> list |> String.concat ","
+            | None -> ""
+    { Data = data; Children = [] }
+
+let private mapBranch parents item childList=
+    let data = 
+        match item with 
+        | Some i -> i.InputData
+        | None ->  
+            match parents with 
+            | Some list -> list |> String.concat ","
+            | None -> ""
+    { Data = data; Children = childList }
 
 let private treeNodeTypeFromInput (input: InputType<string> list) = 
-    TreeFromList groupByAncestors isLeaf mapLeaf mapBranch input
+    TreeFromList groupByAncestors mapBranch input
 
 let private matches (expected: TreeNodeType<string> list) (actual: TreeNodeType<string> list) =
     // KAD: Check with Don on equality to see if this is needed

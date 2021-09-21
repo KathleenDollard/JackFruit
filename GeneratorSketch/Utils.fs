@@ -23,33 +23,33 @@ module Utils =
     let TreeFromList 
         // KAD: for code like this that could infer, but it might be clearer if not, Info CodeFix that allows switching between
         (fGroupBy: 'groupId option -> 'item -> 'groupId)
-        (fIsLeaf: 'groupId option->'item->bool)
-        (fMapLeaf: 'groupId option ->'item->'r) // without the type annotation these try to return unit
-        (fMapBranch: 'groupId ->'item option->'r list->'r)
+        (fMapBranch: 'groupId option-> 'item option -> 'r list -> 'r)
         list =
 
         // This uses closures at present
         // This intenitionally shadows list
         let rec recurse groupId list = 
+
+            let isLeaf gId item =
+                Some (fGroupBy gId item) = gId
+
+            let processGroup group =
+                let (gId, itemList) = group 
+                let (branchRoots, childList) = itemList |> List.partition (isLeaf (Some gId))
+                let branchRoot = 
+                    match branchRoots with
+                    | [] -> None
+                    | [root] -> Some root
+                    | _ -> invalidOp $"Duplicate entries for {gId}"
+                let children = recurse (Some gId) childList
+                fMapBranch (Some gId) branchRoot children
+
             // Find groups that define children
-            let (leaves, notLeaves) = list |> List.partition (fIsLeaf groupId)
-            let groups = notLeaves |> List.groupBy (fGroupBy groupId)
+            let groups = list |> List.groupBy (fGroupBy groupId)
 
             // For each child, determine if it is a leaf and otherwise recurse
-            [ for leaf in leaves do 
-                fMapLeaf groupId leaf
-
-                for g in groups do
-                    let (gId, childList) = g
-                    let someGId = Some gId
-                    let (branchRoots, childNodes) = childList |> List.partition (fIsLeaf someGId)
-                    let branchRoot = 
-                        match branchRoots with
-                        | [] -> None
-                        | [root] -> Some root
-                        | _ -> invalidOp $"Duplicate entries for {gId}"
-                    let children = recurse (someGId) childNodes
-                    fMapBranch gId branchRoot children 
-                ]
+            [ for group in groups do
+                processGroup group
+            ]
 
         recurse None list
