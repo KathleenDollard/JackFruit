@@ -76,50 +76,17 @@ let private example3 = [
 let private example3Expected = [
     { Data="Cedrella"; Children = [] } ]
 
-let private groupByAncestors (current: string list option) item = 
-    match current with 
-    | Some s -> item.Parents.[0..s.Length] // if the current is [a b], we want to group by [a b c]
-    | None -> item.Parents.[0..0]          // at the start, we need everything
-
-let private isLeaf (current: string list option) item =
-    match current with 
-    | Some s -> item.Parents.Length = s.Length
-    | None -> item.Parents.Length = 0
-
-let private mapLeaf parents item =
-    let data = 
-        match item with 
-        | Some i -> i.InputData
-        | None ->  
-            match parents with 
-            | Some list -> list |> String.concat ","
-            | None -> ""
-    { Data = data; Children = [] }
-
 let private mapBranch parents item childList=
-    let data = 
-        match item with 
-        | Some i -> i.InputData
-        | None ->  
-            match parents with 
-            | Some list -> list |> String.concat ","
-            | None -> ""
-    { Data = data; Children = childList }
-
-let private mapBranch2 parents item childList=
     let data = 
         match item with 
         | Some i -> i.InputData
         | None -> parents |> String.concat ","
     { Data = data; Children = childList }
 
-let private treeNodeTypeFromInput (input: InputType<string> list) = 
-    TreeFromList groupByAncestors mapBranch input
-
 let private getKey item = item.Parents
 
-let private treeNodeTypeFromInput2 (input: InputType<string> list) = 
-    TreeFromList2 getKey mapBranch2 input
+let private treeNodeTypeFromInput (input: InputType<string> list) = 
+    TreeFromList getKey mapBranch input
 
 let private matches (expected: TreeNodeType<string> list) (actual: TreeNodeType<string> list) =
     // KAD: Check with Don on equality to see if this is needed
@@ -195,7 +162,7 @@ type ``When buliding a tree from a list of tuple(string list, string)``() =
     [<Fact>]
     member _.``With a nested list of InputType``() =
 
-        let actual = treeNodeTypeFromInput2 example1
+        let actual = treeNodeTypeFromInput example1
 
         actual |> matches example1Expected
 
