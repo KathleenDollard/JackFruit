@@ -40,7 +40,6 @@ module EvaluateInput =
             | '-' -> Option part
             | _ -> Command part
 
-
     let private parts archetype =
         let stringSplitOptions =
             System.StringSplitOptions.RemoveEmptyEntries
@@ -64,12 +63,11 @@ module EvaluateInput =
           Path = commandParts |> String.concat " "
           HandlerExpression = handler }
 
-
     type Source =
         | SyntaxTree of SyntaxTree
         | Code of string
 
-    let syntaxTreeResult (source: Source) =
+    let private syntaxTreeResult (source: Source) =
         let tree =
             match source with
             | SyntaxTree tree -> tree
@@ -107,41 +105,82 @@ module EvaluateInput =
         | Ok tree -> Ok(archetypeInfoListFromInvocations tree)
         | Error errors -> Error errors
 
-    
-    let private groupByAncestors (current: string list option) (item: ArchetypeInfo) = 
-        match current with 
-        | Some s -> item.AncestorsAndThis.[0..s.Length] // if the current is [a b], we want to group by [a b c]
-        | None -> item.AncestorsAndThis.[0..0]          // at the start, we need everything
-    
-    let private isLeaf (current: string list option) item =
-        match current with 
-        | Some s -> item.AncestorsAndThis.Length = s.Length
-        | None -> item.AncestorsAndThis.Length = 0
+    type Path = string
 
+    type Person =
+      { Name: string
+        Age: int
+        Address: string }
+    
+        static member Default =
+            { Name = "Phillip"
+              Age = 12
+              Address = "123 happy fun street" }
 
-    //let CommandDefFrom (source: Source) =
-    //    let mapLeaf _ item =
-    //        { CommandId = item.InputData; Children = [] }
+    type InfoProvider = 
+        {   CommandName: (Path -> string) option
+            CommandDescription: (Path -> string) option
+            CommandAliases: (Path -> string list) option
+            ParentCommandNames: (Path -> string list) option
+            ArgName: (Path -> string) option
+            ArgDescription: (Path -> string) option
+            OptionName: (Path -> string) option
+            OptionDescription: (Path -> string) option
+            OptionAliases: (Path -> string list) option }
+
+        // Providers that only specify a few things can use the Default and with
+        static member Default  = 
+           {   CommandName = None
+               CommandDescription = None
+               CommandAliases = None
+               ParentCommandNames = None
+               ArgName = None
+               ArgDescription = None
+               OptionName = None
+               OptionDescription = None
+               OptionAliases = None }
+    
+    let defaultPerson = Person.Default
+
+    let CommandDefFrom (source: Source) =
+        let getKey item = item.AncestorsAndThis
             
-    //    let mapBranch _ item childList=
-    //        let Data = 
-    //            match item with 
-    //            | Some i -> i.InputData
-    //            | None ->  item.AncestorsAndThis |> String.concat ","
-    //        { Data = Data; Children = childList }        
+        let mapBranch gId itemOption childList= 
+            match itemOption with 
+            | None -> 
+                let commandId = gId |> List.last
+                let parents = gId.[0..gId.Length - 2]
+                { CommandId = commandId
+                  Name = commandId
+                  Description = None
+                  ParentCommandNames = parents
+                  Arg = None
+                  Options = []
+                  SubCommands = [] }
 
-    //    let commandDefFrom (input: ArchetypeInfo list) = 
-    //        TreeFromList groupByAncestors isLeaf mapLeaf mapBranch input
+            | Some item ->
+                let commandId = item.AncestorsAndThis |> List.last
+                let parents = item.AncestorsAndThis.[0..item.AncestorsAndThis.Length - 2]
+                { CommandId = commandId
+                  Name = commandId
+                  Description = None
+                  ParentCommandNames = parents
+                  Arg = None
+                  Options = []
+                  SubCommands = [] }
+
+        let commandDefFrom (input: ArchetypeInfo list) = 
+            TreeFromList getKey mapBranch input
         
-    //    let archListResult = ArchetypeInfoListFrom source
+        let archListResult = ArchetypeInfoListFrom source
 
-    //    match archListResult with 
-    //    | Ok archList -> 
-    //        try
-    //            Ok (commandDefFrom archList)
-    //        with 
-    //        | Exception ex -> Error ex
-    //    | Error diagnostics -> Error diagnostics
+        match archListResult with 
+        | Ok archList -> 
+            try
+                commandDefFrom archList
+            with 
+            | _ -> reraise()
+        | Error diagnostics -> invalidOp "TODO: format diagnostics"
 
          
 
