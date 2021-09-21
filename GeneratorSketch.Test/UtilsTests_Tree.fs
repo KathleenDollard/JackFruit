@@ -20,7 +20,6 @@ type TreeNodeType<'T> = {
     Data: 'T
     Children: TreeNodeType<'T> list}
 
-
 let private example1 = [
     {Parents = ["dotnet"]; InputData="dotnet"}
     {Parents = ["dotnet"; "add"]; InputData="add"}
@@ -107,8 +106,20 @@ let private mapBranch parents item childList=
             | None -> ""
     { Data = data; Children = childList }
 
+let private mapBranch2 parents item childList=
+    let data = 
+        match item with 
+        | Some i -> i.InputData
+        | None -> parents |> String.concat ","
+    { Data = data; Children = childList }
+
 let private treeNodeTypeFromInput (input: InputType<string> list) = 
     TreeFromList groupByAncestors mapBranch input
+
+let private getKey item = item.Parents
+
+let private treeNodeTypeFromInput2 (input: InputType<string> list) = 
+    TreeFromList2 getKey mapBranch2 input
 
 let private matches (expected: TreeNodeType<string> list) (actual: TreeNodeType<string> list) =
     // KAD: Check with Don on equality to see if this is needed
@@ -184,7 +195,7 @@ type ``When buliding a tree from a list of tuple(string list, string)``() =
     [<Fact>]
     member _.``With a nested list of InputType``() =
 
-        let actual = treeNodeTypeFromInput example1
+        let actual = treeNodeTypeFromInput2 example1
 
         actual |> matches example1Expected
 
