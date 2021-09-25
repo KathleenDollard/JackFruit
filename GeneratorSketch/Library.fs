@@ -150,19 +150,6 @@ module Generator =
         | Error errors -> Error errors
 
 
-    let methodFromHandler (model: SemanticModel) expression =
-        let handler =
-            model.GetSymbolInfo(expression: ExpressionSyntax)
-
-        let symbol =
-            match handler.Symbol with
-            | null when handler.CandidateSymbols.IsDefaultOrEmpty -> invalidOp "Delegate not found"
-            | null -> handler.CandidateSymbols.[0]
-            | _ -> handler.Symbol
-
-        match symbol with
-        | :? IMethodSymbol as m -> Some m
-        | _ -> None
 
 
     let copyUpdateArchetypeInfoFromSymbol archetypeInfo methodSymbol =

@@ -67,6 +67,21 @@ module EvaluateInput =
         | SyntaxTree of SyntaxTree
         | Code of string
 
+    
+    let MethodFromHandler (model: SemanticModel) expression =
+        let handler =
+            model.GetSymbolInfo(expression: ExpressionSyntax)
+
+        let symbol =
+            match handler.Symbol with
+            | null when handler.CandidateSymbols.IsDefaultOrEmpty -> invalidOp "Delegate not found"
+            | null -> handler.CandidateSymbols.[0]
+            | _ -> handler.Symbol
+
+        match symbol with
+        | :? IMethodSymbol as m -> Some m
+        | _ -> None
+
     let private syntaxTreeResult (source: Source) =
         let tree =
             match source with
@@ -105,69 +120,95 @@ module EvaluateInput =
         | Ok tree -> Ok(archetypeInfoListFromInvocations tree)
         | Error errors -> Error errors
 
-    type Path = string
-
-    type Person =
-      { Name: string
-        Age: int
-        Address: string }
-    
-        static member Default =
-            { Name = "Phillip"
-              Age = 12
-              Address = "123 happy fun street" }
+    type Path = string list
 
     type InfoProvider = 
-        {   CommandName: (Path -> string) option
-            CommandDescription: (Path -> string) option
-            CommandAliases: (Path -> string list) option
+        {   CommandName: (Path -> string option) option
+            CommandDescription: (Path -> string option) option
+            CommandAliases: (Path -> string list option) option
             ParentCommandNames: (Path -> string list) option
-            ArgName: (Path -> string) option
-            ArgDescription: (Path -> string) option
-            OptionName: (Path -> string) option
-            OptionDescription: (Path -> string) option
-            OptionAliases: (Path -> string list) option }
+            ArgName: (Path -> string option) option
+            ArgTypeName: (Path -> string option) option
+            ArgDescription: (Path -> string option) option
+            OptionName: (Path -> string option) option
+            OptionTypeName: (Path -> string option) option
+            OptionDescription: (Path -> string option) option
+            OptionAliases: (Path -> string list option) option
+            Children: (Path -> string list) option
+            IsArg: (Path -> bool) option }
 
-        // Providers that only specify a few things can use the Default and with
-        static member Default  = 
+        static member Empty  = 
            {   CommandName = None
                CommandDescription = None
                CommandAliases = None
                ParentCommandNames = None
                ArgName = None
+               ArgTypeName = None
                ArgDescription = None
                OptionName = None
+               OptionTypeName = None
                OptionDescription = None
-               OptionAliases = None }
-    
-    let defaultPerson = Person.Default
+               OptionAliases = None 
+               Children = None
+               IsArg = None }
 
+    let rec AggregateProvider fs path =
+        match fs with
+        | [] -> 
+            None
+        | head::[] -> 
+            head path
+        | head::tail ->
+            match head path with 
+            | Some v -> Some v
+            | None -> AggregateProvider tail path
+
+
+
+    let private AggregateProvider infoProviders = 
+        { 
+            CommandName = [ for provider in infoProviders do
+                              match provider.CommandName with 
+                              | Some f -> Some f
+                              | None -> () ]
+                
+        }
+
+    let MapCommandDef infoProviders commandId path raw =
+            
+
+
+    let MapCommand infoProviders model groupId archetypeInfoOption childList= 
+        // CLI Layout always comes from archetype (with inferrence for missing branches)
+        // TypeName always comes from the handler parameters
+        // Everything else can come from any InfoProvider
+        match archetypeInfoOption with 
+        | Some arch -> 
+            let commandId = arch.AncestorsAndThis |> List.last
+            let raw = arch.Raw
+            match arch.HandlerExpression with 
+            | Some handler -> 
+                let handlerProvider = GetHandlerProvider model handler
+                MapCommandDef handlerProvider::infoProviders commandId groupId raw
+            | None -> 
+                MapCommandNoHandler commandId groupId raw
+        | None -> 
+            let commandId = groupId |> List.last
+            let raw = groupId |> String.concat " "
+            MapCommandNoHandler commandId groupId raw
+
+ 
+        
+
+
+
+
+        // Providers that only specify a few things can use the Default and with
+
+    
     let CommandDefFrom (source: Source) =
         let getKey item = item.AncestorsAndThis
             
-        let mapBranch gId itemOption childList= 
-            match itemOption with 
-            | None -> 
-                let commandId = gId |> List.last
-                let parents = gId.[0..gId.Length - 2]
-                { CommandId = commandId
-                  Name = commandId
-                  Description = None
-                  ParentCommandNames = parents
-                  Arg = None
-                  Options = []
-                  SubCommands = [] }
-
-            | Some item ->
-                let commandId = item.AncestorsAndThis |> List.last
-                let parents = item.AncestorsAndThis.[0..item.AncestorsAndThis.Length - 2]
-                { CommandId = commandId
-                  Name = commandId
-                  Description = None
-                  ParentCommandNames = parents
-                  Arg = None
-                  Options = []
-                  SubCommands = [] }
 
         let commandDefFrom (input: ArchetypeInfo list) = 
             TreeFromList getKey mapBranch input

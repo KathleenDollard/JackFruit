@@ -24,7 +24,6 @@ open Microsoft.CodeAnalysis.CSharp.Syntax
         { CommandId: string
           Name: string
           Description: string option
-          ParentCommandNames: string list
           Arg: ArgDef option
           Options: OptionDef list 
           SubCommands: CommandDef list}
@@ -33,5 +32,4 @@ open Microsoft.CodeAnalysis.CSharp.Syntax
     type ArchetypeInfo =
         { AncestorsAndThis: string list 
           Raw: string list
-          Path: string
-          HandlerExpression: ExpressionSyntax }
+          HandlerExpression: ExpressionSyntax option }
