@@ -60,7 +60,6 @@ module EvaluateInput =
 
         { AncestorsAndThis = commandParts
           Raw = parts
-          Path = commandParts |> String.concat " "
           HandlerExpression = handler }
 
     type Source =
@@ -112,7 +111,7 @@ module EvaluateInput =
 
             [ for invoke in invocations do
                   match invoke.args with
-                  | [ a; d ] -> GetArchetypeInfoFrom (stringFromExpression a.Expression) d.Expression
+                  | [ a; d ] -> GetArchetypeInfoFrom (stringFromExpression a.Expression) (Some d.Expression)
 
                   | _ -> () ]
 
@@ -165,68 +164,58 @@ module EvaluateInput =
 
 
 
-    let private AggregateProvider infoProviders = 
-        { 
-            CommandName = [ for provider in infoProviders do
-                              match provider.CommandName with 
-                              | Some f -> Some f
-                              | None -> () ]
+    //let private AggregateProvider infoProviders = 
+    //    { 
+    //        CommandName = [ for provider in infoProviders do
+    //                          match provider.CommandName with 
+    //                          | Some f -> Some f
+    //                          | None -> () ]
                 
-        }
+    //    }
 
-    let MapCommandDef infoProviders commandId path raw =
+    //let MapCommandDef infoProviders commandId path raw =
             
 
 
-    let MapCommand infoProviders model groupId archetypeInfoOption childList= 
-        // CLI Layout always comes from archetype (with inferrence for missing branches)
-        // TypeName always comes from the handler parameters
-        // Everything else can come from any InfoProvider
-        match archetypeInfoOption with 
-        | Some arch -> 
-            let commandId = arch.AncestorsAndThis |> List.last
-            let raw = arch.Raw
-            match arch.HandlerExpression with 
-            | Some handler -> 
-                let handlerProvider = GetHandlerProvider model handler
-                MapCommandDef handlerProvider::infoProviders commandId groupId raw
-            | None -> 
-                MapCommandNoHandler commandId groupId raw
-        | None -> 
-            let commandId = groupId |> List.last
-            let raw = groupId |> String.concat " "
-            MapCommandNoHandler commandId groupId raw
-
- 
-        
+    //let MapCommand infoProviders model groupId archetypeInfoOption childList= 
+    //    // CLI Layout always comes from archetype (with inferrence for missing branches)
+    //    // TypeName always comes from the handler parameters
+    //    // Everything else can come from any InfoProvider
+    //    match archetypeInfoOption with 
+    //    | Some arch -> 
+    //        let commandId = arch.AncestorsAndThis |> List.last
+    //        let raw = arch.Raw
+    //        match arch.HandlerExpression with 
+    //        | Some handler -> 
+    //            let handlerProvider = GetHandlerProvider model handler
+    //            MapCommandDef handlerProvider::infoProviders commandId groupId raw
+    //        | None -> 
+    //            MapCommandNoHandler commandId groupId raw
+    //    | None -> 
+    //        let commandId = groupId |> List.last
+    //        let raw = groupId |> String.concat " "
+    //        MapCommandNoHandler commandId groupId raw
 
 
 
 
-        // Providers that only specify a few things can use the Default and with
+    //    // Providers that only specify a few things can use the Default and with
 
     
-    let CommandDefFrom (source: Source) =
-        let getKey item = item.AncestorsAndThis
+    ////let CommandDefFrom (source: Source) =
+    ////    let getKey item = item.AncestorsAndThis
             
 
-        let commandDefFrom (input: ArchetypeInfo list) = 
-            TreeFromList getKey mapBranch input
+    //    let commandDefFrom (input: ArchetypeInfo list) = 
+    //        TreeFromList getKey mapBranch input
         
-        let archListResult = ArchetypeInfoListFrom source
+    //    let archListResult = ArchetypeInfoListFrom source
 
-        match archListResult with 
-        | Ok archList -> 
-            try
-                commandDefFrom archList
-            with 
-            | _ -> reraise()
-        | Error diagnostics -> invalidOp "TODO: format diagnostics"
+    //    match archListResult with 
+    //    | Ok archList -> 
+    //        try
+    //            commandDefFrom archList
+    //        with 
+    //        | _ -> reraise()
+    //    | Error diagnostics -> invalidOp "TODO: format diagnostics"
 
-         
-
-
-
-
-            
-        

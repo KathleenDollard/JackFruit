@@ -150,7 +150,7 @@ type ``When creating archetypeInfo from mapping``() =
         let (archetypes, model) = archetypesAndModelFromSource oneMapping
         let archetypeInfo = archetypes |> List.exactlyOne 
 
-        let actual = methodFromHandler model archetypeInfo.HandlerExpression
+        let actual = MethodFromHandler model archetypeInfo.HandlerExpression
 
         actual |> should not' (be Null)
 
@@ -161,7 +161,7 @@ type ``When creating archetypeInfo from mapping``() =
     member _.``Option and Argument types are updated on command``() =
         let (archetypes, model) = archetypesAndModelFromSource oneMapping
         let archetypeInfo = archetypes |> List.exactlyOne 
-        let methodSymbolResult = methodFromHandler model archetypeInfo.HandlerExpression
+        let methodSymbolResult = MethodFromHandler model archetypeInfo.HandlerExpression
 
         let actual = 
             match methodSymbolResult with 

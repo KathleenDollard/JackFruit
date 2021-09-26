@@ -190,10 +190,23 @@ module Generator =
                         Arg = mergeArgWithParameter archetypeInfo.Archetype.Arg methodSymbol
                         Options = mergeOptionsWithParameters archetypeInfo.Archetype.Options methodSymbol } }
 
+    let MethodFromHandler (model: SemanticModel) expression =
+        let handler =
+            model.GetSymbolInfo(expression: ExpressionSyntax)
+
+        let symbol =
+            match handler.Symbol with
+            | null when handler.CandidateSymbols.IsDefaultOrEmpty -> invalidOp "Delegate not found"
+            | null -> handler.CandidateSymbols.[0]
+            | _ -> handler.Symbol
+
+        match symbol with
+        | :? IMethodSymbol as m -> Some m
+        | _ -> None
 
     let generate model commandInfo =
         let handlerDef =
-            methodFromHandler model commandInfo.HandlerExpression
+            MethodFromHandler model commandInfo.HandlerExpression
         //let method = findMethod semanticModel handlerName
         ()
 
