@@ -1,17 +1,10 @@
-module Tests
+﻿module Generator.Tests.ArchetypeMappingTests
+
 
 open Xunit
 open FsUnit.Xunit
 open FsUnit.CustomMatchers
-open GeneratorSketch.Generator
-open GeneratorSketch.Patterns
-open Microsoft.CodeAnalysis.CSharp
-open FSharp.CodeAnalysis.CSharp.RoslynPatterns
-open System.Linq
-open TestUtils
-open CSharpTestCode
-open Microsoft.CodeAnalysis
-open Model
+open Generator
 
 let badMapping = """MapInferredX("", Handlers.X);"""
 
@@ -31,33 +24,6 @@ let threeMappings = ["""builder.MapInferred("", Handlers.A);"""
                      """builder.MapInferred("add package <PACKAGE_NAME>", Handlers.B);"""]
 let threeMappingsCommandNames = [ ""; "add"; "package" ]
 
-//type ``When evaluating syntax and models``() =
-//    [<Fact>]
-//    member _.``Syntax is mapped to symbol``() =
-//        let source = addMapStatements true threeMappings
-
-//        let syntaxTree =
-//            match syntaxTreeResult(Code source) with
-//            | Ok t -> t
-//            | Error e -> invalidOp "SyntaxTree creation failed: e"
-        
-//        let model = 
-//            getSemanticModelFromSource (Source.SyntaxTree syntaxTree)
-
-//        let mapSyntax = 
-//            [ for node in syntaxTree.GetRoot().DescendantNodes() do
-//                 match node with 
-//                 | SimpleInvocationByName "mapInferred" invocationInfo -> 
-//                    invocationInfo
-//                 | _ -> ()]
-
-//        let mapSymbols = 
-//            [ for invocationInfo in mapSyntax
-//                (parseArchetype invocationInfo.)
-//            ]
-            
-//        ()
-    
 
 type ``When parsing archetypes``() =
     [<Fact>]
