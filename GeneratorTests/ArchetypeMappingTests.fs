@@ -97,17 +97,6 @@ type ``When creating archetypeInfo from mapping``() =
         | Ok archetypes -> (archetypes, model)
         | Error errors -> invalidOp (ConcatErrors errors)
 
-    let archetypeAndParameters archetypeInfo model =
-        match archetypeInfo.HandlerExpression with 
-        | Some handler -> 
-            match MethodFromHandler model handler with 
-            | Some method -> 
-                [ for parameter in method.Parameters do
-                    parameter.Name, 
-                    parameter.Type.ToDisplayString() ]
-            | None -> invalidOp "Test failed because specified method not found"
-        | None -> invalidOp "Test failed because no handler found"
-
 
     [<Fact>]
     member _.``Handler name is found as method in separate class``() =
@@ -128,7 +117,7 @@ type ``When creating archetypeInfo from mapping``() =
         let (archetypes, model) = archetypesAndModelFromSource oneMapping
         let expected = [("one", "string")]
 
-        let parameters = archetypeAndParameters archetypes[0] model
+        let parameters = ArchetypeAndParameters archetypes[0] model
         let actual = 
             [ for tuple in parameters do
                 match tuple with 

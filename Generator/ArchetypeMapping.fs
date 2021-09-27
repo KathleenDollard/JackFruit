@@ -3,6 +3,7 @@
 open Generator.GeneralUtils
 open Generator.Models
 open RoslynUtils
+open Microsoft.CodeAnalysis
 
 
 let private  (|Command|Arg|Option|) (part: string) =
@@ -43,11 +44,9 @@ let ParseArchetypeInfo archetype handler =
       HandlerExpression = handler }
 
 
-let ArchetypeInfoListFrom (source: Source) =
+let private ArchetypeInfoListFromSyntaxTree (syntaxTree: SyntaxTree) =
     let archetypesFromInvocations syntaxTree =
         let invocations = InvocationsFrom syntaxTree "MapInferred"
-
-        // KAD: Why the type mismatch exception here. Expression inherits from SyntaxNode
         [ for invoke in invocations do
               match invoke with
               | (_, [ a; d ]) ->
@@ -55,12 +54,16 @@ let ArchetypeInfoListFrom (source: Source) =
                     (StringFromExpression a.Expression) 
                     (if (d.Expression = null) then None else Some d.Expression)
               | _ -> () ]
+    archetypesFromInvocations syntaxTree
 
+
+let ArchetypeInfoListFrom (source: Source) =
     match SyntaxTreeResult source with
-    | Ok tree -> Ok(archetypesFromInvocations tree)
+    | Ok syntaxTree -> Ok (ArchetypeInfoListFromSyntaxTree syntaxTree)
     | Error errors -> Error errors
 
-let mapBranch parents item childList=
+
+let private mapBranch parents item childList=
     let data = 
         match item with 
         | Some i -> i
@@ -70,14 +73,30 @@ let mapBranch parents item childList=
               HandlerExpression = None }
     { Data = data; Children = childList }
 
-let getKey item = item.AncestorsAndThis
+let private getKey item = item.AncestorsAndThis
+
+let private ArchetypeInfoTreeFromSyntaxTree (syntaxTree: SyntaxTree) = 
+    let list = ArchetypeInfoListFromSyntaxTree syntaxTree
+    TreeFromList getKey mapBranch list
 
 let ArchetypeInfoTreeFrom (source: Source) = 
     let archetypeInfoListResult = ArchetypeInfoListFrom source
-
-
     match archetypeInfoListResult with 
-    | Ok list -> Generator.GeneralUtils.TreeFromList getKey mapBranch list
+    | Ok list -> TreeFromList getKey mapBranch list
     | Error err -> invalidOp "Test failed because archetypeInfo mapping failed"
 
- 
+let ArchetypeAndParameters archetypeInfo model =
+    match archetypeInfo.HandlerExpression with 
+    | Some handler -> 
+        match MethodFromHandler model handler with 
+        | Some method -> 
+            [ for parameter in method.Parameters do
+                parameter.Name, 
+                parameter.Type.ToDisplayString() ]
+        | None -> invalidOp "Test failed because specified method not found"
+    | None -> invalidOp "Test failed because no handler found"
+
+
+let CommandDefFromSource (syntaxTree: SyntaxTree) model
+    let archTree = ArchetypeInfoTreeFromSyntaxTree syntaxTree
+    
