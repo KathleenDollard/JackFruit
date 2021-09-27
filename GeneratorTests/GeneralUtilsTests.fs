@@ -52,6 +52,15 @@ type ``When working with strings`` () =
 
         actual |> should equal expected
 
+    [<Fact>]
+    member _.``ToCamel works as expected`` () =
+        ToCamel("") |> should equal ""
+        ToCamel("lower") |> should equal "lower"
+        ToCamel("UPPER") |> should equal "UPPER"
+        ToCamel("start-end") |> should equal "startEnd"
+        ToCamel("start_middle_end") |> should equal "startMiddleEnd"
+        ToCamel("start-middle_end") |> should equal "startMiddleEnd"
+
 
 // KAD: I want to put the following mess inside the type that it applies to, but got errors: Why?
 // TODO: If the above is a real problem not a mistake on my part, move this to a separate file

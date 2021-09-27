@@ -2,6 +2,8 @@
 
 open Microsoft.CodeAnalysis
 
+
+
 type ArgDef =
     { ArgId: string
       Name: string
@@ -29,7 +31,14 @@ type CommandDef =
       SubCommands: CommandDef list}
 
 
+type SymbolDef =
+    | ArgDef of ArgDef
+    | OptionDef of OptionDef
+    | CommandDef of CommandDef
+
+
 type ArchetypeInfo =
     { AncestorsAndThis: string list 
       Raw: string list
       HandlerExpression: SyntaxNode option }
+

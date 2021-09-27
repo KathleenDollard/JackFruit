@@ -117,7 +117,7 @@ type ``When creating archetypeInfo from mapping``() =
         let (archetypes, model) = archetypesAndModelFromSource oneMapping
         let expected = [("one", "string")]
 
-        let parameters = ArchetypeAndParameters archetypes[0] model
+        let parameters = ParametersFromArchetype archetypes[0] model
         let actual = 
             [ for tuple in parameters do
                 match tuple with 

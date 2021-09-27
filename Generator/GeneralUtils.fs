@@ -19,6 +19,26 @@ let RemoveLeadingTrailing startChar endChar (input:string) =
 let RemoveLeadingTrailingDoubleQuote (input:string) =
     RemoveLeadingTrailing '"' '"' input
 
+let private RemoveCharsAndUpper (remove: char list) (input:string) =
+    let mutable lastIsSpecial = false
+    let arr =
+        [| for i in 0 .. input.Length do
+            if List.contains input[i] remove then
+                lastIsSpecial <- true
+                ()
+            elif lastIsSpecial then
+                lastIsSpecial <- false
+                System.Char.ToUpper input[i]
+            else
+                input[i] |]
+    new string (arr)
+
+
+let ToCamel input =
+    RemoveCharsAndUpper ['-'; '_'] input
+     
+
+
 type TreeNodeType<'T> = {
     Data: 'T
     Children: TreeNodeType<'T> list}
