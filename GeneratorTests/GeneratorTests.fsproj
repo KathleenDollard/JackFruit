@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Generator\Generator.fsproj" />
+    <ProjectReference Include="..\JackFruit\JackFruit.csproj" />
   </ItemGroup>
 
 </Project>

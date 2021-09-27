@@ -2,15 +2,15 @@
 
 open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp
-open Microsoft.CodeAnalysis.CSharp.Syntax
 open Microsoft.CodeAnalysis.VisualBasic
-open Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 type Source =
     | CSharpTree of SyntaxTree
     | CSharpCode of string
     | VBTree of SyntaxTree
     | VBCode of string
+
+
 
 let SyntaxTreeResult (source: Source) =
     let tree =
@@ -31,3 +31,29 @@ let SyntaxTreeResult (source: Source) =
         Error errors
 
 
+let StringFromExpression (node:  SyntaxNode) =
+    match node with 
+    | :? CSharpSyntaxNode as cSharpNode-> RoslynCSharpUtils.StringFromExpression cSharpNode
+    | :? VisualBasicSyntaxNode as vbNode -> RoslynVBUtils.StringFromExpression vbNode
+    | _ -> invalidOp "Unexpected type"
+
+
+let InvocationsFrom (syntaxTree: SyntaxTree) name =
+    match syntaxTree with 
+    | :? CSharpSyntaxTree as tree-> RoslynCSharpUtils.InvocationsFrom tree name
+    | :? VisualBasicSyntaxTree as tree -> RoslynVBUtils.InvocationsFrom tree name
+    | _ -> invalidOp "Unexpected type"
+
+let MethodFromHandler (model: SemanticModel) (expression: SyntaxNode) =
+    let handler =
+        model.GetSymbolInfo expression
+
+    let symbol =
+        match handler.Symbol with
+        | null when handler.CandidateSymbols.IsDefaultOrEmpty -> invalidOp "Delegate not found"
+        | null -> handler.CandidateSymbols.[0]
+        | _ -> handler.Symbol
+
+    match symbol with
+    | :? IMethodSymbol as m -> Some m
+    | _ -> None

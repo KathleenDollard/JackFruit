@@ -3,6 +3,7 @@
 open Xunit
 open FsUnit.Xunit
 open FsUnit.CustomMatchers
+open Generator.GeneralUtils
 
 type ``When working with strings`` () =
 
@@ -61,11 +62,6 @@ type InputType<'T> = {
     Parents: string list
     InputData: 'T }
 
-/// Test type for testing tree building output. The type in the actual code will be the 
-/// significantly more complex CommandDef
-type TreeNodeType<'T> = {
-    Data: 'T
-    Children: TreeNodeType<'T> list}
 
 let private example1 = [
     {Parents = ["dotnet"]; InputData="dotnet"}
@@ -164,7 +160,7 @@ let shouldNotMatch (expected: TreeNodeType<string> list) (actual: TreeNodeType<s
         | _ -> reraise()
 
 
-type ``When buliding a tree from a list of tuple(string list, string)``() =
+type ``When building a tree from a list of tuple(string list, string)``() =
 
     [<Fact>]
     member _.``Match test fails with typo``() =
@@ -183,8 +179,6 @@ type ``When buliding a tree from a list of tuple(string list, string)``() =
         let actual = treeNodeTypeFromInput example2
 
         actual |> shouldNotMatch example2MissingEntry
-
-
 
 
     [<Fact>]

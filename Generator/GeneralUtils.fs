@@ -19,10 +19,14 @@ let RemoveLeadingTrailing startChar endChar (input:string) =
 let RemoveLeadingTrailingDoubleQuote (input:string) =
     RemoveLeadingTrailing '"' '"' input
 
+type TreeNodeType<'T> = {
+    Data: 'T
+    Children: TreeNodeType<'T> list}
+
 let TreeFromList 
     (fKey: 'item -> string list)
     (fMapBranch: string list-> 'item option -> 'r list -> 'r)
-    list =
+    (list: 'item list) =
 
     // This uses closures at present
     // This intenitionally shadows list
