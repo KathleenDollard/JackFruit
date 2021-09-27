@@ -101,7 +101,7 @@ let CommandDefFromSource (syntaxTree: SyntaxTree) model  =
     let argAndOptions (parameters: (string * string) list) parts = 
         let getKey (part: string) = 
             let aliases = part.Trim().Split("|")
-            let first = aliases[0]
+            let first = aliases.[0]
             first.Replace("-","")
                 .Replace("<","")
                 .Replace(">","")
@@ -157,8 +157,8 @@ let CommandDefFromSource (syntaxTree: SyntaxTree) model  =
         let archetypeInfo = archTree.Data
         let parameters = ParametersFromArchetype archetypeInfo model
         let (arg, options) = argAndOptions parameters archetypeInfo.Raw
-
-        let id = archetypeInfo.AncestorsAndThis[archTree.Data.AncestorsAndThis.Length-1]
+        
+        let id = archetypeInfo.AncestorsAndThis.[archTree.Data.AncestorsAndThis.Length-1]
         let name = id // TODO: Pass this as default to providers, same for remainder except Options/Arg
 
         { CommandId = id
