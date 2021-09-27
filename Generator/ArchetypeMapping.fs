@@ -97,7 +97,7 @@ let ParametersFromArchetype archetypeInfo model =
     | None -> invalidOp "Test failed because no handler found"
 
 
-let CommandDefFromSource (syntaxTree: SyntaxTree) model =
+let CommandDefFromSource (syntaxTree: SyntaxTree) model  =
     let argAndOptions (parameters: (string * string) list) parts = 
         let getKey (part: string) = 
             let aliases = part.Trim().Split("|")
@@ -148,10 +148,11 @@ let CommandDefFromSource (syntaxTree: SyntaxTree) model =
                 | _ -> () ]
         (arg, options)
 
-    let rec depthFirstCreate archTree =
+    // KAD: Why do I have to specify the return here? 
+    let rec depthFirstCreate archTree  =
         let subCommands = 
             [ for child in archTree.Children do
-                depthFirstCreate child ]
+                yield depthFirstCreate child ]
 
         let archetypeInfo = archTree.Data
         let parameters = ParametersFromArchetype archetypeInfo model
