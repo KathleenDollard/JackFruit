@@ -11,10 +11,18 @@ let (|StringLiteralExpression|_|) (n: VisualBasicSyntaxNode) =
         Some()
     | _ -> None
 
-let StringFromExpression syntaxNode =
+let rec StringFrom syntaxNode =
     match syntaxNode with
+    //| SimpleArgumentSyntax (_, _, _, expression)  -> StringFrom expression
     | StringLiteralExpression -> syntaxNode.ToFullString()
     | _ -> invalidOp "Only string literals currently supported"
+
+
+let rec ExpressionFrom syntaxNode =
+    match syntaxNode with
+    //| SimpleArgumentSyntax (_, _, _, expression)  -> expression
+    | _ -> invalidOp "Invalid argument syntax"
+
 
 
 let InvocationsFrom (syntaxTree: VisualBasicSyntaxTree) name =

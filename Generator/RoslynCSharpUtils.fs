@@ -12,6 +12,12 @@ let (|StringLiteralExpression|_|) (n: CSharpSyntaxNode) =
     | _ -> None
 
 
+let (|ArgumentSyntax|_|) (n: CSharpSyntaxNode) =
+    match n with
+    | :? ArgumentSyntax as t -> Some(t.Kind(), t.NameColon, t.RefOrOutKeyword, t.Expression)
+    | _ -> None
+
+
 let (|InvocationExpression|_|) (n: SyntaxNode) =
         match n.Kind() with
         | SyntaxKind.InvocationExpression ->
@@ -46,10 +52,17 @@ let (|SimpleInvocationByName|_|) (name:string) (node:SyntaxNode) =
     | _ -> None
 
 
-let StringFromExpression syntaxNode =
+let rec StringFrom (syntaxNode: CSharpSyntaxNode) =
     match syntaxNode with
+    | ArgumentSyntax (_, _, _, expression)  -> StringFrom expression
     | StringLiteralExpression -> syntaxNode.ToFullString()
     | _ -> invalidOp "Only string literals currently supported"
+
+
+let rec ExpressionFrom syntaxNode =
+    match syntaxNode with
+    | ArgumentSyntax (_, _, _, expression)  -> expression
+    | _ -> invalidOp "Invalid argument syntax"
 
 
 let InvocationsFrom (syntaxTree: CSharpSyntaxTree) name =

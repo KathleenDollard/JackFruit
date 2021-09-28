@@ -31,10 +31,17 @@ let SyntaxTreeResult (source: Source) =
         Error errors
 
 
-let StringFromExpression (node:  SyntaxNode) =
+let StringFrom (node:  SyntaxNode) =
     match node with 
-    | :? CSharpSyntaxNode as cSharpNode-> RoslynCSharpUtils.StringFromExpression cSharpNode
-    | :? VisualBasicSyntaxNode as vbNode -> RoslynVBUtils.StringFromExpression vbNode
+    | :? CSharpSyntaxNode as cSharpNode-> RoslynCSharpUtils.StringFrom cSharpNode
+    | :? VisualBasicSyntaxNode as vbNode -> RoslynVBUtils.StringFrom vbNode
+    | _ -> invalidOp "Unexpected type"
+
+
+let ExpressionFrom (node:  SyntaxNode) =
+    match node with 
+    | :? CSharpSyntaxNode as cSharpNode-> RoslynCSharpUtils.ExpressionFrom cSharpNode
+    | :? VisualBasicSyntaxNode as vbNode -> RoslynVBUtils.ExpressionFrom vbNode
     | _ -> invalidOp "Unexpected type"
 
 

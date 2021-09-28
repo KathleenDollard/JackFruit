@@ -1,5 +1,17 @@
 ﻿module Generator.ArchetypeMapping
 
+//let BuildCommandDef model archInfoTree =
+//    let recurse model tree =
+        
+
+//// invocations list is built in the SyntaxReciever and then changed to a tuple in the
+//// language specific code of the generator
+//let generate invocations model= 
+//    ArchetypeInfoListFrom invocations   // invocations                      -> archetypeInfo list Result
+//    |> bind BuildTree               // archetypeInfo list Result        -> treeNode<archetypeInfo> Result
+//    |> bind BuildCommandDef model   // treeNode<archetypeInfo> Result   -> CommandDef list Result
+//    |> bind BuildCode CSharp        // CommandDef list Result           -> string
+
 open Generator.GeneralUtils
 open Generator.Models
 open RoslynUtils
@@ -44,6 +56,16 @@ let ParseArchetypeInfo archetype handler =
       HandlerExpression = handler }
 
 
+let ArchetypeInfosFrom (invocations: (string * SyntaxNode list) list) =
+        [ for invoke in invocations do
+            match invoke with
+            | (_, [ a; d ]) ->
+                let expression = ExpressionFrom d
+                ParseArchetypeInfo 
+                  (StringFrom a) 
+                  (if (expression = null) then None else Some expression)
+            | _ -> () ]    
+
 let ArchetypeInfoListFrom (source: Source) =
     let archetypesFromInvocations syntaxTree =
         let invocations = InvocationsFrom syntaxTree "MapInferred"
@@ -53,7 +75,7 @@ let ArchetypeInfoListFrom (source: Source) =
               match invoke with
               | (_, [ a; d ]) ->
                   ParseArchetypeInfo 
-                    (StringFromExpression a.Expression) 
+                    (StringFrom a.Expression) 
                     (if (d.Expression = null) then None else Some d.Expression)
               | _ -> () ]
 
