@@ -93,6 +93,7 @@ type ``When parsing archetypes``() =
         let source = AddMapStatements false source
         let mutable model:SemanticModel option = None
 
+        // KAD: Any better way to catch an interim value in a pipeline
         let updateModel newModel = 
             model <- Some newModel
             newModel
@@ -106,25 +107,6 @@ type ``When parsing archetypes``() =
         match result with
         | Ok archetypeList -> (archetypeList, model.Value)
         | Error err -> invalidOp $"Test failed building archetypes from source {err}"
-
-        ////// KAD: I tried to pipeline this and pretty much failed because there are two values created
-        ////// This method exists so I can get the tree later
-        ////let treeFromModel (model: SemanticModel) = 
-        ////    model.SyntaxTree
-
-        ////// I need an interim value from the pipeline, any better way? Then I had to use exception.
-        ////let modelResult = 
-        ////    ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
-        ////let model = 
-        ////    match modelResult with 
-        ////    | Ok model -> model
-        ////    | Error _ -> invalidOp "Test failed building SyntaxTrees or Model"
-        ////let result = 
-        ////    ArchetypeInfoListFrom (InvocationsFrom "MapInferred" (treeFromModel model))
-
-        //match result with
-        //| Ok archetypes -> (archetypes, model)
-        //| Error errors -> invalidOp (ConcatErrors errors)
 
 
     [<Fact>]
@@ -140,6 +122,7 @@ type ``When parsing archetypes``() =
         actual |> should not' (be Null)
 
         actual.ToString() |> should haveSubstring "Handlers.A"
+
 
     [<Fact>]
     member _.``Parameters retrieved from Handler``() =
