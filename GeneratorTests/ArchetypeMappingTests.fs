@@ -138,43 +138,10 @@ type ``When parsing archetypes``() =
         actual |> should matchList expected
 
 
-    [<Fact>]
-    member _.``Tree is built from ArchTypeInfoList by hand``() =
-        let mapBranch parents item childList=
-            let data = 
-                match item with 
-                | Some i -> i
-                | None -> 
-                    { AncestorsAndThis = parents 
-                      Raw = []
-                      HandlerExpression = None }
-            { Data = data; Children = childList }
-        
-        let getKey item = item.AncestorsAndThis
-
-        let source = AddMapStatements false threeMappings
-        let archetypeInfoListResult = 
-            SyntaxTreeResult (CSharpCode source)
-            |> Result.map (InvocationsFrom "MapInferred")
-            |> Result.bind ArchetypeInfoListFrom
-        let archTypeInfoList = 
-            match archetypeInfoListResult with 
-            | Ok a -> a
-            | Error err -> invalidOp "Test failed because archetypeInfo mapping failed"
-
-        let actual = Generator.GeneralUtils.TreeFromList getKey mapBranch archTypeInfoList
-
-
-        actual[0].Data.AncestorsAndThis |> should equal ["dotnet"]
-        actual[0].Children[0].Data.AncestorsAndThis |> should equal ["dotnet"; "add"]
-        actual[0].Children[0].Children[0].Data.AncestorsAndThis |> should equal ["dotnet";"add"; "package"]
-
 
     [<Fact>]
     member _.``Tree is built with ArchetypeInfoTreeFrom``() =
         let source = AddMapStatements false threeMappings
-
-        // TODO: Make a archetype infos list and work with that. Use that list to test teh previous steps
         let result = 
             SyntaxTreeResult (CSharpCode source)
             |> Result.map (InvocationsFrom "MapInferred")
