@@ -3,6 +3,7 @@
 open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.VisualBasic
 open Microsoft.CodeAnalysis.VisualBasic.Syntax
+open Generator.Models
 
 let (|StringLiteralExpression|_|) (n: VisualBasicSyntaxNode) =
     match n.Kind() with
@@ -11,11 +12,13 @@ let (|StringLiteralExpression|_|) (n: VisualBasicSyntaxNode) =
         Some()
     | _ -> None
 
-let rec StringFrom syntaxNode =
+let rec StringFrom (syntaxNode: VisualBasicSyntaxNode) =
     match syntaxNode with
-    //| SimpleArgumentSyntax (_, _, _, expression)  -> StringFrom expression
-    | StringLiteralExpression -> syntaxNode.ToFullString()
-    | _ -> invalidOp "Only string literals currently supported"
+    //| ArgumentSyntax (_, _, _, expression)  -> StringFrom expression
+    // KAD: Why do I need the parens in the fluent part of this? 
+    | StringLiteralExpression -> Ok (syntaxNode.ToFullString())
+    | _ -> Error (NotImplemented "Only string literals currently supported")
+
 
 
 let rec ExpressionFrom syntaxNode =

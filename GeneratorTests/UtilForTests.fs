@@ -4,13 +4,19 @@ open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp
 open System
 open Generator.RoslynUtils
+open Generator.Models
 open Xunit
 
 let testNamespace = "TestCode"
 
 
-let ConcatErrors errors = String.concat "\n\r" [ for error in errors do
-                                                        error.ToString() ]
+let ConcatErrors error = 
+    match error with 
+    | Roslyn diagnostics -> 
+        String.concat "\n\r"
+            [ for error in diagnostics do error.ToString()
+            ]
+    | _ -> error.ToString()
 
 
 let CreateMethod name (statements: string list) = 
@@ -61,7 +67,11 @@ let HandlerSource = ReadCodeFromFile "..\..\..\TestHandlers.cs"
 let OneMapping = AddMapStatementToTestCode ["""var x = new ConsoleSupport.BuilderInferredParser(); x.MapInferred("", Handlers.A);"""]
 
 
-let GetSemanticModelFromFirstTree (trees:SyntaxTree list) =
+let GetSemanticModelFromFirstTree inputTrees =
+    let trees = 
+        match inputTrees with 
+        | f, s -> [f; s]
+
     let compilation = 
         let core = typeof<obj>.Assembly.Location
         let runtime = 
@@ -78,39 +88,14 @@ let GetSemanticModelFromFirstTree (trees:SyntaxTree list) =
 
     let errors = 
         [ for diag in compilation.GetDiagnostics() do
-                        if diag.Severity = DiagnosticSeverity.Error then
-                            diag]
+            if diag.Severity = DiagnosticSeverity.Error then
+                diag]
     if errors.IsEmpty then
         match trees with 
-                    | [] -> invalidOp "Model not found for tree"
-                    | firstTree::_ -> Ok (compilation.GetSemanticModel (firstTree, true))
+        | [] -> invalidOp "Model not found for tree"
+        | firstTree::_ -> Ok (compilation.GetSemanticModel (firstTree, true))
     else
-        Error errors
-
-
-let GetSemanticModelFromSource (source: Source) (otherSources:Source list) =
-    let treeResults = 
-        SyntaxTreeResult source::
-        [ for src in otherSources do
-            SyntaxTreeResult src]
-
-    // KAD: Is there an easier way to tease these apart than traversing the list twice
-    let errors = 
-        [ for result in treeResults do 
-            match result with 
-            | Error resultErrors -> 
-                for error in resultErrors do
-                    error
-            | Ok _ -> ()]
-
-    if errors.IsEmpty then
-        GetSemanticModelFromFirstTree 
-            [ for result in treeResults do 
-                match result with 
-                | Ok tree -> tree
-                | Error _ -> ()]
-    else
-        Error errors
+        Error (Roslyn errors)
 
 
 let IsResultOk result = 
@@ -130,19 +115,17 @@ let IsModelOk modelResult =
 
 
 let ModelFrom (source: Source) (handlerSource: Source) =
-    let tree = 
-        match SyntaxTreeResult source with
-        | Ok tr -> tr
-        | Error errors -> invalidOp (ConcatErrors errors)
-    let handlerTree = 
-        match SyntaxTreeResult handlerSource with
-        | Ok tr -> tr
-        | Error errors -> invalidOp (ConcatErrors errors)
+    // KAD: Is there an easier way to do this?
+    let makeTuple tree handlerTree =
+        (tree, handlerTree)
 
-    let modelResult = GetSemanticModelFromFirstTree [tree; handlerTree]
-    match modelResult with 
-    | Ok model -> model
-    | Error e -> invalidOp "Semantic model creation failed"
+    let combineTrees hSource (tree: SyntaxTree) =
+        SyntaxTreeResult hSource
+        |> Result.map (makeTuple tree)
+
+    SyntaxTreeResult source
+    |> Result.bind (combineTrees handlerSource)
+    |> Result.bind GetSemanticModelFromFirstTree 
 
 
 let ShouldEqual (expected: 'a) (actual: 'a) =     

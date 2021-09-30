@@ -3,6 +3,7 @@
 open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp
 open Microsoft.CodeAnalysis.CSharp.Syntax
+open Generator.Models
 
 let (|StringLiteralExpression|_|) (n: CSharpSyntaxNode) =
     match n.Kind() with
@@ -55,18 +56,22 @@ let (|SimpleInvocationByName|_|) (name:string) (node:SyntaxNode) =
 let rec StringFrom (syntaxNode: CSharpSyntaxNode) =
     match syntaxNode with
     | ArgumentSyntax (_, _, _, expression)  -> StringFrom expression
-    | StringLiteralExpression -> syntaxNode.ToFullString()
-    | _ -> invalidOp "Only string literals currently supported"
+    // KAD: Why do I need the parens in the fluent part of this? 
+    | StringLiteralExpression -> Ok (syntaxNode.ToFullString())
+    | _ -> Error (NotImplemented "Only string literals currently supported")
 
 
-let rec ExpressionFrom syntaxNode =
+let ExpressionFrom (syntaxNode: CSharpSyntaxNode) =
     match syntaxNode with
-    | ArgumentSyntax (_, _, _, expression)  -> expression
-    | _ -> invalidOp "Invalid argument syntax"
+    | ArgumentSyntax (_, _, _, expression)  -> Ok (expression :> SyntaxNode)
+    | _ -> Error (UnexpectedExpression "Argument not passed")
 
 
 let InvocationsFrom (syntaxTree: CSharpSyntaxTree) name =
    [ for node in syntaxTree.GetRoot().DescendantNodes() do
         match node with 
-        | SimpleInvocationByName name t -> t
-        | _ -> ()] 
+        | SimpleInvocationByName name (caller, argList) 
+            -> (caller, 
+                [for arg in argList do arg :> SyntaxNode])
+        | _ 
+            -> ()] 

@@ -51,49 +51,63 @@ type ``When parsing archetypes``() =
         actual.AncestorsAndThis |> should equal expectedCommands
 
 
-type ``When creating archetypeInfo from mapping``() =
-    let CommandNamesFromSource archetypeInfoListResult =
-        match archetypeInfoListResult with
-        | Ok archInfoList -> 
-            [ for archInfo in archInfoList do
-                archInfo.AncestorsAndThis |> List.last ]
-        | Error err -> 
-            invalidOp $"Test failed due to {err}"
+//type ``When creating archetypeInfo from mapping``() =
+//    let CommandNamesFromSource archetypeInfoListResult =
+//        match archetypeInfoListResult with
+//        | Ok archInfoList -> 
+//            [ for archInfo in archInfoList do
+//                archInfo.AncestorsAndThis |> List.last ]
+//        | Error err -> 
+//            invalidOp $"Test failed due to {err}"
 
-    [<Fact>]
-    member _.``None are found when there are none``() =
-        let source = AddMapStatements true noMapping
+//    [<Fact>]
+//    member _.``None are found when there are none``() =
+//        let source = AddMapStatements true noMapping
 
-        let actual = ArchetypeInfoListFrom (CSharpCode source)
-        let actualNames = CommandNamesFromSource actual
+//        let actual = ArchetypeInfoListFrom (CSharpCode source)
+//        let actualNames = CommandNamesFromSource actual
 
-        actualNames |> should matchList noMappingCommandNames
+//        actualNames |> should matchList noMappingCommandNames
 
-    [<Fact>]
-    member _.``One is found when there is one``() =
-        let source = AddMapStatements true oneMapping
+//    [<Fact>]
+//    member _.``One is found when there is one``() =
+//        let source = AddMapStatements true oneMapping
 
-        let actual = ArchetypeInfoListFrom (CSharpCode source)
-        let actualNames = CommandNamesFromSource actual
+//        let actual = ArchetypeInfoListFrom (CSharpCode source)
+//        let actualNames = CommandNamesFromSource actual
 
-        actualNames |> should matchList oneMappingCommandNames
+//        actualNames |> should matchList oneMappingCommandNames
 
-    [<Fact>]
-    member _.``Multiples are found when there are multiple``() =
-        let source = AddMapStatements true threeMappings
+//    [<Fact>]
+//    member _.``Multiples are found when there are multiple``() =
+//        let source = AddMapStatements true threeMappings
 
-        let actual = ArchetypeInfoListFrom (CSharpCode source)
-        let actualNames = CommandNamesFromSource actual
+//        let actual = ArchetypeInfoListFrom (CSharpCode source)
+//        let actualNames = CommandNamesFromSource actual
 
-        actualNames |> should matchList threeMappingsCommandNames
+//        actualNames |> should matchList threeMappingsCommandNames
 
 
  type ``When creating commandDefs from handlers``() =
     let archetypesAndModelFromSource source =
         let source = AddMapStatements false source
-        let model = ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
 
-        match ArchetypeInfoListFrom (CSharpTree model.SyntaxTree) with
+        // KAD: I tried to pipeline this and pretty much failed because there are two values created
+        // This method exists so I can get the tree later
+        let treeFromModel (model: SemanticModel) = 
+            model.SyntaxTree
+
+        // I need an interim value from the pipeline, any better way? Then I had to use exception.
+        let modelResult = 
+            ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
+        let model = 
+            match modelResult with 
+            | Ok model -> model
+            | Error _ -> invalidOp "Test failed building SyntaxTrees or Model"
+        let result = 
+            ArchetypeInfoListFrom (InvocationsFrom "MapInferred" (treeFromModel model))
+
+        match result with
         | Ok archetypes -> (archetypes, model)
         | Error errors -> invalidOp (ConcatErrors errors)
 
@@ -141,13 +155,17 @@ type ``When creating archetypeInfo from mapping``() =
         let getKey item = item.AncestorsAndThis
 
         let source = AddMapStatements false threeMappings
-        let archetypeInfoListResult = ArchetypeInfoListFrom (CSharpCode source)
+        let archetypeInfoListResult = 
+            SyntaxTreeResult (CSharpCode source)
+            |> Result.map (InvocationsFrom "MapInferred")
+            |> Result.bind ArchetypeInfoListFrom
         let archTypeInfoList = 
             match archetypeInfoListResult with 
             | Ok a -> a
             | Error err -> invalidOp "Test failed because archetypeInfo mapping failed"
 
         let actual = Generator.GeneralUtils.TreeFromList getKey mapBranch archTypeInfoList
+
 
         actual[0].Data.AncestorsAndThis |> should equal ["dotnet"]
         actual[0].Children[0].Data.AncestorsAndThis |> should equal ["dotnet"; "add"]
@@ -158,7 +176,17 @@ type ``When creating archetypeInfo from mapping``() =
     member _.``Tree is built with ArchetypeInfoTreeFrom``() =
         let source = AddMapStatements false threeMappings
 
-        let actual = ArchetypeInfoTreeFrom (CSharpCode source)
+        // TODO: Make a archetype infos list and work with that. Use that list to test teh previous steps
+        let result = 
+            SyntaxTreeResult (CSharpCode source)
+            |> Result.map (InvocationsFrom "MapInferred")
+            |> Result.bind ArchetypeInfoListFrom
+            |> Result.map ArchetypeInfoTreeFrom
+
+        let actual = 
+            match result with 
+            | Ok tree -> tree
+            | Error err -> invalidOp $"Failed to build tree {err}" // TODO: Work on error reporting
 
         actual[0].Data.AncestorsAndThis |> should equal ["dotnet"]
         actual[0].Children[0].Data.AncestorsAndThis |> should equal ["dotnet"; "add"]
