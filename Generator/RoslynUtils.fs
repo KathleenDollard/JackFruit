@@ -52,6 +52,10 @@ let InvocationsFrom name (syntaxTree: SyntaxTree) =
     | :?  VisualBasic.VisualBasicSyntaxTree as tree -> RoslynVBUtils.InvocationsFrom tree name
     | _ -> invalidOp "Invalid node type"
 
+
+let InvocationsFromModel name (model:SemanticModel) =
+    InvocationsFrom name model.SyntaxTree
+
 let MethodFromHandler (model: SemanticModel) (expression: SyntaxNode) =
     let handler =
         model.GetSymbolInfo expression

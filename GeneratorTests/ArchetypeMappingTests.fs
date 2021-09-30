@@ -91,25 +91,40 @@ type ``When parsing archetypes``() =
  type ``When creating commandDefs from handlers``() =
     let archetypesAndModelFromSource source =
         let source = AddMapStatements false source
+        let mutable model:SemanticModel option = None
 
-        // KAD: I tried to pipeline this and pretty much failed because there are two values created
-        // This method exists so I can get the tree later
-        let treeFromModel (model: SemanticModel) = 
-            model.SyntaxTree
+        let updateModel newModel = 
+            model <- Some newModel
+            newModel
 
-        // I need an interim value from the pipeline, any better way? Then I had to use exception.
-        let modelResult = 
-            ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
-        let model = 
-            match modelResult with 
-            | Ok model -> model
-            | Error _ -> invalidOp "Test failed building SyntaxTrees or Model"
         let result = 
-            ArchetypeInfoListFrom (InvocationsFrom "MapInferred" (treeFromModel model))
+            ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
+            |> Result.map updateModel
+            |> Result.map (InvocationsFromModel "MapInferred")
+            |> Result.bind ArchetypeInfoListFrom
 
         match result with
-        | Ok archetypes -> (archetypes, model)
-        | Error errors -> invalidOp (ConcatErrors errors)
+        | Ok archetypeList -> (archetypeList, model.Value)
+        | Error err -> invalidOp $"Test failed building archetypes from source {err}"
+
+        ////// KAD: I tried to pipeline this and pretty much failed because there are two values created
+        ////// This method exists so I can get the tree later
+        ////let treeFromModel (model: SemanticModel) = 
+        ////    model.SyntaxTree
+
+        ////// I need an interim value from the pipeline, any better way? Then I had to use exception.
+        ////let modelResult = 
+        ////    ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
+        ////let model = 
+        ////    match modelResult with 
+        ////    | Ok model -> model
+        ////    | Error _ -> invalidOp "Test failed building SyntaxTrees or Model"
+        ////let result = 
+        ////    ArchetypeInfoListFrom (InvocationsFrom "MapInferred" (treeFromModel model))
+
+        //match result with
+        //| Ok archetypes -> (archetypes, model)
+        //| Error errors -> invalidOp (ConcatErrors errors)
 
 
     [<Fact>]
