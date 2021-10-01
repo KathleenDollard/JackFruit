@@ -2,6 +2,17 @@
 
 open Microsoft.CodeAnalysis
 
+let (|Command|Arg|Option|) (part: string) =
+    let part = part.Trim()
+
+    if part.Length = 0 then
+        Command part
+    else
+        match part.[0] with
+        | '<' -> Arg part
+        | '-' -> Option part
+        | _ -> Command part
+
 type AppErrors =
     | Roslyn of Diagnostics: Diagnostic list
     | UnexpectedExpression of Message: string
