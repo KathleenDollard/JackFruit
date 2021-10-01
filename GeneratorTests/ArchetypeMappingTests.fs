@@ -51,41 +51,47 @@ type ``When parsing archetypes``() =
         actual.AncestorsAndThis |> should equal expectedCommands
 
 
-//type ``When creating archetypeInfo from mapping``() =
-//    let CommandNamesFromSource archetypeInfoListResult =
-//        match archetypeInfoListResult with
-//        | Ok archInfoList -> 
-//            [ for archInfo in archInfoList do
-//                archInfo.AncestorsAndThis |> List.last ]
-//        | Error err -> 
-//            invalidOp $"Test failed due to {err}"
+type ``When creating archetypeInfo from mapping``() =
+    let CommandNamesFromSource source =
+        let commandNames archInfoList =
+            [ for archInfo in archInfoList do
+                archInfo.AncestorsAndThis |> List.last ]
 
-//    [<Fact>]
-//    member _.``None are found when there are none``() =
-//        let source = AddMapStatements true noMapping
+        let result = 
+            ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
+            |> Result.map (InvocationsFromModel "MapInferred")
+            |> Result.bind ArchetypeInfoListFrom 
+            |> Result.map commandNames
 
-//        let actual = ArchetypeInfoListFrom (CSharpCode source)
-//        let actualNames = CommandNamesFromSource actual
+        match result with 
+        | Ok n -> n
+        | Error err -> invalidOp $"Test failed with {err}"
 
-//        actualNames |> should matchList noMappingCommandNames
 
-//    [<Fact>]
-//    member _.``One is found when there is one``() =
-//        let source = AddMapStatements true oneMapping
+    [<Fact>]
+    member _.``None are found when there are none``() =
+        let source = AddMapStatements false noMapping
 
-//        let actual = ArchetypeInfoListFrom (CSharpCode source)
-//        let actualNames = CommandNamesFromSource actual
+        let actual = CommandNamesFromSource source
 
-//        actualNames |> should matchList oneMappingCommandNames
+        actual |> should matchList noMappingCommandNames
 
-//    [<Fact>]
-//    member _.``Multiples are found when there are multiple``() =
-//        let source = AddMapStatements true threeMappings
+    [<Fact>]
+    member _.``One is found when there is one``() =
+        let source = AddMapStatements false oneMapping
 
-//        let actual = ArchetypeInfoListFrom (CSharpCode source)
-//        let actualNames = CommandNamesFromSource actual
+        let actual = CommandNamesFromSource source
 
-//        actualNames |> should matchList threeMappingsCommandNames
+        actual |> should matchList oneMappingCommandNames
+
+    [<Fact>]
+    member _.``Multiples are found when there are multiple``() =
+        let source = AddMapStatements false threeMappings
+
+        let actual = CommandNamesFromSource source
+
+        actual |> should matchList threeMappingsCommandNames
+
 
 
  type ``When creating commandDefs from handlers``() =
@@ -160,19 +166,18 @@ type ``When parsing archetypes``() =
 
     [<Fact>]
     member _.``CommandDef built from ArchetypeInfo with Handler``() =
-        ()
-        //let (archetypes, model) = archetypesAndModelFromSource oneMapping
-        //let archetypeInfo = archetypes |> List.exactlyOne
+        let (archetypes, model) = archetypesAndModelFromSource oneMapping
+        let archetypeInfo = archetypes |> List.exactlyOne
 
-        //let actual = 
-        //    match archetypeInfo.HandlerExpression with 
-        //    | Some handler -> MethodFromHandler model handler
-        //    | None -> invalidOp "Test failed because no handler found"
+        let actual = 
+            match archetypeInfo.HandlerExpression with 
+            | Some handler -> MethodFromHandler model handler
+            | None -> invalidOp "Test failed because no handler found"
 
-        //actual |> should not' (be Null)
+        actual |> should not' (be Null)
 
-        //actual.ToString()
-        //|> should haveSubstring "Handlers.A"
+        actual.ToString()
+        |> should haveSubstring "Handlers.A"
 
     //[<Fact>]
     //member _.``Option and Argument types are updated on command``() =

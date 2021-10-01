@@ -23,8 +23,7 @@ let SyntaxTreeResult (source: Source) =
 
     let errors =
         [ for diag in tree.GetDiagnostics() do
-            if diag.Severity = DiagnosticSeverity.Error then
-                    diag ]
+            if diag.Severity = DiagnosticSeverity.Error then diag ]
 
     if errors.IsEmpty then
         Ok tree
