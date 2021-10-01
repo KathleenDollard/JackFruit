@@ -84,23 +84,6 @@ let ArchetypeInfoListFrom invocations =
         | _ -> Error (Aggregate errors)
 
 
-//let ArchetypeInfoListFrom (source: Source) =
-//    let archetypesFromInvocations syntaxTree =
-//        let invocations = InvocationsFrom syntaxTree "MapInferred"
-
-//        // KAD: Why the type mismatch exception here. Expression inherits from SyntaxNode
-//        [ for invoke in invocations do
-//              match invoke with
-//              | (_, [ a; d ]) ->
-//                  ParseArchetypeInfo 
-//                    (StringFrom ExpressionFrom a) 
-//                    (if (d.Expression = null) then None else Some d.Expression)
-//              | _ -> () ]
-
-//    match SyntaxTreeResult source with
-//    | Ok tree -> Ok(archetypesFromInvocations tree)
-//    | Error errors -> Error errors
-
 let ArchetypeInfoTreeFrom archetypeInfoList = 
     let mapBranch parents item childList=
         let data = 

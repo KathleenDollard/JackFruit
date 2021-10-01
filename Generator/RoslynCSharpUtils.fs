@@ -56,7 +56,7 @@ let (|SimpleInvocationByName|_|) (name:string) (node:SyntaxNode) =
 let rec StringFrom (syntaxNode: CSharpSyntaxNode) =
     match syntaxNode with
     | ArgumentSyntax (_, _, _, expression)  -> StringFrom expression
-    // KAD: Why do I need the parens in the fluent part of this? 
+    // KAD: Why do I need the parens around the syntaxNode.ToFullString()? 
     | StringLiteralExpression -> Ok (syntaxNode.ToFullString())
     | _ -> Error (NotImplemented "Only string literals currently supported")
 

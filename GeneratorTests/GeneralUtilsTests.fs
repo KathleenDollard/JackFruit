@@ -141,15 +141,11 @@ let private treeNodeTypeFromInput (input: InputType<string> list) =
     Generator.GeneralUtils.TreeFromList getKey mapBranch input
 
 let private matches (expected: TreeNodeType<string> list) (actual: TreeNodeType<string> list) =
-    // KAD: Check with Don on equality to see if this is needed
     let rec recurse (exp: TreeNodeType<string> list) (act: TreeNodeType<string> list) = 
          // KAD: Figure out the right thing to throw on lack of match
         if act.Length > exp.Length then invalidOp "An extra row was present"
         for item in exp do
             let matching = act |> List.tryFind (fun x -> x.Data = item.Data)
-            // KAD: Is there a more reasonable way to do a "not"
-            //if matching.IsNone && item.Data.Contains(",") = false then invalidOp $"Missing {item.Data}"
-            // KAD: In the next line, VS sees the & separately, and refers to this as a binary and. I had to look it up.
             if matching.IsSome then
                 recurse item.Children matching.Value.Children
             elif item.Data.Contains(",") then 
@@ -165,7 +161,6 @@ let shouldNotMatch (expected: TreeNodeType<string> list) (actual: TreeNodeType<s
         raise (System.ApplicationException("Failure was expected and did not occur"))
     with 
         | :? System.InvalidOperationException -> () // all is well, failure expected
-        // KAD: I tried reraise here without parens, and got a type inconsistent in the match issue. I understand that, but let's make it easier
         | _ -> reraise()
 
 

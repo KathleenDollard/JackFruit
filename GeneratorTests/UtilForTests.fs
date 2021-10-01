@@ -115,7 +115,6 @@ let IsModelOk modelResult =
 
 
 let ModelFrom (source: Source) (handlerSource: Source) =
-    // KAD: Is there an easier way to do this?
     let makeTuple tree handlerTree =
         (tree, handlerTree)
 

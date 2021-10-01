@@ -15,7 +15,6 @@ let (|StringLiteralExpression|_|) (n: VisualBasicSyntaxNode) =
 let rec StringFrom (syntaxNode: VisualBasicSyntaxNode) =
     match syntaxNode with
     //| ArgumentSyntax (_, _, _, expression)  -> StringFrom expression
-    // KAD: Why do I need the parens in the fluent part of this? 
     | StringLiteralExpression -> Ok (syntaxNode.ToFullString())
     | _ -> Error (NotImplemented "Only string literals currently supported")
 
