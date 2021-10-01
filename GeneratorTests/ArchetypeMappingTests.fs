@@ -52,50 +52,67 @@ type ``When parsing archetypes``() =
 
 
 type ``When creating archetypeInfo from mapping``() =
-    let CommandNamesFromSource archetypeInfoListResult =
-        match archetypeInfoListResult with
-        | Ok archInfoList -> 
+    let CommandNamesFromSource source =
+        let commandNames archInfoList =
             [ for archInfo in archInfoList do
                 archInfo.AncestorsAndThis |> List.last ]
-        | Error err -> 
-            invalidOp $"Test failed due to {err}"
+
+        let result = 
+            ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
+            |> Result.map (InvocationsFromModel "MapInferred")
+            |> Result.bind ArchetypeInfoListFrom 
+            |> Result.map commandNames
+
+        match result with 
+        | Ok n -> n
+        | Error err -> invalidOp $"Test failed with {err}"
+
 
     [<Fact>]
     member _.``None are found when there are none``() =
-        let source = AddMapStatements true noMapping
+        let source = AddMapStatements false noMapping
 
-        let actual = ArchetypeInfoListFrom (CSharpCode source)
-        let actualNames = CommandNamesFromSource actual
+        let actual = CommandNamesFromSource source
 
-        actualNames |> should matchList noMappingCommandNames
+        actual |> should matchList noMappingCommandNames
 
     [<Fact>]
     member _.``One is found when there is one``() =
-        let source = AddMapStatements true oneMapping
+        let source = AddMapStatements false oneMapping
 
-        let actual = ArchetypeInfoListFrom (CSharpCode source)
-        let actualNames = CommandNamesFromSource actual
+        let actual = CommandNamesFromSource source
 
-        actualNames |> should matchList oneMappingCommandNames
+        actual |> should matchList oneMappingCommandNames
 
     [<Fact>]
     member _.``Multiples are found when there are multiple``() =
-        let source = AddMapStatements true threeMappings
+        let source = AddMapStatements false threeMappings
 
-        let actual = ArchetypeInfoListFrom (CSharpCode source)
-        let actualNames = CommandNamesFromSource actual
+        let actual = CommandNamesFromSource source
 
-        actualNames |> should matchList threeMappingsCommandNames
+        actual |> should matchList threeMappingsCommandNames
+
 
 
  type ``When creating commandDefs from handlers``() =
     let archetypesAndModelFromSource source =
         let source = AddMapStatements false source
-        let model = ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
+        let mutable model:SemanticModel option = None
 
-        match ArchetypeInfoListFrom (CSharpTree model.SyntaxTree) with
-        | Ok archetypes -> (archetypes, model)
-        | Error errors -> invalidOp (ConcatErrors errors)
+        // KAD: Any better way to catch an interim value in a pipeline
+        let updateModel newModel = 
+            model <- Some newModel
+            newModel
+
+        let result = 
+            ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
+            |> Result.map updateModel
+            |> Result.map (InvocationsFromModel "MapInferred")
+            |> Result.bind ArchetypeInfoListFrom
+
+        match result with
+        | Ok archetypeList -> (archetypeList, model.Value)
+        | Error err -> invalidOp $"Test failed building archetypes from source {err}"
 
 
     [<Fact>]
@@ -112,6 +129,7 @@ type ``When creating archetypeInfo from mapping``() =
 
         actual.ToString() |> should haveSubstring "Handlers.A"
 
+
     [<Fact>]
     member _.``Parameters retrieved from Handler``() =
         let (archetypes, model) = archetypesAndModelFromSource oneMapping
@@ -126,39 +144,20 @@ type ``When creating archetypeInfo from mapping``() =
         actual |> should matchList expected
 
 
-    [<Fact>]
-    member _.``Tree is built from ArchTypeInfoList by hand``() =
-        let mapBranch parents item childList=
-            let data = 
-                match item with 
-                | Some i -> i
-                | None -> 
-                    { AncestorsAndThis = parents 
-                      Raw = []
-                      HandlerExpression = None }
-            { Data = data; Children = childList }
-        
-        let getKey item = item.AncestorsAndThis
-
-        let source = AddMapStatements false threeMappings
-        let archetypeInfoListResult = ArchetypeInfoListFrom (CSharpCode source)
-        let archTypeInfoList = 
-            match archetypeInfoListResult with 
-            | Ok a -> a
-            | Error err -> invalidOp "Test failed because archetypeInfo mapping failed"
-
-        let actual = Generator.GeneralUtils.TreeFromList getKey mapBranch archTypeInfoList
-
-        actual[0].Data.AncestorsAndThis |> should equal ["dotnet"]
-        actual[0].Children[0].Data.AncestorsAndThis |> should equal ["dotnet"; "add"]
-        actual[0].Children[0].Children[0].Data.AncestorsAndThis |> should equal ["dotnet";"add"; "package"]
-
 
     [<Fact>]
     member _.``Tree is built with ArchetypeInfoTreeFrom``() =
         let source = AddMapStatements false threeMappings
+        let result = 
+            SyntaxTreeResult (CSharpCode source)
+            |> Result.map (InvocationsFrom "MapInferred")
+            |> Result.bind ArchetypeInfoListFrom
+            |> Result.map ArchetypeInfoTreeFrom
 
-        let actual = ArchetypeInfoTreeFrom (CSharpCode source)
+        let actual = 
+            match result with 
+            | Ok tree -> tree
+            | Error err -> invalidOp $"Failed to build tree {err}" // TODO: Work on error reporting
 
         actual[0].Data.AncestorsAndThis |> should equal ["dotnet"]
         actual[0].Children[0].Data.AncestorsAndThis |> should equal ["dotnet"; "add"]
@@ -167,19 +166,18 @@ type ``When creating archetypeInfo from mapping``() =
 
     [<Fact>]
     member _.``CommandDef built from ArchetypeInfo with Handler``() =
-        ()
-        //let (archetypes, model) = archetypesAndModelFromSource oneMapping
-        //let archetypeInfo = archetypes |> List.exactlyOne
+        let (archetypes, model) = archetypesAndModelFromSource oneMapping
+        let archetypeInfo = archetypes |> List.exactlyOne
 
-        //let actual = 
-        //    match archetypeInfo.HandlerExpression with 
-        //    | Some handler -> MethodFromHandler model handler
-        //    | None -> invalidOp "Test failed because no handler found"
+        let actual = 
+            match archetypeInfo.HandlerExpression with 
+            | Some handler -> MethodFromHandler model handler
+            | None -> invalidOp "Test failed because no handler found"
 
-        //actual |> should not' (be Null)
+        actual |> should not' (be Null)
 
-        //actual.ToString()
-        //|> should haveSubstring "Handlers.A"
+        actual.ToString()
+        |> should haveSubstring "Handlers.A"
 
     //[<Fact>]
     //member _.``Option and Argument types are updated on command``() =

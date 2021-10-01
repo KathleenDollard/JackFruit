@@ -3,12 +3,19 @@
 open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp
 open Microsoft.CodeAnalysis.CSharp.Syntax
+open Generator.Models
 
 let (|StringLiteralExpression|_|) (n: CSharpSyntaxNode) =
     match n.Kind() with
     | SyntaxKind.StringLiteralExpression ->
         let t = n :?> LiteralExpressionSyntax
         Some()
+    | _ -> None
+
+
+let (|ArgumentSyntax|_|) (n: CSharpSyntaxNode) =
+    match n with
+    | :? ArgumentSyntax as t -> Some(t.Kind(), t.NameColon, t.RefOrOutKeyword, t.Expression)
     | _ -> None
 
 
@@ -46,14 +53,25 @@ let (|SimpleInvocationByName|_|) (name:string) (node:SyntaxNode) =
     | _ -> None
 
 
-let StringFromExpression syntaxNode =
+let rec StringFrom (syntaxNode: CSharpSyntaxNode) =
     match syntaxNode with
-    | StringLiteralExpression -> syntaxNode.ToFullString()
-    | _ -> invalidOp "Only string literals currently supported"
+    | ArgumentSyntax (_, _, _, expression)  -> StringFrom expression
+    // KAD: Why do I need the parens around the syntaxNode.ToFullString()? 
+    | StringLiteralExpression -> Ok (syntaxNode.ToFullString())
+    | _ -> Error (NotImplemented "Only string literals currently supported")
+
+
+let ExpressionFrom (syntaxNode: CSharpSyntaxNode) =
+    match syntaxNode with
+    | ArgumentSyntax (_, _, _, expression)  -> Ok (expression :> SyntaxNode)
+    | _ -> Error (UnexpectedExpression "Argument not passed")
 
 
 let InvocationsFrom (syntaxTree: CSharpSyntaxTree) name =
    [ for node in syntaxTree.GetRoot().DescendantNodes() do
         match node with 
-        | SimpleInvocationByName name t -> t
-        | _ -> ()] 
+        | SimpleInvocationByName name (caller, argList) 
+            -> (caller, 
+                [for arg in argList do arg :> SyntaxNode])
+        | _ 
+            -> ()] 

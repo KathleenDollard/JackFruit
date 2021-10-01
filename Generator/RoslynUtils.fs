@@ -1,8 +1,9 @@
 ﻿module Generator.RoslynUtils
 
 open Microsoft.CodeAnalysis
-open Microsoft.CodeAnalysis.CSharp
-open Microsoft.CodeAnalysis.VisualBasic
+//open Microsoft.CodeAnalysis.CSharp
+//open Microsoft.CodeAnalysis.VisualBasic
+open Generator.Models
 
 type Source =
     | CSharpTree of SyntaxTree
@@ -16,33 +17,43 @@ let SyntaxTreeResult (source: Source) =
     let tree =
         match source with
         | CSharpTree tree -> tree
-        | CSharpCode code -> (CSharpSyntaxTree.ParseText code)
+        | CSharpCode code -> (Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText code)
         | VBTree tree -> tree
-        | VBCode code -> (VisualBasicSyntaxTree.ParseText code)
+        | VBCode code -> (Microsoft.CodeAnalysis.VisualBasic.VisualBasicSyntaxTree.ParseText code)
 
     let errors =
         [ for diag in tree.GetDiagnostics() do
-            if diag.Severity = DiagnosticSeverity.Error then
-                    diag ]
+            if diag.Severity = DiagnosticSeverity.Error then diag ]
 
     if errors.IsEmpty then
         Ok tree
     else
-        Error errors
+        Error (Roslyn errors)
 
 
-let StringFromExpression (node:  SyntaxNode) =
+let StringFrom (node: SyntaxNode) =
     match node with 
-    | :? CSharpSyntaxNode as cSharpNode-> RoslynCSharpUtils.StringFromExpression cSharpNode
-    | :? VisualBasicSyntaxNode as vbNode -> RoslynVBUtils.StringFromExpression vbNode
+    | :? CSharp.CSharpSyntaxNode as cSharpNode-> RoslynCSharpUtils.StringFrom cSharpNode
+    | :?  VisualBasic.VisualBasicSyntaxNode as vbNode -> RoslynVBUtils.StringFrom vbNode
     | _ -> invalidOp "Unexpected type"
 
 
-let InvocationsFrom (syntaxTree: SyntaxTree) name =
+let ExpressionFrom (node: SyntaxNode)  =
+    match node with 
+    | :? CSharp.CSharpSyntaxNode as cSharpNode-> RoslynCSharpUtils.ExpressionFrom cSharpNode
+    | :?  VisualBasic.VisualBasicSyntaxNode as vbNode -> RoslynVBUtils.ExpressionFrom vbNode
+    | _ -> invalidOp "Invalid node type"
+
+
+let InvocationsFrom name (syntaxTree: SyntaxTree) =
     match syntaxTree with 
-    | :? CSharpSyntaxTree as tree-> RoslynCSharpUtils.InvocationsFrom tree name
-    | :? VisualBasicSyntaxTree as tree -> RoslynVBUtils.InvocationsFrom tree name
-    | _ -> invalidOp "Unexpected type"
+    | :? CSharp.CSharpSyntaxTree as tree-> RoslynCSharpUtils.InvocationsFrom tree name
+    | :?  VisualBasic.VisualBasicSyntaxTree as tree -> RoslynVBUtils.InvocationsFrom tree name
+    | _ -> invalidOp "Invalid node type"
+
+
+let InvocationsFromModel name (model:SemanticModel) =
+    InvocationsFrom name model.SyntaxTree
 
 let MethodFromHandler (model: SemanticModel) (expression: SyntaxNode) =
     let handler =

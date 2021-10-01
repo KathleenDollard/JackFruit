@@ -3,6 +3,7 @@
 open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.VisualBasic
 open Microsoft.CodeAnalysis.VisualBasic.Syntax
+open Generator.Models
 
 let (|StringLiteralExpression|_|) (n: VisualBasicSyntaxNode) =
     match n.Kind() with
@@ -11,10 +12,19 @@ let (|StringLiteralExpression|_|) (n: VisualBasicSyntaxNode) =
         Some()
     | _ -> None
 
-let StringFromExpression syntaxNode =
+let rec StringFrom (syntaxNode: VisualBasicSyntaxNode) =
     match syntaxNode with
-    | StringLiteralExpression -> syntaxNode.ToFullString()
-    | _ -> invalidOp "Only string literals currently supported"
+    //| ArgumentSyntax (_, _, _, expression)  -> StringFrom expression
+    | StringLiteralExpression -> Ok (syntaxNode.ToFullString())
+    | _ -> Error (NotImplemented "Only string literals currently supported")
+
+
+
+let rec ExpressionFrom syntaxNode =
+    match syntaxNode with
+    //| SimpleArgumentSyntax (_, _, _, expression)  -> expression
+    | _ -> invalidOp "Invalid argument syntax"
+
 
 
 let InvocationsFrom (syntaxTree: VisualBasicSyntaxTree) name =

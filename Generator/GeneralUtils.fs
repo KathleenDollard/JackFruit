@@ -20,19 +20,21 @@ let RemoveLeadingTrailingDoubleQuote (input:string) =
     RemoveLeadingTrailing '"' '"' input
 
 let private RemoveCharsAndUpper (remove: char list) (input:string) =
-    let mutable lastIsSpecial = false
-    let arr =
-        [| for i in 0 .. input.Length do
-            if List.contains input[i] remove then
-                lastIsSpecial <- true
-                ()
-            elif lastIsSpecial then
-                lastIsSpecial <- false
-                System.Char.ToUpper input[i]
-            else
-                input[i] |]
-    new string (arr)
-
+    match input with 
+    | null -> null
+    | "" -> ""
+    | _ ->
+        let mutable lastIsSpecial = false
+        new string 
+            [| for c in input do
+                if List.contains c remove then
+                    lastIsSpecial <- true
+                    ()
+                elif lastIsSpecial then
+                    lastIsSpecial <- false
+                    System.Char.ToUpper c
+                else
+                    c |]
 
 let ToCamel input =
     RemoveCharsAndUpper ['-'; '_'] input

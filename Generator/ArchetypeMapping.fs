@@ -1,5 +1,17 @@
 ﻿module Generator.ArchetypeMapping
 
+//let BuildCommandDef model archInfoTree =
+//    let recurse model tree =
+        
+
+//// invocations list is built in the SyntaxReciever and then changed to a tuple in the
+//// language specific code of the generator
+//let generate invocations model= 
+//    ArchetypeInfoListFrom invocations   // invocations                      -> archetypeInfo list Result
+//    |> bind BuildTree               // archetypeInfo list Result        -> treeNode<archetypeInfo> Result
+//    |> bind BuildCommandDef model   // treeNode<archetypeInfo> Result   -> CommandDef list Result
+//    |> bind BuildCode CSharp        // CommandDef list Result           -> string
+
 open Generator.GeneralUtils
 open Generator.Models
 open RoslynUtils
@@ -44,29 +56,39 @@ let ParseArchetypeInfo archetype handler =
       HandlerExpression = handler }
 
 
-let ArchetypeInfoListFrom (source: Source) =
-    let archetypesFromInvocations syntaxTree =
-        let invocations = InvocationsFrom syntaxTree "MapInferred"
+let ArchetypeInfoListFrom invocations =
+        let archetypeInfoWithResults =
+            let mutable pos = 0
+            [ for invoke in invocations do
+                let pos = pos + 1
+                match invoke with
+                | (_, [ a; d ]) ->
+                    let archetype = StringFrom a
+                    let expression = ExpressionFrom d
+                    match (archetype, expression) with
+                    | Ok arch, Ok expr -> Ok (ParseArchetypeInfo arch (Some expr))
+                    | Error _, _ ->  Error (UnexpectedExpressionForArchetype pos)
+                    | Ok arch, Error _ ->  Error (UnexpectedExpressionForHandler arch)
+                | _ -> Error UnexpectednumberOfArguments ]
+        let errors = [
+            for result in archetypeInfoWithResults do
+                match result with 
+                | Error err -> err
+                | _ -> ()]
+        match errors with 
+        | [] -> Ok [
+            for result in archetypeInfoWithResults do
+                match result with
+                | Ok arch -> arch
+                | _ -> () ]
+        | _ -> Error (Aggregate errors)
 
-        // KAD: Why the type mismatch exception here. Expression inherits from SyntaxNode
-        [ for invoke in invocations do
-              match invoke with
-              | (_, [ a; d ]) ->
-                  ParseArchetypeInfo 
-                    (StringFromExpression a.Expression) 
-                    (if (d.Expression = null) then None else Some d.Expression)
-              | _ -> () ]
 
-    match SyntaxTreeResult source with
-    | Ok tree -> Ok(archetypesFromInvocations tree)
-    | Error errors -> Error errors
-
-
-let ArchetypeInfoTreeFrom (source: Source) = 
+let ArchetypeInfoTreeFrom archetypeInfoList = 
     let mapBranch parents item childList=
         let data = 
-            match item with 
-            | Some i -> i
+            match item with
+            | Some x -> x
             | None -> 
                 { AncestorsAndThis = parents 
                   Raw = []
@@ -75,11 +97,27 @@ let ArchetypeInfoTreeFrom (source: Source) =
 
     let getKey item = item.AncestorsAndThis
 
-    let archetypeInfoListResult = ArchetypeInfoListFrom source
+    TreeFromList getKey mapBranch archetypeInfoList
 
-    match archetypeInfoListResult with 
-    | Ok list -> Generator.GeneralUtils.TreeFromList getKey mapBranch list
-    | Error err -> invalidOp "Test failed because archetypeInfo mapping failed"
+
+//let ArchetypeInfoTreeFrom archetypeInfoListResult = 
+//    let mapBranch parents item childList=
+//        let data = 
+//            match item with 
+//            | Some i -> i
+//            | None -> 
+//                { AncestorsAndThis = parents 
+//                  Raw = []
+//                  HandlerExpression = None }
+//        { Data = data; Children = childList }
+
+//    let getKey item = item.AncestorsAndThis
+
+//    //let archetypeInfoListResult = ArchetypeInfoListFrom source
+
+//    match archetypeInfoListResult with 
+//    | Ok list -> Generator.GeneralUtils.TreeFromList getKey mapBranch list
+//    | Error err -> invalidOp "Test failed because archetypeInfo mapping failed"
 
 
 // TODO: More work is needed because there is more we can get from the parameter
@@ -97,7 +135,7 @@ let ParametersFromArchetype archetypeInfo model =
     | None -> invalidOp "Test failed because no handler found"
 
 
-let CommandDefFromSource (syntaxTree: SyntaxTree) model  =
+let CommandDefFromSource archTree model  =
     let argAndOptions (parameters: (string * string) list) parts = 
         let getKey (part: string) = 
             let aliases = part.Trim().Split("|")
@@ -148,7 +186,6 @@ let CommandDefFromSource (syntaxTree: SyntaxTree) model  =
                 | _ -> () ]
         (arg, options)
 
-    // KAD: Why do I have to specify the return here? 
     let rec depthFirstCreate archTree  =
         let subCommands = 
             [ for child in archTree.Children do
@@ -168,13 +205,13 @@ let CommandDefFromSource (syntaxTree: SyntaxTree) model  =
           Options = options
           SubCommands = subCommands}
 
-    let source = 
-        match syntaxTree with 
-        | :? CSharp.CSharpSyntaxTree as tree -> CSharpTree tree
-        | :? VisualBasic.VisualBasicSyntaxTree as tree -> VBTree tree
-        | _ -> invalidOp "Unexpected item passed as a syntax tree"
+    //let source = 
+    //    match syntaxTree with 
+    //    | :? CSharp.CSharpSyntaxTree as tree -> CSharpTree tree
+    //    | :? VisualBasic.VisualBasicSyntaxTree as tree -> VBTree tree
+    //    | _ -> invalidOp "Unexpected item passed as a syntax tree"
 
-    let archTree = ArchetypeInfoTreeFrom source
+    //let archTree = ArchetypeInfoTreeFrom source
 
     [ for topLevelArch in archTree do
         depthFirstCreate topLevelArch ]
