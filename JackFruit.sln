@@ -15,17 +15,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{1AF2A300-F640-4E0B-8A15-E9545222463B}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GeneratorSketch", "GeneratorSketch\GeneratorSketch.fsproj", "{C6EB5437-779B-44C3-9456-37630E688B18}"
-EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GeneratorSketch.Test", "GeneratorSketch.Test\GeneratorSketch.Test.fsproj", "{9531965C-4F82-43E0-BE52-7914F3FD2A58}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Playground", "Playground\Playground.csproj", "{EA17DA2E-79A2-45DC-8412-DB4521533F78}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Playground.FSharp", "Playground.FSharp\Playground.FSharp.fsproj", "{F2BB9DBC-32C2-45DD-88F0-1F482BFBB4F4}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Generator", "Generator\Generator.fsproj", "{26166555-8C47-4B7B-B261-15FE477164D9}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Generator", "Generator\Generator.fsproj", "{26166555-8C47-4B7B-B261-15FE477164D9}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GeneratorTests", "GeneratorTests\GeneratorTests.fsproj", "{9ABF8ADB-4736-4043-89FC-D37A0B619615}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GeneratorTests", "GeneratorTests\GeneratorTests.fsproj", "{9ABF8ADB-4736-4043-89FC-D37A0B619615}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,14 +41,6 @@ Global
 		{1AF2A300-F640-4E0B-8A15-E9545222463B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1AF2A300-F640-4E0B-8A15-E9545222463B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1AF2A300-F640-4E0B-8A15-E9545222463B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C6EB5437-779B-44C3-9456-37630E688B18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C6EB5437-779B-44C3-9456-37630E688B18}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C6EB5437-779B-44C3-9456-37630E688B18}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C6EB5437-779B-44C3-9456-37630E688B18}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9531965C-4F82-43E0-BE52-7914F3FD2A58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9531965C-4F82-43E0-BE52-7914F3FD2A58}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9531965C-4F82-43E0-BE52-7914F3FD2A58}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9531965C-4F82-43E0-BE52-7914F3FD2A58}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EA17DA2E-79A2-45DC-8412-DB4521533F78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EA17DA2E-79A2-45DC-8412-DB4521533F78}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA17DA2E-79A2-45DC-8412-DB4521533F78}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -40,10 +40,6 @@ module Generator =
 
 
     let (|Command|Arg|Option|) (part: string) =
-        // KAD: For arg and option, it seems easiest to return the ArgDef and OptionDef currently created
-        //      in parseArchteype. However, I do not have enough info here to return the full CommandDef
-        //      and it seems anti-symmetric to either return just the Command name, or to return a partially
-        //      created Command that is not yet valid.
         let part = part.Trim()
 
         if part.Length = 0 then
@@ -182,8 +178,6 @@ module Generator =
                       { option with
                             TypeName = Some(parameter.Type.ToString()) }
                   | None -> () ]
-        // KAD: The logic for options is backward, peruse the method parameters and attempt match
-        //      If the method does not take the parameter, we do not care. 
         { archetypeInfo with
               Archetype =
                   { archetypeInfo.Archetype with

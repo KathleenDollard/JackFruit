@@ -1,6 +1,8 @@
 ﻿module TestUtilsTests
 
 open Xunit
+open FsUnit.Xunit
+open FsUnit.CustomMatchers
 open TestUtils
 open Microsoft.CodeAnalysis.CSharp
 open CSharpTestCode
@@ -25,15 +27,8 @@ type ``When using utility functions``() =
 
         let actual =
             getSemanticModelFromSource (Code source) []
-        // KAD: How to do this reasonably
-        let pass =
-            match actual with
-            | Ok _ -> true
-            | _ -> false
 
-
-        Assert.True(pass)
-
+        actual |> should be (ofCase <@ Ok @>)
 
     [<Fact>]
     member __.``SemanticModel not Ok when compilation errors present``() =
@@ -57,13 +52,7 @@ type ``When using utility functions``() =
                 "\n\r"
                 [ for error in errors do
                       error.ToString() ]
-        // KAD: How to do this reasonably
-        let pass =
-            match actual with
-            | Ok _ -> true
-            | _ -> false
-
-        Assert.False(pass)
+        actual |> should be (ofCase <@ Ok @>)
 
     [<Fact>]
     member __.``SemanticModel not Ok when syntax errors present``() =
@@ -87,13 +76,7 @@ type ``When using utility functions``() =
                 "\n\r"
                 [ for error in errors do
                       error.ToString() ]
-        // KAD: How to do this reasonably
-        let pass =
-            match actual with
-            | Ok _ -> true
-            | _ -> false
-
-        Assert.False(pass)
+        actual |> should be (ofCase <@ Ok @>)
 
     [<Fact>]
     member __.``Semantic model for single tree is not null``() =

@@ -63,7 +63,6 @@
             [ for src in otherSources do
                 syntaxTreeResult src]
 
-        // KAD: Is there an easier way to tease these apart than traversing the list twice
         let errors = 
             [ for result in treeResults do 
                 match result with 

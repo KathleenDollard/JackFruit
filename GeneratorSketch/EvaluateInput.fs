@@ -1,7 +1,4 @@
-﻿// KAD: Discuss namespaces and capitilization in naming
-// KAD: Top level modules are confusing. It appears here 
-//      that these rules are loose (Is EvaluateInput a top level module?)
-namespace GeneratorSketch
+﻿namespace GeneratorSketch
 
 open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp

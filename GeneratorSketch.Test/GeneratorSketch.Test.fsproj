@@ -34,7 +34,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\GeneratorSketch\GeneratorSketch.fsproj" />
 		<ProjectReference Include="..\JackFruit\JackFruit.csproj" />
 	</ItemGroup>
 
