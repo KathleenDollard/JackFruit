@@ -160,3 +160,19 @@ let archetypesAndModelFromSource source =
     match result with
     | Ok archetypeList -> (archetypeList, model.Value)
     | Error err -> invalidOp $"Test failed building archetypes from source {err}"
+
+
+
+let InvocationsAndModelFrom source =
+    //let source = AddMapStatements false source
+    let mutable model:SemanticModel = null
+
+    // KAD: Any better way to catch an interim value in a pipeline
+    let updateModel newModel = 
+        model <- newModel
+        newModel
+
+    ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
+    |> Result.map updateModel
+    |> Result.map (InvocationsFromModel "MapInferred")
+    |> Result.map (fun invocations -> (invocations, model))

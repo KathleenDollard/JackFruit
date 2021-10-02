@@ -76,7 +76,7 @@ type ``When creating archetypeInfo from mapping``() =
         actual |> should matchList threeMappingsCommandNames
 
 
- type ``When creating commandDefs from handlers``() =
+ type ``When working with  handlers``() =
 
     [<Fact>]
     member _.``Handler name is found as method in separate class``() =

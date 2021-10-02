@@ -17,59 +17,98 @@ let ParametersFromArchetype archetypeInfo model =
                 parameter.Name, 
                 parameter.Type.ToDisplayString() ]
         | None -> invalidOp "Test failed because specified method not found"
-    | None -> invalidOp "Test failed because no handler found"
+    | None -> [] // Interim subcommands do not have handlers
 
 
-let CommandDefFromSource archTree model  =
-    let argAndOptions (parameters: (string * string) list) parts = 
-        let getKey (part: string) = 
-            let aliases = part.Trim().Split("|")
-            let first = aliases.[0]
-            first.Replace("-","")
-                .Replace("<","")
-                .Replace(">","")
-                .Replace("[","")
-                .Replace("]","")
-                |> ToCamel
+let getKey (part: string) = 
+    let aliases = part.Trim().Split("|")
+    let first = aliases.[0]
+    first.Replace("-","")
+        .Replace("<","")
+        .Replace(">","")
+        .Replace("[","")
+        .Replace("]","")
+        |> ToCamel
 
-        let getArg part name typeName =
-            ()
 
-        let getOption part name typeName =
-            ()
+let getArgDef (part, id, typeName) =
+    let name = id
+    let desc = None
+    let required = None
+    let typeName = typeName
 
-        let isArg symbolDef =
-            match symbolDef with 
-            | ArgDef a -> true
+    { ArgId = id 
+      Name = name
+      Description = desc
+      Required = required
+      TypeName = typeName }
+
+
+let getOptionDef (part, id, typeName) =
+    let name = id
+    let desc = None
+    let aliases = []
+    let required = None
+    let typeName = typeName
+
+    { OptionId = id 
+      Name = name
+      Description = desc
+      Aliases = aliases
+      Required = required
+      TypeName = typeName }
+
+
+let getCommandDef part id arg options subCommands=
+    let name = id
+    let desc = None
+    let aliases = []
+
+    { CommandId = id 
+      Name = name
+      Description = desc
+      Aliases = aliases 
+      Arg = arg
+      Options = options
+      SubCommands = subCommands}
+
+
+let argAndOptions (parameters: (string * string) list) parts = 
+
+    let lookup = 
+        [ for part in parts do
+            (getKey part, part)]
+        |> Map.ofList
+
+    let isArg (part, id, typeName) =
+        match part with 
+        | Some p ->
+            match p with 
+            | Arg a -> true
             | _ -> false
+        | _ -> false
 
-        let lookup = 
-            [ for part in parts do
-                (getKey part, part)]
-            |> Map.ofList
+    let pairWithPart (id: string, typeName: string) =
+         lookup.TryFind id, id, typeName
 
-        let combined =
-            [ for (name, typeName) in parameters do 
-                let partOption = lookup |> Map.tryFind name 
-                match partOption with 
-                | Some p -> 
-                    match p with 
-                    | Arg a -> getArg p name typeName           // TODO: Add providers to call 
-                    | _ -> getOption partOption name typeName   // TODO: Add providers to call
-                | None -> getOption partOption name typeName ]
-        let arg = 
-            [ for symbol in combined do
-                match symbol with 
-                | ArgDef a -> Some a
-                | _ -> None ]
-            |> List.head
+    let args, options = 
+        parameters 
+        |> List.map pairWithPart
+        |> List.partition isArg
 
-        let options = 
-            [ for symbol in combined do
-                match symbol with 
-                | OptionDef o -> o
-                | _ -> () ]
-        (arg, options)
+    let argDefs = args |>  List.map getArgDef
+    // KAD: tryHead is documented as returning an Option, but it is returning null when list is empty
+    // let argDef = argDefs |> List.tryHead
+    let argDef: ArgDef option = 
+        match argDefs with 
+        | [] -> None
+        | head::_ -> Some head
+    let optionDefs = options |> List.map getOptionDef
+
+    argDef, optionDefs
+
+
+let CommandDefFrom model archTree =
 
     let rec depthFirstCreate archTree  =
         let subCommands = 
@@ -83,20 +122,7 @@ let CommandDefFromSource archTree model  =
         let id = archetypeInfo.AncestorsAndThis.[archTree.Data.AncestorsAndThis.Length-1]
         let name = id // TODO: Pass this as default to providers, same for remainder except Options/Arg
 
-        { CommandId = id
-          Name = name       // TODO: Pass this as default to providers
-          Description = None  // TODO: Pass this as default to providers
-          Arg = arg 
-          Options = options
-          SubCommands = subCommands}
-
-    //let source = 
-    //    match syntaxTree with 
-    //    | :? CSharp.CSharpSyntaxTree as tree -> CSharpTree tree
-    //    | :? VisualBasic.VisualBasicSyntaxTree as tree -> VBTree tree
-    //    | _ -> invalidOp "Unexpected item passed as a syntax tree"
-
-    //let archTree = ArchetypeInfoTreeFrom source
+        getCommandDef archetypeInfo.Raw id arg options subCommands
 
     [ for topLevelArch in archTree do
         depthFirstCreate topLevelArch ]

@@ -45,6 +45,13 @@ let ParseArchetypeInfo archetype handler =
       HandlerExpression = handler }
 
 
+let ExpresionOption expression =
+    if IsNullLiteral expression then
+        None
+    else
+        Some expression
+
+
 let ArchetypeInfoListFrom invocations =
         let archetypeInfoWithResults =
             let mutable pos = 0
@@ -55,7 +62,7 @@ let ArchetypeInfoListFrom invocations =
                     let archetype = StringFrom a
                     let expression = ExpressionFrom d
                     match (archetype, expression) with
-                    | Ok arch, Ok expr -> Ok (ParseArchetypeInfo arch (Some expr))
+                    | Ok arch, Ok expr -> Ok (ParseArchetypeInfo arch (ExpresionOption expr))
                     | Error _, _ ->  Error (UnexpectedExpressionForArchetype pos)
                     | Ok arch, Error _ ->  Error (UnexpectedExpressionForHandler arch)
                 | _ -> Error UnexpectednumberOfArguments ]
