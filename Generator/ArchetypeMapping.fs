@@ -30,22 +30,20 @@ open Microsoft.CodeAnalysis
 //
 // one|[old] --option1|o|[old]
 
-type CommandArchetype = 
-    { CommandId: string
-      Name: string
-      Aliases: string list
-      HiddenAliases: string list }
+let (|Command|Arg|Option|) (part: string) =
+    let part = part.Trim()
 
-type OptionArchetype = 
-    { OptionId: string
-      Name: string
-      Aliases: string list
-      HiddenAliases: string list }
+    if part.Length = 0 then
+        Command part
+    else
+        match part.[0] with
+        | '<' -> Arg part
+        | '-' -> Option part
+        | _ -> Command part
 
-type ArgArchetype = 
-    { ArgId: string
-      Name: string
-      Aliases: string list }
+let private stringSplitOptions =
+     System.StringSplitOptions.RemoveEmptyEntries
+     ||| System.StringSplitOptions.TrimEntries
 
 let private FirstNonHiddenWord words =
     let mutable name = ""
@@ -59,7 +57,7 @@ let private FirstNonHiddenWord words =
         Some name
 
 let private ParseArechetypePart (part: string) =
-    let words = part.Trim().Split('|')
+    let words = part.Trim().Split('|', stringSplitOptions)
     let id = RemoveSurroundingSquareBrackets words[0]
     let firstNonHidden = FirstNonHiddenWord words
     let name = 
@@ -80,43 +78,50 @@ let private ParseArechetypePart (part: string) =
 
 let CommandArchetypeFrom part =
     let ( id, name, aliases, hiddenAliases ) = ParseArechetypePart part
-    { CommandId = id
-      Name = name
-      Aliases = aliases
-      HiddenAliases = hiddenAliases}
-
+    CommandArchetype 
+        { Id = id
+          Name = name
+          Aliases = aliases
+          HiddenAliases = hiddenAliases}
 
 let OptionArchetypeFrom (part: string) =
     let part = part.Replace("-","")
     let ( id, name, aliases, hiddenAliases ) = ParseArechetypePart part
-    { OptionId = id
-      Name = name
-      Aliases = aliases
-      HiddenAliases = hiddenAliases}
+    OptionArchetype 
+        { Id = id
+          Name = name
+          Aliases = aliases
+          HiddenAliases = hiddenAliases}
 
 let ArgArchetypeFrom part =
     let part = RemoveSurroundingAngleBrackets part
     let ( id, name, aliases, hiddenAliases ) = ParseArechetypePart part
-    { ArgId = id
-      Name = name
-      Aliases = aliases}
+    ArgArchetype 
+        { Id = id
+          Name = name
+          Aliases = aliases
+          HiddenAliases = hiddenAliases}
 
-
-let ParseArchetypeInfo archetype handler =
-    let stringSplitOptions =
-        System.StringSplitOptions.RemoveEmptyEntries
-        ||| System.StringSplitOptions.TrimEntries
-
-    let parts =
+let ParseArchtypeParts archetype =
+    let words =
         (RemoveSurroundingDoubleQuote archetype)
             .Split(' ', stringSplitOptions)
         |> Array.toList
+    [ for word in words do 
+        match word with 
+        | Arg x -> ArgArchetypeFrom x
+        | Option x -> OptionArchetypeFrom x
+        | Command x -> CommandArchetypeFrom x ]
 
-    let commandNames =
-        [ for part in parts do
-              match part with
-              | Command commandName -> commandName
-              | _ -> () ]
+
+let ParseArchetypeInfo archetype handler =
+    let parts = ParseArchtypeParts archetype
+
+    let commandNames = 
+        [ for part in parts do 
+            match part with 
+            | CommandArchetype {Name=n} -> n
+            | _ -> ()]
 
     { AncestorsAndThis = 
         // Root command name is generally empty

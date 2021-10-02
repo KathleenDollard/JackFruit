@@ -73,7 +73,7 @@ let getCommandDef part id arg options subCommands=
       SubCommands = subCommands}
 
 
-let argAndOptions (parameters: (string * string) list) parts = 
+let argAndOptions (parameters: (string * string) list) (parts: ArchetypeParts list) = 
 
     let lookup = 
         [ for part in parts do
