@@ -1,4 +1,4 @@
-﻿module Generator.ArchetypeMapping
+﻿module Generator.ArchetypeMapping_Old
 
 //let BuildCommandDef model archInfoTree =
 //    let recurse model tree =
@@ -17,89 +17,6 @@ open Generator.Models
 open RoslynUtils
 open Microsoft.CodeAnalysis
 
-// Support these syntaxes
-//
-// Arg is singular for now because management of an item is different than a list and I want that experience
-//
-// one two three <arg> --option1 <optionArg> --option2
-// one|longOrShortOne --option1|o
-//
-// I want to support hidden args in the future. For that, square brackets. 
-// This is for deprecation and handler mismatches, and may help a common case where option names don't match their arg names
-// System.CommandLine does not yet support this. 
-//
-// one|[old] --option1|o|[old]
-
-type CommandArchetype = 
-    { CommandId: string
-      Name: string
-      Aliases: string list
-      HiddenAliases: string list }
-
-type OptionArchetype = 
-    { OptionId: string
-      Name: string
-      Aliases: string list
-      HiddenAliases: string list }
-
-type ArgArchetype = 
-    { ArgId: string
-      Name: string
-      Aliases: string list }
-
-let private FirstNonHiddenWord words =
-    let mutable name = ""
-    for word:string in words do
-        if name = "" then
-            if word[0] <> '[' then
-                name <- word
-    if name = "" then
-        None
-    else
-        Some name
-
-let private ParseArechetypePart (part: string) =
-    let words = part.Trim().Split('|')
-    let id = RemoveSurroundingSquareBrackets words[0]
-    let firstNonHidden = FirstNonHiddenWord words
-    let name = 
-        match firstNonHidden with
-        | Some name -> name
-        | None -> id
-    let aliases = [
-        // KAD-Don: Is there a difference between do and ->
-        for word in words do
-            if word[0] <> '[' && word <> name then
-                word ]
-    let hiddenAliases = [
-        for word in words do
-            if word[0] = '[' then
-                RemoveSurroundingSquareBrackets word ]
-    
-    ( id, name, aliases, hiddenAliases )
-
-let CommandArchetypeFrom part =
-    let ( id, name, aliases, hiddenAliases ) = ParseArechetypePart part
-    { CommandId = id
-      Name = name
-      Aliases = aliases
-      HiddenAliases = hiddenAliases}
-
-
-let OptionArchetypeFrom (part: string) =
-    let part = part.Replace("-","")
-    let ( id, name, aliases, hiddenAliases ) = ParseArechetypePart part
-    { OptionId = id
-      Name = name
-      Aliases = aliases
-      HiddenAliases = hiddenAliases}
-
-let ArgArchetypeFrom part =
-    let part = RemoveSurroundingAngleBrackets part
-    let ( id, name, aliases, hiddenAliases ) = ParseArechetypePart part
-    { ArgId = id
-      Name = name
-      Aliases = aliases}
 
 
 let ParseArchetypeInfo archetype handler =

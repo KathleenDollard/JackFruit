@@ -16,8 +16,16 @@ let RemoveLeadingTrailing startChar endChar (input:string) =
 
 
 /// Removes leading and trailing double 
-let RemoveLeadingTrailingDoubleQuote (input:string) =
+// TODO: Solve naming challenge: RemoveLeadingTrailing was too long. UnSurround isn't a word
+let RemoveSurroundingDoubleQuote (input:string) =
     RemoveLeadingTrailing '"' '"' input
+
+let RemoveSurroundingAngleBrackets (input:string) =
+    RemoveLeadingTrailing '<' '>' input
+
+let RemoveSurroundingSquareBrackets(input:string) =
+    RemoveLeadingTrailing '[' ']' input
+
 
 let private RemoveCharsAndUpper (remove: char list) (input:string) =
     match input with 

@@ -48,7 +48,7 @@ type ``When working with strings`` () =
         let input = @"""Some stuff"""
         let expected = "Some stuff"
 
-        let actual = Generator.GeneralUtils.RemoveLeadingTrailingDoubleQuote input
+        let actual = Generator.GeneralUtils.RemoveSurroundingDoubleQuote input
 
         actual |> should equal expected
 

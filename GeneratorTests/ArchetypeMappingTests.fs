@@ -33,6 +33,158 @@ type ``When parsing archetypes``() =
 
         actual.AncestorsAndThis |> should equal expectedCommands
 
+    [<Fact>]
+    member _.``ArgArchetype parsed from single element part`` () =
+        let input = "<one>"
+        let expected = 
+            { ArgId = "one"
+              Name = "one"
+              Aliases = [] }
+
+        let actual = ArgArchetypeFrom input
+
+        actual |> should equal expected
+
+    [<Fact>]
+    member _.``OptionArchetype parsed from single element part`` () =
+        let input = "--one"
+        let expected = 
+            { OptionId = "one"
+              Name = "one"
+              Aliases = []
+              HiddenAliases = [] }
+
+        let actual = OptionArchetypeFrom input
+
+        actual |> should equal expected
+
+    [<Fact>]
+    member _.``CommandArchetype parsed from single element part`` () =
+        let input = "one"
+        let expected = 
+            { CommandId = "one"
+              Name = "one"
+              Aliases = []
+              HiddenAliases = [] }
+
+        let actual = CommandArchetypeFrom input
+        
+        actual |> should equal expected
+
+    [<Fact>]
+    member _.``ArgArchetype parsed from multi-element part`` () =
+        let input = "<one|two>"
+        let expected = 
+            { ArgId = "one"
+              Name = "one"
+              Aliases = ["two"] }
+
+        let actual = ArgArchetypeFrom input
+        
+        actual |> should equal expected
+
+    [<Fact>]
+    member _.``OptionArchetype parsed from multi-element part`` () =
+        let input = "--one|two"
+        let expected = 
+            { OptionId = "one"
+              Name = "one"
+              Aliases = ["two"]
+              HiddenAliases = [] }
+
+        let actual = OptionArchetypeFrom input
+        
+        actual |> should equal expected
+
+    [<Fact>]
+    member _.``CommandArchetype parsed from multi-element part`` () =
+        let input = "one|two"
+        let expected = 
+            { CommandId = "one"
+              Name = "one"
+              Aliases = ["two"]
+              HiddenAliases = [] }
+
+        let actual = CommandArchetypeFrom input
+        
+        actual |> should equal expected
+
+    [<Fact>]
+    member _.``ArgArchetype parsed with hidden id`` () =
+        let input = "<[one]|two>"
+        let expected = 
+            { ArgId = "one"
+              Name = "two"
+              Aliases = [] }
+
+        let actual = ArgArchetypeFrom input
+        
+        actual |> should equal expected
+
+    [<Fact>]
+    member _.``OptionArchetype parsed with hidden id`` () =
+        let input = "--[one]|two"
+        let expected = 
+            { OptionId = "one"
+              Name = "two"
+              Aliases = []
+              HiddenAliases = ["one"] }
+
+        let actual = OptionArchetypeFrom input
+        
+        actual |> should equal expected
+
+    [<Fact>]
+    member _.``CommandArchetype parsed with hidden id`` () =
+        let input = "[one]|two"
+        let expected = 
+            { CommandId = "one"
+              Name = "two"
+              Aliases = []
+              HiddenAliases = ["one"] }
+
+        let actual = CommandArchetypeFrom input
+        
+        actual |> should equal expected
+
+    [<Fact>]
+    member _.``ArgArchetype parsed with hidden alias`` () =
+        let input = "<one|[two]>"
+        let expected = 
+            { ArgId = "one"
+              Name = "one"
+              Aliases = [] }
+
+        let actual = ArgArchetypeFrom input
+        
+        actual |> should equal expected
+
+    [<Fact>]
+    member _.``OptionArchetype parsed with hidden aliss`` () =
+        let input = "--one|[two]"
+        let expected = 
+            { OptionId = "one"
+              Name = "one"
+              Aliases = []
+              HiddenAliases = ["two"] }
+
+        let actual = OptionArchetypeFrom input
+        
+        actual |> should equal expected
+
+    [<Fact>]
+    member _.``CommandArchetype parsed with hidden alias`` () =
+        let input = "one|[two]"
+        let expected = 
+            { CommandId = "one"
+              Name = "one"
+              Aliases = []
+              HiddenAliases = ["two"] }
+
+        let actual = CommandArchetypeFrom input
+        
+        actual |> should equal expected
+
 
 type ``When creating archetypeInfo from mapping``() =
     let CommandNamesFromSource source =
