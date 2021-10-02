@@ -6,10 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="TestData.fs" />
     <Compile Include="UtilForTests.fs" />
-    <Compile Include="ArchetypeMappingTests.fs" />
     <Compile Include="GeneralUtilsTests.fs" />
     <Compile Include="RoslynUtilsTests.fs" />
+    <Compile Include="ArchetypeMappingTests.fs" />
+    <Compile Include="CommandDefMappingTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

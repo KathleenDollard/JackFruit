@@ -53,6 +53,20 @@ let (|SimpleInvocationByName|_|) (name:string) (node:SyntaxNode) =
     | _ -> None
 
 
+let (|NullLiteralExpression|_|) (n: CSharpSyntaxNode) =
+    match n.Kind() with
+    | SyntaxKind.NullLiteralExpression ->
+        let t = n :?> LiteralExpressionSyntax
+        Some()
+    | _ -> None
+
+
+let IsNullLiteral (expression: CSharpSyntaxNode) =
+    match expression with 
+    | NullLiteralExpression-> true
+    | _ -> false
+
+
 let rec StringFrom (syntaxNode: CSharpSyntaxNode) =
     match syntaxNode with
     | ArgumentSyntax (_, _, _, expression)  -> StringFrom expression

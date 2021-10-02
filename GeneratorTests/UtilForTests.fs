@@ -6,6 +6,8 @@ open System
 open Generator.RoslynUtils
 open Generator.Models
 open Xunit
+open Generator.ArchetypeMapping
+open Generator.Tests.TestData
 
 let testNamespace = "TestCode"
 
@@ -132,3 +134,45 @@ let ShouldEqual (expected: 'a) (actual: 'a) =
         Assert.Equal<'a>(expected, actual)
     with
         | _ -> printf "Expected: %A\nActual: %A" expected actual 
+
+
+let AddMapStatements includeBad (statements: string list) =
+    AddMapStatementToTestCode [ "var builder = new ConsoleSupport.BuilderInferredParser();";
+                                if includeBad then badMapping
+                                for s in statements do s ]
+
+
+let archetypesAndModelFromSource source =
+    let source = AddMapStatements false source
+    let mutable model:SemanticModel option = None
+
+    // KAD: Any better way to catch an interim value in a pipeline
+    let updateModel newModel = 
+        model <- Some newModel
+        newModel
+
+    let result = 
+        ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
+        |> Result.map updateModel
+        |> Result.map (InvocationsFromModel "MapInferred")
+        |> Result.bind ArchetypeInfoListFrom
+
+    match result with
+    | Ok archetypeList -> (archetypeList, model.Value)
+    | Error err -> invalidOp $"Test failed building archetypes from source {err}"
+
+
+
+let InvocationsAndModelFrom source =
+    //let source = AddMapStatements false source
+    let mutable model:SemanticModel = null
+
+    // KAD: Any better way to catch an interim value in a pipeline
+    let updateModel newModel = 
+        model <- newModel
+        newModel
+
+    ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
+    |> Result.map updateModel
+    |> Result.map (InvocationsFromModel "MapInferred")
+    |> Result.map (fun invocations -> (invocations, model))

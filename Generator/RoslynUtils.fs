@@ -48,7 +48,14 @@ let ExpressionFrom (node: SyntaxNode)  =
 let InvocationsFrom name (syntaxTree: SyntaxTree) =
     match syntaxTree with 
     | :? CSharp.CSharpSyntaxTree as tree-> RoslynCSharpUtils.InvocationsFrom tree name
-    | :?  VisualBasic.VisualBasicSyntaxTree as tree -> RoslynVBUtils.InvocationsFrom tree name
+    | :? VisualBasic.VisualBasicSyntaxTree as tree -> RoslynVBUtils.InvocationsFrom tree name
+    | _ -> invalidOp "Invalid node type"
+
+
+let IsNullLiteral (expression: SyntaxNode) =
+    match expression with 
+    | :? CSharp.CSharpSyntaxNode as node-> RoslynCSharpUtils.IsNullLiteral node
+ //   | :? VisualBasic.VisualBasicSyntaxNode as node -> RoslynVBUtils.IsNullLiteral node
     | _ -> invalidOp "Invalid node type"
 
 

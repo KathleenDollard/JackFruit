@@ -10,24 +10,7 @@ open Generator.GeneralUtils
 open Generator.Models
 open Generator.Tests.UtilForTests
 open Microsoft.CodeAnalysis
-
-let badMapping = """MapInferredX("", Handlers.X);"""
-
-let AddMapStatements includeBad (statements: string list) =
-    AddMapStatementToTestCode [ "var builder = new ConsoleSupport.BuilderInferredParser();";
-                                if includeBad then badMapping
-                                for s in statements do s ]
-
-let oneMapping = ["""builder.MapInferred("", Handlers.A);"""]
-let oneMappingCommandNames = [ "" ]
-
-let noMapping = [ ]
-let noMappingCommandNames = []
-
-let threeMappings = ["""builder.MapInferred("dotnet", Handlers.A);"""
-                     """builder.MapInferred("dotnet add <PROJECT>", null);"""
-                     """builder.MapInferred("dotnet add package <PACKAGE_NAME>", Handlers.B);"""]
-let threeMappingsCommandNames = [ "dotnet"; "add"; "package" ]
+open Generator.Tests.TestData
 
 
 type ``When parsing archetypes``() =
@@ -93,27 +76,7 @@ type ``When creating archetypeInfo from mapping``() =
         actual |> should matchList threeMappingsCommandNames
 
 
-
- type ``When creating commandDefs from handlers``() =
-    let archetypesAndModelFromSource source =
-        let source = AddMapStatements false source
-        let mutable model:SemanticModel option = None
-
-        // KAD: Any better way to catch an interim value in a pipeline
-        let updateModel newModel = 
-            model <- Some newModel
-            newModel
-
-        let result = 
-            ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
-            |> Result.map updateModel
-            |> Result.map (InvocationsFromModel "MapInferred")
-            |> Result.bind ArchetypeInfoListFrom
-
-        match result with
-        | Ok archetypeList -> (archetypeList, model.Value)
-        | Error err -> invalidOp $"Test failed building archetypes from source {err}"
-
+ type ``When working with  handlers``() =
 
     [<Fact>]
     member _.``Handler name is found as method in separate class``() =
@@ -128,20 +91,6 @@ type ``When creating archetypeInfo from mapping``() =
         actual |> should not' (be Null)
 
         actual.ToString() |> should haveSubstring "Handlers.A"
-
-
-    [<Fact>]
-    member _.``Parameters retrieved from Handler``() =
-        let (archetypes, model) = archetypesAndModelFromSource oneMapping
-        let expected = [("one", "string")]
-
-        let parameters = ParametersFromArchetype archetypes[0] model
-        let actual = 
-            [ for tuple in parameters do
-                match tuple with 
-                | (name, t) -> (name, t.ToString())]
-
-        actual |> should matchList expected
 
 
 
