@@ -1,5 +1,12 @@
 ﻿module Generator.Tests.TestData
 
+open Generator.Models
+
+type testData =
+    { MapInferredStatements: string list
+      CommandNames: string list
+      CommandDef: CommandDef }
+
 let badMapping = """MapInferredX("", Handlers.X);"""
 
 let oneMapping = ["""builder.MapInferred("", Handlers.A);"""]

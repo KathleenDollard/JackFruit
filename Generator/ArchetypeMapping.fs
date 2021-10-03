@@ -107,21 +107,30 @@ let ParseArchtypeParts archetype =
         (RemoveSurroundingDoubleQuote archetype)
             .Split(' ', stringSplitOptions)
         |> Array.toList
-    let rawParts = [ for word in words do 
-        match word with 
-        | Arg x -> ArgArchetypeFrom x
-        | Option x -> OptionArchetypeFrom x
-        | Command x -> CommandArchetypeFrom x ]
+    let argOptions =
+        [ for word in words do 
+            match word with 
+            | Arg x -> ArgArchetypeFrom x
+            | Option x -> OptionArchetypeFrom x
+            | _ -> ()]
+    let commands = 
+        [ for word in words do 
+            match word with 
+            | Command x -> CommandArchetypeFrom x
+            | _ -> ()]
+    (commands, argOptions)
 
 
 let ParseArchetypeInfo archetype handler =
-    let parts = ParseArchtypeParts archetype
+    let (commandParts, argOptionParts) = ParseArchtypeParts archetype
 
     let commandNames = 
-        [ for part in parts do 
+        [ for part in commandParts do 
             match part with 
             | CommandArchetype {Name=n} -> n
-            | _ -> ()]
+            | _ -> invalidOp "This list should only contain CommandArchetype" ]
+
+    let command = commandParts |> List.last
 
     { Path = 
         // Root command name is generally empty
@@ -129,7 +138,7 @@ let ParseArchetypeInfo archetype handler =
             [""]
         else
             commandNames
-      ArchetypeParts = parts
+      ArchetypeParts = command::argOptionParts
       Handler = handler }
 
 
