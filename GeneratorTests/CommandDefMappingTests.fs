@@ -125,4 +125,4 @@ type ``When building CommandDef parts``() =
             | Ok tree -> tree
             | Error err -> invalidOp $"Failed to build tree {err}" // TODO: Work on error reporting
 
-        actual |> should not' (be Null)
+        result |> should equal (Ok ThreeMappings.CommandDef)

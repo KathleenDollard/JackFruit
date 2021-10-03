@@ -71,7 +71,7 @@ let ThreeMappings =
           Description = None
           Aliases = []
           Arg = Some { ArgDef.Empty with ArgId="packageName"; Name ="packageName"; TypeName = "string"}
-          Options = []
+          Options = [{ OptionDef.Empty with OptionId="other"; Name ="other"; TypeName = "int"}]
           SubCommands = [] }
     let add =
         { CommandId = "add"
@@ -79,12 +79,12 @@ let ThreeMappings =
           Name = "add"
           Description = None
           Aliases = []
-          Arg = Some { ArgDef.Empty with ArgId="project"; Name ="project"; TypeName = "string"}
-          Options = [{ OptionDef.Empty with OptionId="other"; Name ="other"; TypeName = "int"}]
+          Arg = None
+          Options = []
           SubCommands = [package] }
     { MapInferredStatements = 
-        [ "builder.MapInferred(\"dotnet\", DotnetHandlers.Dotnet);"
-          "builder.MapInferred(\"dotnet add <PROJECT>\", null);"
+        [ "builder.MapInferred(\"dotnet <PROJECT>\", DotnetHandlers.Dotnet);"
+          "builder.MapInferred(\"dotnet add\", null);"
           "builder.MapInferred(\"dotnet add package <PACKAGE_NAME>\", DotnetHandlers.AddPackage);" ];
       CommandNames = ["dotnet"; "add"; "package"]
       CommandDef = 
@@ -93,7 +93,7 @@ let ThreeMappings =
           Name = "dotnet"
           Description = None
           Aliases = []
-          Arg = None
+          Arg = Some { ArgDef.Empty with ArgId="project"; Name ="project"; TypeName = "string"}
           Options = []
           SubCommands = [add] }}
 

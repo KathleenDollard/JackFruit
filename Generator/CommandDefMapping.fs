@@ -4,6 +4,7 @@ open Generator.GeneralUtils
 open Generator.Models
 open RoslynUtils
 open Microsoft.CodeAnalysis
+open System
 
 // TODO: More work is needed because there is more we can get from the parameter
 // But it was being difficult and I wanted to get the main logic done. This will 
@@ -83,13 +84,14 @@ let argAndOptions (parameters: (string * string) list) (parts: ArchetypePart lis
     let lookup = 
         [ for part in parts do
             match part with 
-            | ArgArchetype x 
-            | OptionArchetype x -> (x.Name, part)
+            | ArgArchetype x
+            | OptionArchetype x -> (ToCamel x.Id, part)
             | _ -> () ]
         |> Map.ofList
 
     let pairWithPart (id: string, typeName: string) =
-         lookup.TryFind id, id, typeName
+         let x = lookup.TryFind id, id, typeName
+         x
 
     let args, options = 
         parameters 
