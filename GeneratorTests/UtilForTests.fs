@@ -138,7 +138,7 @@ let ShouldEqual (expected: 'a) (actual: 'a) =
 
 let AddMapStatements includeBad (statements: string list) =
     AddMapStatementToTestCode [ "var builder = new ConsoleSupport.BuilderInferredParser();";
-                                if includeBad then badMapping
+                                if includeBad then BadMappingStatement
                                 for s in statements do s ]
 
 

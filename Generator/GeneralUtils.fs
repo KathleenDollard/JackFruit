@@ -26,6 +26,11 @@ let RemoveSurroundingAngleBrackets (input:string) =
 let RemoveSurroundingSquareBrackets(input:string) =
     RemoveLeadingTrailing '[' ']' input
 
+let UseDefaultIfEmpty defaultValue (list: 'a list) =
+    if list.IsEmpty then 
+        [ defaultValue ]
+    else 
+        list
 
 let private RemoveCharsAndUpper (remove: char list) (input:string) =
     match input with 

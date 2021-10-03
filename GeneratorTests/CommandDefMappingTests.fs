@@ -18,7 +18,7 @@ type ``When evaluating handlers``() =
 
     [<Fact>]
     member _.``Parameters retrieved from Handler``() =
-        let (archetypes, model) = archetypesAndModelFromSource oneMapping
+        let (archetypes, model) = archetypesAndModelFromSource OneMapping.MapInferredStatements
         let expected = [("one", "string")]
 
         let parameters = ParametersFromArchetype archetypes[0] model
@@ -108,7 +108,7 @@ type ``When building CommandDef parts``() =
 
     [<Fact>]
     member _.``CommandDef is built``() =
-        let source = AddMapStatements false threeMappings
+        let source = AddMapStatements false ThreeMappings.MapInferredStatements
         let mutable model = null
         let result = 
             InvocationsAndModelFrom source

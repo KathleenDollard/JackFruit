@@ -21,7 +21,7 @@ type ArgDef =
       Name: string
       Description: string option
       Required: bool option
-      TypeName: string}
+      TypeName: string }
 
 
 type OptionDef =

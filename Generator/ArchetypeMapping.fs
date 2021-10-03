@@ -48,7 +48,7 @@ let private stringSplitOptions =
 let private FirstNonHiddenWord words =
     let mutable name = ""
     for word:string in words do
-        if name = "" then
+        if name = "" && word.Length > 0 then
             if word[0] <> '[' then
                 name <- word
     if name = "" then
@@ -58,7 +58,11 @@ let private FirstNonHiddenWord words =
 
 let private ParseArechetypePart (part: string) =
     let words = part.Trim().Split('|', stringSplitOptions)
-    let id = RemoveSurroundingSquareBrackets words[0]
+    let id = 
+        if words.Length > 0 then
+            RemoveSurroundingSquareBrackets words[0]
+        else
+            ""
     let firstNonHidden = FirstNonHiddenWord words
     let name = 
         match firstNonHidden with
@@ -67,11 +71,11 @@ let private ParseArechetypePart (part: string) =
     let aliases = [
         // KAD-Don: Is there a difference between do and ->
         for word in words do
-            if word[0] <> '[' && word <> name then
+            if word.Length > 0 && word[0] <> '[' && word <> name then
                 word ]
     let hiddenAliases = [
         for word in words do
-            if word[0] = '[' then
+            if word.Length > 0 && word[0] = '[' then
                 RemoveSurroundingSquareBrackets word ]
     
     ( id, name, aliases, hiddenAliases )
@@ -118,6 +122,8 @@ let ParseArchtypeParts archetype =
             match word with 
             | Command x -> CommandArchetypeFrom x
             | _ -> ()]
+        |> UseDefaultIfEmpty (CommandArchetypeFrom "")
+
     (commands, argOptions)
 
 
