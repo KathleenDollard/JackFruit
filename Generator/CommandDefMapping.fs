@@ -9,7 +9,7 @@ open Microsoft.CodeAnalysis
 // But it was being difficult and I wanted to get the main logic done. This will 
 // need to switch to a record or similar to carry the parameter information. 
 let ParametersFromArchetype archetypeInfo model =
-    match archetypeInfo.HandlerExpression with 
+    match archetypeInfo.Handler with 
     | Some handler -> 
         match MethodFromHandler model handler with 
         | Some method -> 
@@ -18,17 +18,6 @@ let ParametersFromArchetype archetypeInfo model =
                 parameter.Type.ToDisplayString() ]
         | None -> invalidOp "Test failed because specified method not found"
     | None -> [] // Interim subcommands do not have handlers
-
-
-let getKey (part: string) = 
-    let aliases = part.Trim().Split("|")
-    let first = aliases.[0]
-    first.Replace("-","")
-        .Replace("<","")
-        .Replace(">","")
-        .Replace("[","")
-        .Replace("]","")
-        |> ToCamel
 
 
 let getArgDef (part, id, typeName) =
@@ -59,13 +48,19 @@ let getOptionDef (part, id, typeName) =
       TypeName = typeName }
 
 
-let getCommandDef part id arg options subCommands=
-    let name = id
+let getCommandDef parts archInfo arg options subCommands=
+    let commandArchetpes =
+         [for part in parts do
+            match part with  
+            | CommandArchetype c -> c
+            | _ -> ()]
+    let commandArch = commandArchetpes |> List.exactlyOne
     let desc = None
     let aliases = []
 
-    { CommandId = id 
-      Name = name
+    { CommandId = commandArch.Id 
+      Path = archInfo.Path
+      Name = commandArch.Name
       Description = desc
       Aliases = aliases 
       Arg = arg
@@ -73,20 +68,25 @@ let getCommandDef part id arg options subCommands=
       SubCommands = subCommands}
 
 
-let argAndOptions (parameters: (string * string) list) (parts: ArchetypeParts list) = 
+let argAndOptions (parameters: (string * string) list) (parts: ArchetypePart list) = 
 
-    let lookup = 
-        [ for part in parts do
-            (getKey part, part)]
-        |> Map.ofList
-
-    let isArg (part, id, typeName) =
+    // KAD-Don: Any shortcuts to this pattern?
+    let isArg (part: ArchetypePart option, _, _) =
         match part with 
         | Some p ->
             match p with 
-            | Arg a -> true
+            | ArgArchetype a -> true
             | _ -> false
-        | _ -> false
+        | None -> false
+
+    // KAD-Don: Is there a way I could have designed ArchetypeParts so that I would not have to match here
+    let lookup = 
+        [ for part in parts do
+            match part with 
+            | ArgArchetype x 
+            | OptionArchetype x -> (x.Name, part)
+            | _ -> () ]
+        |> Map.ofList
 
     let pairWithPart (id: string, typeName: string) =
          lookup.TryFind id, id, typeName
@@ -117,12 +117,9 @@ let CommandDefFrom model archTree =
 
         let archetypeInfo = archTree.Data
         let parameters = ParametersFromArchetype archetypeInfo model
-        let (arg, options) = argAndOptions parameters archetypeInfo.Raw
+        let (arg, options) = argAndOptions parameters archetypeInfo.ArchetypeParts
         
-        let id = archetypeInfo.AncestorsAndThis.[archTree.Data.AncestorsAndThis.Length-1]
-        let name = id // TODO: Pass this as default to providers, same for remainder except Options/Arg
-
-        getCommandDef archetypeInfo.Raw id arg options subCommands
+        getCommandDef archetypeInfo.ArchetypeParts archetypeInfo arg options subCommands
 
     [ for topLevelArch in archTree do
         depthFirstCreate topLevelArch ]

@@ -2,9 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <WarnOn>3390;$(WarnOn)</WarnOn>
-    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

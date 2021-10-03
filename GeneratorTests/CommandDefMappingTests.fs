@@ -32,18 +32,11 @@ type ``When evaluating handlers``() =
 
 type ``When building CommandDef parts``() =
 
-    [<Fact>]
-    member _.``Part key retrieved from many valid strings``() =
-
-        getKey "ABC" |> should equal "ABC"
-        getKey "<ABC>" |> should equal "ABC"
-        getKey "[ABC]" |> should equal "ABC"
-
     
     [<Fact>]
     member _.``Argument is found``() =
         let parameters = [("two", "int")]
-        let raw = ["<two>"]
+        let raw = [ ArgArchetype { Id = "two"; Name = "two"; Aliases = []; HiddenAliases = [] } ]
         let expected = Some {
             ArgId = "two" 
             Name = "two"
@@ -61,7 +54,7 @@ type ``When building CommandDef parts``() =
     [<Fact>]
     member _.``One option is found``() =
         let parameters = [("one", "string")]
-        let raw = ["--one"]
+        let raw = [ OptionArchetype { Id = "one"; Name = "one"; Aliases = []; HiddenAliases = [] } ]
         let expected = [{
             OptionId = "one" 
             Name = "one"
@@ -77,12 +70,14 @@ type ``When building CommandDef parts``() =
         //arg |> should be null
         options |> should equal expected
 
-    
-    
     [<Fact>]
     member _.``Two options and one argument are found``() =
         let parameters = [("one", "string"); ("two", "int"); ("three", "int")]
-        let raw = ["--one"; "--three"; "<two>"]
+        let raw = 
+            [ OptionArchetype { Id = "one"; Name = "one"; Aliases = []; HiddenAliases = [] } 
+              ArgArchetype { Id = "two"; Name = "two"; Aliases = []; HiddenAliases = [] } 
+              OptionArchetype { Id = "three"; Name = "three"; Aliases = []; HiddenAliases = [] } ]
+
         let optionDefOne = {
             OptionId = "one" 
             Name = "one"

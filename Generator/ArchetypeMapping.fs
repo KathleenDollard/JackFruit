@@ -107,7 +107,7 @@ let ParseArchtypeParts archetype =
         (RemoveSurroundingDoubleQuote archetype)
             .Split(' ', stringSplitOptions)
         |> Array.toList
-    [ for word in words do 
+    let rawParts = [ for word in words do 
         match word with 
         | Arg x -> ArgArchetypeFrom x
         | Option x -> OptionArchetypeFrom x
@@ -123,14 +123,14 @@ let ParseArchetypeInfo archetype handler =
             | CommandArchetype {Name=n} -> n
             | _ -> ()]
 
-    { AncestorsAndThis = 
+    { Path = 
         // Root command name is generally empty
         if commandNames.IsEmpty then
             [""]
         else
             commandNames
-      Raw = parts
-      HandlerExpression = handler }
+      ArchetypeParts = parts
+      Handler = handler }
 
 
 let ExpresionOption expression =
@@ -174,11 +174,11 @@ let ArchetypeInfoTreeFrom archetypeInfoList =
             match item with
             | Some x -> x
             | None -> 
-                { AncestorsAndThis = parents 
-                  Raw = []
-                  HandlerExpression = None }
+                { Path = parents 
+                  ArchetypeParts = []
+                  Handler = None }
         { Data = data; Children = childList }
 
-    let getKey item = item.AncestorsAndThis
+    let getKey item = item.Path
 
     TreeFromList getKey mapBranch archetypeInfoList

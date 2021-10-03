@@ -15,11 +15,11 @@
     printfn $"fullList.[..2] F#: {unboundedBeginning}"
     let unboundedEnd = fullList.[98..]
     printfn $"fullList.[98..] F#: {unboundedEnd}"
-    let fromEnd = fullList.[^2..]
-    printfn $"fullList.[^2..] F#: {fromEnd}"
+    //let fromEnd = fullList.[^2..]
+    //printfn $"fullList.[^2..] F#: {fromEnd}"
     
-    let x = list.[^2..]
-    let Test = 
-        printfn $"list.[^2..] F#: {x}"
-        printfn ""
+    //let x = list.[^2..]
+    //let Test = 
+    //    printfn $"list.[^2..] F#: {x}"
+    //    printfn ""
 

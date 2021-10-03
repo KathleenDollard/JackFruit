@@ -18,28 +18,30 @@ type ``When parsing archetypes``() =
     member _.``Ancestors found for empty archetype``() =
         let actual = ParseArchetypeInfo "\"\"" None
 
-        actual.AncestorsAndThis |> should equal [""]
+        actual.Path |> should equal [""]
 
     [<Fact>]
     member _.``Ancestors found for simple archetype``() =
         let actual = ParseArchetypeInfo "\"first\"" None
 
-        actual.AncestorsAndThis |> should equal ["first"]
+        actual.Path |> should equal ["first"]
 
     [<Fact>]
     member _.``Ancestors found for multi-level archetype``() =
         let expectedCommands = [ "first"; "second"; "third"]
         let actual = ParseArchetypeInfo "\"first second third\"" None
 
-        actual.AncestorsAndThis |> should equal expectedCommands
+        actual.Path |> should equal expectedCommands
 
     [<Fact>]
     member _.``ArgArchetype parsed from single element part`` () =
         let input = "<one>"
         let expected = 
-            { ArgId = "one"
-              Name = "one"
-              Aliases = [] }
+            ArgArchetype 
+                { Id = "one"
+                  Name = "one"
+                  Aliases = [] 
+                  HiddenAliases = []}
 
         let actual = ArgArchetypeFrom input
 
@@ -49,10 +51,11 @@ type ``When parsing archetypes``() =
     member _.``OptionArchetype parsed from single element part`` () =
         let input = "--one"
         let expected = 
-            { OptionId = "one"
-              Name = "one"
-              Aliases = []
-              HiddenAliases = [] }
+           OptionArchetype
+               { Id = "one"
+                 Name = "one"
+                 Aliases = []
+                 HiddenAliases = [] }
 
         let actual = OptionArchetypeFrom input
 
@@ -62,10 +65,11 @@ type ``When parsing archetypes``() =
     member _.``CommandArchetype parsed from single element part`` () =
         let input = "one"
         let expected = 
-            { CommandId = "one"
-              Name = "one"
-              Aliases = []
-              HiddenAliases = [] }
+            CommandArchetype
+                { Id = "one"
+                  Name = "one"
+                  Aliases = []
+                  HiddenAliases = [] }
 
         let actual = CommandArchetypeFrom input
         
@@ -75,9 +79,11 @@ type ``When parsing archetypes``() =
     member _.``ArgArchetype parsed from multi-element part`` () =
         let input = "<one|two>"
         let expected = 
-            { ArgId = "one"
-              Name = "one"
-              Aliases = ["two"] }
+            ArgArchetype 
+                { Id = "one"
+                  Name = "one"
+                  Aliases = ["two"]
+                  HiddenAliases = [] }
 
         let actual = ArgArchetypeFrom input
         
@@ -87,10 +93,11 @@ type ``When parsing archetypes``() =
     member _.``OptionArchetype parsed from multi-element part`` () =
         let input = "--one|two"
         let expected = 
-            { OptionId = "one"
-              Name = "one"
-              Aliases = ["two"]
-              HiddenAliases = [] }
+            OptionArchetype
+                { Id = "one"
+                  Name = "one"
+                  Aliases = ["two"]
+                  HiddenAliases = [] }
 
         let actual = OptionArchetypeFrom input
         
@@ -100,10 +107,11 @@ type ``When parsing archetypes``() =
     member _.``CommandArchetype parsed from multi-element part`` () =
         let input = "one|two"
         let expected = 
-            { CommandId = "one"
-              Name = "one"
-              Aliases = ["two"]
-              HiddenAliases = [] }
+            CommandArchetype
+                { Id = "one"
+                  Name = "one"
+                  Aliases = ["two"]
+                  HiddenAliases = [] }
 
         let actual = CommandArchetypeFrom input
         
@@ -113,9 +121,11 @@ type ``When parsing archetypes``() =
     member _.``ArgArchetype parsed with hidden id`` () =
         let input = "<[one]|two>"
         let expected = 
-            { ArgId = "one"
-              Name = "two"
-              Aliases = [] }
+            ArgArchetype 
+                { Id = "one"
+                  Name = "two"
+                  Aliases = []
+                  HiddenAliases = ["one"] }
 
         let actual = ArgArchetypeFrom input
         
@@ -125,10 +135,11 @@ type ``When parsing archetypes``() =
     member _.``OptionArchetype parsed with hidden id`` () =
         let input = "--[one]|two"
         let expected = 
-            { OptionId = "one"
-              Name = "two"
-              Aliases = []
-              HiddenAliases = ["one"] }
+            OptionArchetype
+                { Id = "one"
+                  Name = "two"
+                  Aliases = []
+                  HiddenAliases = ["one"] }
 
         let actual = OptionArchetypeFrom input
         
@@ -138,10 +149,11 @@ type ``When parsing archetypes``() =
     member _.``CommandArchetype parsed with hidden id`` () =
         let input = "[one]|two"
         let expected = 
-            { CommandId = "one"
-              Name = "two"
-              Aliases = []
-              HiddenAliases = ["one"] }
+            CommandArchetype
+                { Id = "one"
+                  Name = "two"
+                  Aliases = []
+                  HiddenAliases = ["one"] }
 
         let actual = CommandArchetypeFrom input
         
@@ -151,9 +163,11 @@ type ``When parsing archetypes``() =
     member _.``ArgArchetype parsed with hidden alias`` () =
         let input = "<one|[two]>"
         let expected = 
-            { ArgId = "one"
-              Name = "one"
-              Aliases = [] }
+            ArgArchetype 
+                { Id = "one"
+                  Name = "one"
+                  Aliases = []
+                  HiddenAliases = ["two"] }
 
         let actual = ArgArchetypeFrom input
         
@@ -163,10 +177,11 @@ type ``When parsing archetypes``() =
     member _.``OptionArchetype parsed with hidden aliss`` () =
         let input = "--one|[two]"
         let expected = 
-            { OptionId = "one"
-              Name = "one"
-              Aliases = []
-              HiddenAliases = ["two"] }
+            OptionArchetype
+                { Id = "one"
+                  Name = "one"
+                  Aliases = []
+                  HiddenAliases = ["two"] }
 
         let actual = OptionArchetypeFrom input
         
@@ -176,10 +191,11 @@ type ``When parsing archetypes``() =
     member _.``CommandArchetype parsed with hidden alias`` () =
         let input = "one|[two]"
         let expected = 
-            { CommandId = "one"
-              Name = "one"
-              Aliases = []
-              HiddenAliases = ["two"] }
+            CommandArchetype
+                { Id = "one"
+                  Name = "one"
+                  Aliases = []
+                  HiddenAliases = ["two"] }
 
         let actual = CommandArchetypeFrom input
         
@@ -190,7 +206,7 @@ type ``When creating archetypeInfo from mapping``() =
     let CommandNamesFromSource source =
         let commandNames archInfoList =
             [ for archInfo in archInfoList do
-                archInfo.AncestorsAndThis |> List.last ]
+                archInfo.Path |> List.last ]
 
         let result = 
             ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
@@ -236,7 +252,7 @@ type ``When creating archetypeInfo from mapping``() =
         let archetypeInfo = archetypes |> List.exactlyOne
 
         let actual = 
-            match archetypeInfo.HandlerExpression with 
+            match archetypeInfo.Handler with 
             | Some handler -> MethodFromHandler model handler
             | None -> invalidOp "Test failed because no handler found"
 
@@ -260,9 +276,9 @@ type ``When creating archetypeInfo from mapping``() =
             | Ok tree -> tree
             | Error err -> invalidOp $"Failed to build tree {err}" // TODO: Work on error reporting
 
-        actual[0].Data.AncestorsAndThis |> should equal ["dotnet"]
-        actual[0].Children[0].Data.AncestorsAndThis |> should equal ["dotnet"; "add"]
-        actual[0].Children[0].Children[0].Data.AncestorsAndThis |> should equal ["dotnet";"add"; "package"]
+        actual[0].Data.Path |> should equal ["dotnet"]
+        actual[0].Children[0].Data.Path |> should equal ["dotnet"; "add"]
+        actual[0].Children[0].Children[0].Data.Path |> should equal ["dotnet";"add"; "package"]
 
 
     [<Fact>]
@@ -271,7 +287,7 @@ type ``When creating archetypeInfo from mapping``() =
         let archetypeInfo = archetypes |> List.exactlyOne
 
         let actual = 
-            match archetypeInfo.HandlerExpression with 
+            match archetypeInfo.Handler with 
             | Some handler -> MethodFromHandler model handler
             | None -> invalidOp "Test failed because no handler found"
 

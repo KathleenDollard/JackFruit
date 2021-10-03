@@ -36,6 +36,7 @@ type OptionDef =
 
 type CommandDef =
     { CommandId: string
+      Path: string list
       Name: string
       Description: string option
       Aliases: string list
@@ -50,19 +51,19 @@ type SymbolDef =
     | CommandDef of CommandDef
 
 
-type ArchetypePart = 
+type ArchPart = 
     { Id: string
       Name: string
       Aliases: string list
       HiddenAliases: string list }
 
-type ArchetypeParts =
-    | CommandArchetype of part: ArchetypePart
-    | OptionArchetype of part: ArchetypePart
-    | ArgArchetype of part: ArchetypePart
+type ArchetypePart =
+    | CommandArchetype of part: ArchPart
+    | OptionArchetype of part: ArchPart
+    | ArgArchetype of part: ArchPart
 
 type ArchetypeInfo =
-    { AncestorsAndThis: string list 
-      Raw: ArchetypeParts list
-      HandlerExpression: SyntaxNode option }
+    { Path: string list 
+      ArchetypeParts: ArchetypePart list
+      Handler: SyntaxNode option }
 
