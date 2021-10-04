@@ -109,6 +109,7 @@ type ``When building CommandDef parts``() =
     [<Fact>]
     member _.``CommandDef is built``() =
         let source = AddMapStatements false ThreeMappings.MapInferredStatements
+        let expected = ThreeMappings.CommandDef
         let mutable model = null
         let result = 
             InvocationsAndModelFrom source
@@ -125,4 +126,8 @@ type ``When building CommandDef parts``() =
             | Ok tree -> tree
             | Error err -> invalidOp $"Failed to build tree {err}" // TODO: Work on error reporting
 
-        result |> should equal (Ok ThreeMappings.CommandDef)
+        actual.Length |> should equal 1
+        let actual = actual.Head
+        let errors = MatchCommandDef expected actual
+        errors |> should equal ""
+        actual |> should equal expected
