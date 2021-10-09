@@ -1,7 +1,6 @@
 ﻿module rec Generator.Language
 
 open System.Text
-open Generator.Roslyn
 open GeneralUtils
 
 type Scope =
@@ -43,6 +42,9 @@ type Expression =
     | Invocation of Invocation
     | Comparison of Comparison
     | Instantiation of Instantiation
+    | StringLiteral of string
+    | NonStringLiteral of string
+    | NamedItem of NamedItem
 
 type If =
     { Condition: Expression

@@ -1,7 +1,7 @@
 ﻿module Dummy
 
 open System
-open Generator.Roslyn
+open Generator.Language
 
 
 type LanguageCSharp() =

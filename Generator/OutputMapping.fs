@@ -1,6 +1,6 @@
 ﻿module Generaor.OutputMapping
 
-open Generator.Roslyn
+open Generator.Language
 open Generator.Models
 
 let OutputCode (outputter: Output) (root: CommandDef)=

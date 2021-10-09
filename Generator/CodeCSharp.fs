@@ -1,6 +1,6 @@
 ﻿module Generator.CodeCSharp
 
-open Generator.Roslyn
+open Generator.Language
 open GeneralUtils
 
 
