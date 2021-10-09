@@ -1,6 +1,7 @@
 ﻿module Generator.GeneralUtils 
 
 open System
+open System.Text
 
 /// Removes leading and trailing characters
 let RemoveLeadingTrailing startChar endChar (input:string) =
@@ -135,3 +136,28 @@ let TreeFromList
 
     recurse [] list
 
+type SpaceStringBuilder(spacesForIndent: int) =
+    let sb = new StringBuilder()
+    let mutable indentSize = spacesForIndent
+    let mutable indentLevel = 0
+      
+    member _.AppendLine line = 
+        let spaceCount = indentSize * indentLevel
+        let spaces = String.replicate spaceCount " "
+        sb.AppendLine(spaces + line)
+
+    member _.AppendLines lines list = 
+        let spaceCount = indentSize * indentLevel
+        let spaces = String.replicate spaceCount " "
+        for line in lines do
+            sb.AppendLine(spaces + line)
+        
+    member _.IncreaseIndent =
+        indentLevel <- indentLevel + 1
+
+    member _.DecreaseIndent =
+        if indentLevel > 1 then
+            indentLevel <- indentLevel - 1
+
+    override _.ToString() =
+        sb.ToString()

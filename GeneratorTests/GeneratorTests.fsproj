@@ -6,9 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="OutputMapingTests.fs" />
     <Compile Include="TestData.fs" />
     <Compile Include="UtilForTests.fs" />
+    
+    <Compile Include="LanguageCSharpTests.fs" />
+    <Compile Include="OutputMapingTests.fs" />
     <Compile Include="GeneralUtilsTests.fs" />
     <Compile Include="RoslynUtilsTests.fs" />
     <Compile Include="ArchetypeMappingTests.fs" />

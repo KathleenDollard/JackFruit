@@ -3,7 +3,8 @@ using System.Linq;
 
 namespace Playground
 {
-    public class Program
+
+    class Program
     {
         static void Main(string[] args)
         {
