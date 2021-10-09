@@ -10,6 +10,7 @@
     <Compile Include="Models.fs" />
     <Compile Include="GeneralUtils.fs" />
     <Compile Include="Language.fs" />
+    <Compile Include="CSharpLanguageExtensions.fs" />
     <Compile Include="LanguageCSharp.fs" />
     <Compile Include="CodeCSharp.fs" />
     <Compile Include="OutputMapping.fs" />

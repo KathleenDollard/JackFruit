@@ -65,7 +65,7 @@ type ``When building CommandDef parts``() =
 
         let (arg, options) = argAndOptions parameters raw
 
-        // KAD: This is related to the problem argAndOptions. This should be None, not null
+        // KAD-Don:*** This is related to the problem argAndOptions. This should be None, not null
         arg |> should be (ofCase <@ None @>)
         //arg |> should be null
         options |> should equal expected

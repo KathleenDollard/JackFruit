@@ -2,23 +2,25 @@
 
 open System.Text
 open GeneralUtils
+open System
 
 type Scope =
     | Public
     | Private
     | Internal
 
-// KAD-Don: Can a type be a restriction: IOW, can I create a SymbolName guaranteed to be a valid symbol?
-type NamedItem = | NamedItem of string
-
 // Where a class may be used, use NamedType, even if it will generally be an instance
 type GenericNamedItem = 
-    { TypeName: NamedItem 
+    { Name: string 
       GenericTypes: GenericNamedItem list }
+    static member Create name =
+        { Name = name 
+          GenericTypes = [] }
+
 
 type Invocation =
     { Instance: GenericNamedItem
-      MethodName: NamedItem
+      MethodName: string
       Arguments: Expression list}
 
 type Instantiation =
@@ -44,7 +46,7 @@ type Expression =
     | Instantiation of Instantiation
     | StringLiteral of string
     | NonStringLiteral of string
-    | NamedItem of NamedItem
+    | Symbol of string
 
 type If =
     { Condition: Expression
@@ -52,12 +54,12 @@ type If =
       Elses: If list}
 
 type ForEach =
-    { LoopVar: NamedItem
-      LoopOver: NamedItem
+    { LoopVar: string
+      LoopOver: string
       Statements: Statement list }
 
 type Assignment = 
-    { Item: NamedItem
+    { Item: string
       Value: Expression}
 
 type Statement =
@@ -67,7 +69,7 @@ type Statement =
     | ForEach of ForEach
 
 type Parameter =
-    { Name: NamedItem
+    { Name: string
       Type: GenericNamedItem
       Default: Expression option
       IsParams: bool}
@@ -81,7 +83,7 @@ type Method =
       Statements: Statement list}
 
 type Property =
-    { Name: NamedItem
+    { Name: string
       Type: GenericNamedItem
       IsStatic: bool
       Scope: Scope
@@ -100,10 +102,13 @@ type Class =
 
 type Using = 
     { Namespace: string
-      Alias: string option}
+      Alias: string option }
+    with static member Create nspace =
+        { Namespace = nspace
+          Alias = None }
 
 type Namespace = 
-    { Name: NamedItem
+    { Name: string
       Usings: Using list
       Classes: Class list}
 
@@ -145,7 +150,7 @@ type ILanguage =
     abstract member Comparison: Comparison -> string
 
 
-type Output(language: ILanguage, spacesPerIndent: int) =
+type RoslynWriter(language: ILanguage, spacesPerIndent: int) =
     let addLines (newLines: string list) oldLines =
         let mutable retLines = oldLines
         for line in newLines do
@@ -178,42 +183,42 @@ type Output(language: ILanguage, spacesPerIndent: int) =
         |> addLines (OutputStatements method.Statements)
         |> addLines (language.MethodClose method)
 
-    let OutputProperty  mbr =
+    member this.OutputProperty  mbr =
         []
 
-    let OutputMember mbr =
+    member this.OutputMember mbr =
         match mbr with 
         | Method m -> OutputMethod m
-        | Property p -> OutputProperty p
+        | Property p -> this.OutputProperty p
 
-    let OutputMembers (members: Member list) =
+    member this.OutputMembers (members: Member list) =
         let mutable retLines = []
         for mbr in members do 
-            retLines <- addLines (OutputMember mbr) retLines
+            retLines <- addLines (this.OutputMember mbr) retLines
         retLines
 
-    let OutputClass cls =
+    member this.OutputClass cls =
         []
         |> addLines (language.ClassOpen cls)
-        |> addLines (OutputMembers cls.Members)
+        |> addLines (this.OutputMembers cls.Members)
         |> addLines (language.ClassClose cls)
 
-    let OutputClasses (classes: Class list) =
+    member this.OutputClasses (classes: Class list) =
         // KAD-Don: Are there any shortcuts to pipelining in a loop?
         let mutable retLines = []
         for cls in classes do 
-            retLines <- addLines (OutputClass cls) retLines
+            retLines <- addLines (this.OutputClass cls) retLines
         retLines
 
-    let OutputUsings (usings: Using list) =
+    member this.OutputUsings (usings: Using list) =
         [ for using in usings do 
             language.Using using]
 
-    let Output spaces (nspace: Namespace) = 
+    member this.Output spaces (nspace: Namespace) = 
         []
         |> addLines (language.NamespaceOpen nspace)
-        |> addLines (OutputUsings nspace.Usings)
-        |> addLines (OutputClasses nspace.Classes)
+        |> addLines (this.OutputUsings nspace.Usings)
+        |> addLines (this.OutputClasses nspace.Classes)
         |> addLines (language.NamespaceClose nspace)
 
 

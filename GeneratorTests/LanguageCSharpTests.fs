@@ -1,86 +1,95 @@
-﻿module Generator.Tests.LanguageCSharpTests
+﻿module LanguageCSharpTests
 
+open Xunit
+open FsUnit.Xunit
+open FsUnit.CustomMatchers
+open Generator.GeneralUtils
+open Generator
 open Generator.Language
+open Generator.Tests.TestDataCSharp
 
-// Where a class may be used, use NamedType, even if it will generally be an instance
-type GenericNamedItem with
-    static member ForTesting =
-    { TypeName = NamedItem "RonWeasley"
-      GenericTypes = [] }
+type ``When working with language parts`` () =
+    let cSharp = LanguageCSharp() :> ILanguage
 
-type Invocation with
-    static member ForTesting =
-    { Instance = GenericNamedItem.ForTesting
-      MethodName = NamedItem "JackRussell"
-      Arguments = []}
+    [<Fact>]
+    member _.``Using is correct without alias`` () =
+        let actual = cSharp.Using Using.ForTesting
+        actual |> should equal "using System;"
 
-type Instantiation with
-    static member ForTesting =
-    { TypeName = GenericNamedItem.ForTesting
-      Arguments = []}
+    [<Fact>]
+    member _.``Using is correct with alias`` () =
+        let actual = cSharp.Using {  Using.ForTesting with Alias = Some "B"}
+        actual |> should equal "using B = System;"
 
-type Comparison with 
-    static member ForTesting =
-    { Left = NamedItem "left"
-      Right = StringLiteral "qwerty"
-      Operator = Operator Equals}
+    [<Fact>]
+    member _.``Namespace open is correct`` () =
+        let actual = cSharp.NamespaceOpen Namespace.ForTesting
+        actual |> should equal ["namespace MyNamespace";"{"]
 
-type If with 
-    static member ForTesting =
-    { Condition = Expression
-      Statements = Statement list
-      Elses = If list}
+    [<Fact>]
+    member _.``Namespace close is correct`` () =
+        let actual = cSharp.NamespaceClose Namespace.ForTesting
+        actual |> should equal ["}"]
 
-type ForEach with 
-    static member ForTesting =
-    { LoopVar = NamedItem
-      LoopOver = NamedItem
-      Statements = Statement list }
+    [<Fact>]
+    member _.``Class open is correct`` () =
+        let actual = cSharp.ClassOpen Class.ForTesting
+        actual |> should equal ["public class RonWeasley";"{"]
 
-type Assignment with 
-    static member ForTesting = 
-    { Item = NamedItem
-      Value = Expression}
+    [<Fact>]
+    member _.``Class close is correct`` () =
+        let actual = cSharp.ClassClose Class.ForTesting
+        actual |> should equal ["}"]
 
-type Parameter with 
-    static member ForTesting =
-    { Name = NamedItem
-      Type = GenericNamedItem
-      Default = Expression option
-      IsParams = bool}
+    [<Fact>]
+    member _.``Method open is correct`` () =
+        let actual = cSharp.MethodOpen Method.ForTesting
+        actual |> should equal ["public string MyMethod()";"{"]
 
-type Method with 
-    static member ForTesting =
-    { Name = GenericNamedItem
-      ReturnType = GenericNamedItem
-      IsStatic = bool
-      Scope = Scope
-      Parameters = Parameter list
-      Statements = Statement list}
+    [<Fact>]
+    member _.``Method close is correct`` () =
+        let actual = cSharp.MethodClose Method.ForTesting
+        actual |> should equal ["}"]
 
-type Property with 
-    static member ForTesting =
-    { Name = NamedItem
-      Type = GenericNamedItem
-      IsStatic = bool
-      Scope = Scope
-      GetStatements = Statement list
-      SetStatements = Statement list}
+    [<Fact>]
+    member _.``Property open is correct`` () =
+        let actual = cSharp.PropertyOpen Property.ForTesting
+        actual |> should equal ["public MyReturnType MyProperty";"{"]
 
-type Class with 
-    static member ForTesting = 
-    { Name = GenericNamedItem
-      IsStatic = bool
-      Scope = Scope
-      Members = Member list}
+    [<Fact>]
+    member _.``Property close is correct`` () =
+        let actual = cSharp.PropertyClose Property.ForTesting
+        actual |> should equal ["}"]
 
-type Using with 
-    static member ForTesting = 
-    { Namespace = string
-      Alias = string option}
+    [<Fact>]
+    member _.``If open is correct`` () =
+        let actual = cSharp.IfOpen If.ForTesting
+        actual |> should equal ["if (A == 42)";"{"]
 
-type Namespace with 
-    static member ForTesting = 
-    { Name = NamedItem
-      Usings = Using list
-      Classes = Class list}
+    [<Fact>]
+    member _.``If close is correct`` () =
+        let actual = cSharp.IfClose If.ForTesting
+        actual |> should equal ["}"]
+
+    [<Fact>]
+    member _.``ForEach open is correct`` () =
+        let actual = cSharp.ForEachOpen ForEach.ForTesting
+        actual |> should equal ["for (var x in listOfThings)";"{"]
+
+    [<Fact>]
+    member _.``ForEach close is correct`` () =
+        let actual = cSharp.ForEachClose ForEach.ForTesting
+        actual |> should equal ["}"]
+
+type ``When working with members`` () =
+    let writer = RoslynWriter(LanguageCSharp(), 3)
+
+    [<Fact>]
+    member _.``Auto-properties output correctly`` () =
+        let actual = writer.OutputProperty Property.ForTesting
+        actual |> should equal ["for (var x in listOfThings)";"{"]
+
+    [<Fact>]
+    member _.``Expanded properties output correctly`` () =
+        let actual = cSharp.ForEachOpen ForEach.ForTesting
+        actual |> should equal ["for (var x in listOfThings)";"{"]

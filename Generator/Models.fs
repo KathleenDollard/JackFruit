@@ -22,6 +22,12 @@ type ArgDef =
       Description: string option
       Required: bool option
       TypeName: string }
+    with static member Create argId typeName =
+        { ArgId = argId
+          Name = argId
+          Description = None
+          Required = None
+          TypeName = typeName }
 
 
 type OptionDef =
@@ -31,7 +37,14 @@ type OptionDef =
       Aliases: string list
       //Arity: Arity
       Required: bool option
-      TypeName: string}
+      TypeName: string }
+    static member Create optionId typeName=
+        { OptionId = optionId
+          Name = optionId
+          Description = None
+          Aliases = []
+          Required = None
+          TypeName = typeName }
 
 
 type CommandDef =
@@ -43,6 +56,24 @@ type CommandDef =
       Arg: ArgDef option
       Options: OptionDef list 
       SubCommands: CommandDef list}
+    static member Create commandId =
+        { CommandId = commandId
+          Path = []
+          Name = commandId
+          Description = None
+          Aliases = []
+          Arg = None
+          Options = []
+          SubCommands = [] }
+    static member CreateRoot =
+        { CommandId = ""
+          Path = []
+          Name = ""
+          Description = None
+          Aliases = []
+          Arg = None
+          Options = []
+          SubCommands = [] }
 
 
 type SymbolDef =
@@ -57,10 +88,12 @@ type ArchPart =
       Aliases: string list
       HiddenAliases: string list }
 
+
 type ArchetypePart =
     | CommandArchetype of part: ArchPart
     | OptionArchetype of part: ArchPart
     | ArgArchetype of part: ArchPart
+
 
 type ArchetypeInfo =
     { Path: string list 

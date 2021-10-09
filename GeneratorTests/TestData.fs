@@ -2,33 +2,6 @@
 
 open Generator.Models
 
-type CommandDef with
-    static member Empty =
-        { CommandId = ""
-          Path = []
-          Name = ""
-          Description = None
-          Aliases = []
-          Arg = None
-          Options = []
-          SubCommands = [] }
-
-type ArgDef with
-    static member Empty =
-        { ArgId = ""
-          Name = ""
-          Description = None
-          Required = None
-          TypeName = "" }
-
-type OptionDef with
-    static member Empty =
-        { OptionId = ""
-          Name = ""
-          Description = None
-          Aliases = []
-          Required = None
-          TypeName = "" }
 
 type testData =
     { MapInferredStatements: string list
@@ -41,13 +14,13 @@ let BadMapping =
     { MapInferredStatements = 
         [];
       CommandNames = [BadMappingStatement]
-      CommandDef = CommandDef.Empty }
+      CommandDef = CommandDef.CreateRoot }
 
 let NoMapping = 
     { MapInferredStatements = 
         [];
       CommandNames = []
-      CommandDef = CommandDef.Empty }
+      CommandDef = CommandDef.CreateRoot }
 
 let OneMapping = 
     { MapInferredStatements = 
@@ -70,8 +43,8 @@ let ThreeMappings =
           Name = "package"
           Description = None
           Aliases = []
-          Arg = Some { ArgDef.Empty with ArgId="packageName"; Name ="packageName"; TypeName = "string"}
-          Options = [{ OptionDef.Empty with OptionId="other"; Name ="other"; TypeName = "int"}]
+          Arg = Some (ArgDef.Create "packageName" "string")
+          Options = [(OptionDef.Create "other" "int")]
           SubCommands = [] }
     let add =
         { CommandId = "add"
@@ -93,7 +66,7 @@ let ThreeMappings =
           Name = "dotnet"
           Description = None
           Aliases = []
-          Arg = Some { ArgDef.Empty with ArgId="project"; Name ="project"; TypeName = "string"}
+          Arg = Some (ArgDef.Create "project" "string")
           Options = []
           SubCommands = [add] }}
 
