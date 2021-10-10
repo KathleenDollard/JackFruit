@@ -150,7 +150,8 @@ type SpaceStringBuilder(spacesForIndent: int) =
         let spaceCount = indentSize * indentLevel
         let spaces = String.replicate spaceCount " "
         for line in lines do
-            sb.AppendLine(spaces + line)
+            sb.AppendLine(spaces + line) |> ignore
+        ()
         
     member _.IncreaseIndent =
         indentLevel <- indentLevel + 1

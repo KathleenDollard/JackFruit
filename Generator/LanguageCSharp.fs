@@ -57,6 +57,8 @@ type LanguageCSharp() =
         member __.MethodClose(_) =
             ["}"]
 
+        member __.AutoProperty(property: Property) =
+            [$"{property.Scope.Output}{staticOutput property.IsStatic} {property.Type.Output} {property.Name} {{get; set;}}"]
         member __.PropertyOpen(property: Property) =
             [$"{property.Scope.Output}{staticOutput property.IsStatic} {property.Type.Output} {property.Name}"; "{"]
         member __.PropertyClose(_) =
@@ -81,7 +83,17 @@ type LanguageCSharp() =
             ["}"]
 
         member __.Assignment(assignment) =
-            $"{assignment.Item}.= {assignment.Value};"
+            [$"{assignment.Item} = {assignment.Value.Output};"]
+        member __.AssignWithDeclare(assign) =
+            let t = 
+                match assign.TypeName with 
+                | Some n -> n.Output
+                | None -> "var"
+            [$"{t} {assign.Item} = {assign.Value.Output};"]
+        member __.Return(ret) =
+            [$"return {ret.Output};"]
+        member __.SimpleCall(simple) =
+            [$"{simple.Output};"]
 
         member __.Invocation(invocation) =
             $"{invocation.Instance}.{invocation.MethodName}({OutputArguments invocation.Arguments})"

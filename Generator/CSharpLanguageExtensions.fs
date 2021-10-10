@@ -38,7 +38,7 @@ type GenericNamedItem with
 
 type Invocation with 
     member this.Output = 
-        $"{this.Instance}.{this.MethodName}()" // TODO: Arguments
+        $"{this.Instance.Output}.{this.MethodName}()" // TODO: Arguments
 
 type Comparison with 
     member this.Output = 

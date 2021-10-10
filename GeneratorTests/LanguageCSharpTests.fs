@@ -85,11 +85,72 @@ type ``When working with members`` () =
     let writer = RoslynWriter(LanguageCSharp(), 3)
 
     [<Fact>]
-    member _.``Auto-properties output correctly`` () =
-        let actual = writer.OutputProperty Property.ForTesting
-        actual |> should equal ["for (var x in listOfThings)";"{"]
+    member _.``If outputs correctly``() =
+        let actual = writer.OutputIf If.ForTesting
+        actual |> should equal ["public MyReturnType MyProperty {get; set;}"]
 
     [<Fact>]
-    member _.``Expanded properties output correctly`` () =
-        let actual = cSharp.ForEachOpen ForEach.ForTesting
-        actual |> should equal ["for (var x in listOfThings)";"{"]
+    member _.``ForEach outputs correctly``() =
+        let actual = writer.OutputForEach ForEach.ForTesting
+        actual |> should equal ["public MyReturnType MyProperty {get; set;}"]
+
+    [<Fact>]
+    member _.``Assignment outputs correctly``() =
+        let actual = writer.OutputAssignment Assignment.ForTesting
+        actual |> should equal ["public MyReturnType MyProperty {get; set;}"]
+
+    [<Fact>]
+    member _.``AssignWithDeclare outputs correctly``() =
+        let actual = writer.OutputAssignWithDeclare AssignWithDeclare.ForTesting
+        actual |> should equal ["public MyReturnType MyProperty {get; set;}"]
+
+    [<Fact>]
+    member _.``Return outputs correctly``() =
+        let actual = writer.OutputReturn (NonStringLiteral "42")
+        actual |> should equal ["public MyReturnType MyProperty {get; set;}"]
+
+    [<Fact>]
+    member _.``SimpleCall outputs correctly``() =
+        let actual = writer.OutputSimpleCall (StringLiteral "Harry")
+        actual |> should equal ["public MyReturnType MyProperty {get; set;}"]
+
+
+    [<Fact>]
+    member _.``Auto-properties output correctly``() =
+        let actual = writer.OutputProperty Property.ForTesting
+        actual |> should equal ["public MyReturnType MyProperty {get; set;}"]
+
+    [<Fact>]
+    member _.``Expanded properties output correctly``() =
+        let input = 
+            { Property.ForTesting with 
+                GetStatements = [Return (Symbol "x")]
+                SetStatements = [Assignment { Item = "value"; Value = (Symbol "x")}] }
+        let actual = writer.OutputProperty input
+        actual |> should equal [
+            "public MyReturnType MyProperty"
+            "{"
+            "get"
+            "{";
+             "return x;"
+            "}"
+            "set"
+            "{";
+             "value = x;"
+            "}"
+            "}"]
+
+    [<Fact>]
+    member _.``Void method outputs correctly`` () =
+        let input = 
+            { Method.ForTesting with 
+                Statements = 
+                    [ AssignWithDeclare { Item = "x"; TypeName = None; Value = (NonStringLiteral "42")}
+                      SimpleCall (Invocation { Instance = (GenericNamedItem.Create "Console"); MethodName = "WriteLine"; Arguments = [] }) ] }
+        let actual = writer.OutputMethod input
+        actual |> should equal [
+            "public string MyMethod()"
+            "{"
+            "var x = 42;"
+            "Console.WriteLine();"
+            "}"]

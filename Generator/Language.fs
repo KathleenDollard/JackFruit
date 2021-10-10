@@ -62,11 +62,18 @@ type Assignment =
     { Item: string
       Value: Expression}
 
+type AssignWithDeclare =
+    { Item: string
+      TypeName: GenericNamedItem option
+      Value: Expression}
+
 type Statement =
-    | If of Expression
+    | If of If
     | Assignment of Assignment
-    | Simple of Expression
+    | AssignWithDeclare of AssignWithDeclare
     | ForEach of ForEach
+    | Return of Expression
+    | SimpleCall of Expression
 
 type Parameter =
     { Name: string
@@ -133,19 +140,24 @@ type ILanguage =
     abstract member ClassClose: Class -> string list
     abstract member MethodOpen: Method -> string list
     abstract member MethodClose: Method -> string list
+    abstract member AutoProperty: Property -> string list
     abstract member PropertyOpen: Property -> string list
     abstract member PropertyClose: Property -> string list
     abstract member GetOpen: Property-> string list
     abstract member GetClose: Property -> string list
     abstract member SetOpen: Property -> string list
     abstract member SetClose: Property -> string list
+
+    // Statements
     abstract member IfOpen: If -> string list
     abstract member IfClose: If -> string list
     abstract member ForEachOpen: ForEach -> string list
     abstract member ForEachClose: ForEach -> string list
-    abstract member Assignment: Assignment -> string
+    abstract member Assignment: Assignment -> string list
+    abstract member AssignWithDeclare: AssignWithDeclare -> string list
+    abstract member Return: Expression -> string list
+    abstract member SimpleCall: Expression -> string list
 
-    // Expressions
     abstract member Invocation: Invocation -> string
     abstract member Comparison: Comparison -> string
 
@@ -157,38 +169,71 @@ type RoslynWriter(language: ILanguage, spacesPerIndent: int) =
             retLines <- line::retLines
         retLines
 
-    let ScopeOutput scope =
-        match scope with 
-        | Public -> language.PublicKeyword
-        | Private -> language.PrivateKeyword
-        | Internal ->  language.InternalKeyword
+    member this.OutputStatement (statement: Statement) =
+        match statement with 
+        | If x -> this.OutputIf x
+        | Assignment x -> this.OutputAssignment x
+        | AssignWithDeclare x -> this.OutputAssignWithDeclare x
+        | Return x -> this.OutputReturn x
+        | ForEach x -> this.OutputForEach x
+        | SimpleCall x -> this.OutputSimpleCall x
 
-    let StaticOutput isStatic = 
-        if isStatic then
-            " " + language.StaticKeyword
-        else
-            ""
-
-    let OutputStatement (statement: Statement) =
-        ()
-
-    let OutputStatements (statements: Statement list) =
+    member this.OutputStatements (statements: Statement list) =
         [ for statement in statements do 
-            OutputStatement statement ]
-            
+            this.OutputStatement statement ]
+        |> List.concat
 
-    let OutputMethod (method: Method) =
+    member this.OutputIf (ifInfo: If) : string list= 
+        []
+        |> addLines (language.IfOpen ifInfo) 
+        |> addLines (this.OutputStatements ifInfo.Statements)
+        |> addLines (language.IfClose ifInfo)
+
+    member _.OutputAssignWithDeclare assign =
+        language.AssignWithDeclare assign
+
+    member _.OutputAssignment assignment =
+        language.Assignment assignment 
+
+    member _.OutputReturn ret =
+        language.Return ret 
+
+    member this.OutputForEach foreach =
+        []
+        |> addLines (language.ForEachOpen foreach) 
+        |> addLines (this.OutputStatements foreach.Statements)
+        |> addLines (language.ForEachClose foreach)
+
+    member _.OutputSimpleCall simple =
+        language.SimpleCall simple 
+
+    member this.OutputMethod (method: Method) =
         []
         |> addLines (language.MethodOpen method) 
-        |> addLines (OutputStatements method.Statements)
+        |> addLines (this.OutputStatements method.Statements)
         |> addLines (language.MethodClose method)
+        |> List.rev
 
-    member this.OutputProperty  mbr =
-        []
+    member this.OutputProperty prop =
+        let isAutoProp = 
+            prop.SetStatements.IsEmpty && prop.GetStatements.IsEmpty
+        if isAutoProp then
+            language.AutoProperty prop
+        else
+            []
+            |> addLines (language.PropertyOpen prop)
+            |> addLines (language.GetOpen prop)
+            |> addLines (this.OutputStatements prop.GetStatements)
+            |> addLines (language.GetClose prop)
+            |> addLines (language.SetOpen prop)
+            |> addLines (this.OutputStatements prop.SetStatements)
+            |> addLines (language.SetClose prop)
+            |> addLines (language.PropertyClose prop)
+            |> List.rev
 
     member this.OutputMember mbr =
         match mbr with 
-        | Method m -> OutputMethod m
+        | Method m -> this.OutputMethod m
         | Property p -> this.OutputProperty p
 
     member this.OutputMembers (members: Member list) =

@@ -2,6 +2,8 @@
 
 open Generator.Language
 
+// KAD-Don: There are a ton of offisde errors in this file. What's wrong?
+
 // Where a class may be used, use NamedType, even if it will generally be an instance
 type GenericNamedItem with
     static member ForTesting =
@@ -40,6 +42,12 @@ type ForEach with
 type Assignment with 
     static member ForTesting = 
     { Item = "item"
+      Value = StringLiteral "boo!"}
+
+type AssignWithDeclare with 
+    static member ForTesting = 
+    { Item = "item"
+      TypeName = None
       Value = StringLiteral "boo!"}
 
 type Parameter with 
