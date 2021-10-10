@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <Compile Include="TestDataCSharp.fs" />
-    <Compile Include="TestData.fs" />
+    <Compile Include="MapData.fs" />
     <Compile Include="UtilForTests.fs" />
     
     <Compile Include="LanguageCSharpTests.fs" />

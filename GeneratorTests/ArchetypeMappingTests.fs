@@ -10,7 +10,7 @@ open Generator.GeneralUtils
 open Generator.Models
 open Generator.Tests.UtilForTests
 open Microsoft.CodeAnalysis
-open Generator.Tests.TestData
+open Generator.Tests.MapData
 
 
 type ``When parsing archetypes``() =
@@ -221,34 +221,34 @@ type ``When creating archetypeInfo from mapping``() =
 
     [<Fact>]
     member _.``None are found when there are none``() =
-        let source = AddMapStatements false NoMapping.MapInferredStatements
+        let source = AddMapStatements false MapData.NoMapping.MapInferredStatements
 
         let actual = CommandNamesFromSource source
 
-        actual |> should matchList NoMapping.CommandNames
+        actual |> should matchList MapData.NoMapping.CommandNames
 
     [<Fact>]
     member _.``One is found when there is one``() =
-        let source = AddMapStatements false OneMapping.MapInferredStatements
+        let source = AddMapStatements false MapData.OneMapping.MapInferredStatements
 
         let actual = CommandNamesFromSource source
 
-        actual |> should matchList OneMapping.CommandNames
+        actual |> should matchList MapData.OneMapping.CommandNames
 
     [<Fact>]
     member _.``Multiples are found when there are multiple``() =
-        let source = AddMapStatements false ThreeMappings.MapInferredStatements
+        let source = AddMapStatements false MapData.ThreeMappings.MapInferredStatements
 
         let actual = CommandNamesFromSource source
 
-        actual |> should matchList ThreeMappings.CommandNames
+        actual |> should matchList MapData.ThreeMappings.CommandNames
 
 
  type ``When working with  handlers``() =
 
     [<Fact>]
     member _.``Handler name is found as method in separate class``() =
-        let (archetypes, model) = archetypesAndModelFromSource OneMapping.MapInferredStatements
+        let (archetypes, model) = archetypesAndModelFromSource MapData.OneMapping.MapInferredStatements
         let archetypeInfo = archetypes |> List.exactlyOne
 
         let actual = 
@@ -264,7 +264,7 @@ type ``When creating archetypeInfo from mapping``() =
 
     [<Fact>]
     member _.``Tree is built with ArchetypeInfoTreeFrom``() =
-        let source = AddMapStatements false ThreeMappings.MapInferredStatements
+        let source = AddMapStatements false MapData.ThreeMappings.MapInferredStatements
         let result = 
             SyntaxTreeResult (CSharpCode source)
             |> Result.map (InvocationsFrom "MapInferred")
@@ -283,7 +283,7 @@ type ``When creating archetypeInfo from mapping``() =
 
     [<Fact>]
     member _.``CommandDef built from ArchetypeInfo with Handler``() =
-        let (archetypes, model) = archetypesAndModelFromSource OneMapping.MapInferredStatements
+        let (archetypes, model) = archetypesAndModelFromSource MapData.OneMapping.MapInferredStatements
         let archetypeInfo = archetypes |> List.exactlyOne
 
         let actual = 

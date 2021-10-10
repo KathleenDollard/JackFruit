@@ -3,6 +3,43 @@
 open System.Text
 open GeneralUtils
 open System
+open Generator
+
+
+type ILanguage =
+    abstract member PublicKeyword: string with get
+    abstract member PrivateKeyword: string with get
+    abstract member InternalKeyword: string with get
+    abstract member StaticKeyword: string with get
+
+    // Language structure
+    abstract member Using: Using -> string
+    abstract member NamespaceOpen: Namespace -> string list
+    abstract member NamespaceClose: Namespace -> string list
+    abstract member ClassOpen: Class -> string list
+    abstract member ClassClose: Class -> string list
+    abstract member MethodOpen: Method -> string list
+    abstract member MethodClose: Method -> string list
+    abstract member AutoProperty: Property -> string list
+    abstract member PropertyOpen: Property -> string list
+    abstract member PropertyClose: Property -> string list
+    abstract member GetOpen: Property-> string list
+    abstract member GetClose: Property -> string list
+    abstract member SetOpen: Property -> string list
+    abstract member SetClose: Property -> string list
+
+    // Statements
+    abstract member IfOpen: If -> unit
+    abstract member IfClose: If -> string list
+    abstract member ForEachOpen: ForEach -> string list
+    abstract member ForEachClose: ForEach -> string list
+    abstract member Assignment: Assignment -> string list
+    abstract member AssignWithDeclare: AssignWithDeclare -> string list
+    abstract member Return: Expression -> string list
+    abstract member SimpleCall: Expression -> string list
+
+    abstract member Invocation: Invocation -> string
+    abstract member Comparison: Comparison -> string
 
 type Scope =
     | Public
@@ -126,48 +163,17 @@ type CodeBlock =
     | IfBlock
     | ForBlock
 
-type ILanguage =
-    abstract member PublicKeyword: string with get
-    abstract member PrivateKeyword: string with get
-    abstract member InternalKeyword: string with get
-    abstract member StaticKeyword: string with get
-
-    // Language structure
-    abstract member Using: Using -> string
-    abstract member NamespaceOpen: Namespace -> string list
-    abstract member NamespaceClose: Namespace -> string list
-    abstract member ClassOpen: Class -> string list
-    abstract member ClassClose: Class -> string list
-    abstract member MethodOpen: Method -> string list
-    abstract member MethodClose: Method -> string list
-    abstract member AutoProperty: Property -> string list
-    abstract member PropertyOpen: Property -> string list
-    abstract member PropertyClose: Property -> string list
-    abstract member GetOpen: Property-> string list
-    abstract member GetClose: Property -> string list
-    abstract member SetOpen: Property -> string list
-    abstract member SetClose: Property -> string list
-
-    // Statements
-    abstract member IfOpen: If -> string list
-    abstract member IfClose: If -> string list
-    abstract member ForEachOpen: ForEach -> string list
-    abstract member ForEachClose: ForEach -> string list
-    abstract member Assignment: Assignment -> string list
-    abstract member AssignWithDeclare: AssignWithDeclare -> string list
-    abstract member Return: Expression -> string list
-    abstract member SimpleCall: Expression -> string list
-
-    abstract member Invocation: Invocation -> string
-    abstract member Comparison: Comparison -> string
 
 
-type RoslynWriter(language: ILanguage, spacesPerIndent: int) =
-    let addLines (newLines: string list) oldLines =
-        let mutable retLines = oldLines
-        for line in newLines do
-            retLines <- line::retLines
-        retLines
+
+type RoslynOut(language: ILanguage, writer: IWriter) =
+
+    //let addLines (newLines: string list) oldLines =
+    //    let mutable retLines = oldLines
+    //    for line in newLines do
+    //        retLines <- line::retLines
+    //    retLines
+
 
     member this.OutputStatement (statement: Statement) =
         match statement with 
@@ -183,11 +189,10 @@ type RoslynWriter(language: ILanguage, spacesPerIndent: int) =
             this.OutputStatement statement ]
         |> List.concat
 
-    member this.OutputIf (ifInfo: If) : string list= 
-        []
-        |> addLines (language.IfOpen ifInfo) 
-        |> addLines (this.OutputStatements ifInfo.Statements)
-        |> addLines (language.IfClose ifInfo)
+    member this.OutputIf (ifInfo: If) = 
+        writer.AddLines (language.IfOpen ifInfo) 
+        writer.AddLines (this.OutputStatements ifInfo.Statements)
+        writer.AddLines (language.IfClose ifInfo)
 
     member _.OutputAssignWithDeclare assign =
         language.AssignWithDeclare assign

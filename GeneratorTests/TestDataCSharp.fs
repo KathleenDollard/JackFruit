@@ -1,94 +1,176 @@
-﻿module Generator.Tests.TestDataCSharp
+﻿/// This module extends the basic code elements with the most common test cases
+/// These are expected to be used with "with" syntax to add more specific local test cases
+module Generator.Tests.TestData
 
 open Generator.Language
 
-// KAD-Don: There are a ton of offisde errors in this file. What's wrong?
+type TestData<'T> = { Data: 'T; CSharp: string list } // Add VB later
+
+type TestDataBlock<'T> =
+    { Data: 'T
+      CSharpOpen: string list
+      CSharpBlock: string list
+      CSharpClose: string list }
 
 // Where a class may be used, use NamedType, even if it will generally be an instance
 type GenericNamedItem with
     static member ForTesting =
-    { Name = "RonWeasley"
-      GenericTypes = [] }
+        let data =
+            { Name = "RonWeasley"
+              GenericTypes = [] }    
+        { Data = data
+          CSharp = [ "RonWeasley(JackRussell)" ] }
 
 type Invocation with
     static member ForTesting =
-    { Instance = GenericNamedItem.ForTesting
-      MethodName = "JackRussell"
-      Arguments = []}
+        let data =
+            { Instance = GenericNamedItem.ForTesting.Data
+              MethodName = "JackRussell"
+              Arguments = [] }
+
+        { Data = data
+          CSharp = [ "RonWeasley(JackRussell)" ] }
 
 type Instantiation with
     static member ForTesting =
-    { TypeName = GenericNamedItem.ForTesting
-      Arguments = []}
+        let data =
+            { TypeName = GenericNamedItem.ForTesting.Data
+              Arguments = [] }
 
-type Comparison with 
+        { Data = data
+          CSharp = [ "new RonWeasley()" ] }
+
+type Comparison with
     static member ForTesting =
-    { Left = Symbol "left"
-      Right = StringLiteral "qwerty"
-      Operator = Equals}
+        let data =
+            { Left = Symbol "left"
+              Right = StringLiteral "qwerty"
+              Operator = Equals }
 
-type If with 
+        { Data = data
+          CSharp = [ "left = \"querty\"" ] }
+
+type If with
     static member ForTesting =
-    { Condition = Comparison { Left = Symbol "A"; Right = NonStringLiteral "42"; Operator = Equals}
-      Statements = []
-      Elses = []}
+        let data =
+            { Condition =
+                Comparison
+                    { Left = Symbol "A"
+                      Right = NonStringLiteral "42"
+                      Operator = Equals }
+              Statements = []
+              Elses = [] }
 
-type ForEach with 
+        { Data = data
+          CSharpOpen = [ "if (A = 42)"; "{" ]
+          CSharpBlock = []
+          CSharpClose = [ "}" ] }
+
+type ForEach with
     static member ForTesting =
-    { LoopVar = "x"
-      LoopOver = "listOfThings"
-      Statements = [] }
+        let data =
+            { LoopVar = "x"
+              LoopOver = "listOfThings"
+              Statements = [] }
 
-type Assignment with 
-    static member ForTesting = 
-    { Item = "item"
-      Value = StringLiteral "boo!"}
+        { Data = data
+          CSharpOpen =
+            [ "foreach (var x in listOfThings)"
+              "{" ]
+          CSharpBlock = []
+          CSharpClose = [ "}" ] }
 
-type AssignWithDeclare with 
-    static member ForTesting = 
-    { Item = "item"
-      TypeName = None
-      Value = StringLiteral "boo!"}
-
-type Parameter with 
+type Assignment with
     static member ForTesting =
-    { Name = "param1"
-      Type = { Name = "string"; GenericTypes = []}
-      Default = None
-      IsParams = false}
+        let data =
+            { Item = "item"
+              Value = StringLiteral "boo!" }
 
-type Method with 
+        { Data = data
+          CSharp = [ "item = \"boo!\";" ] }
+
+
+type AssignWithDeclare with
     static member ForTesting =
-    { Name = { Name = "MyMethod"; GenericTypes = [] }
-      ReturnType = { Name = "string"; GenericTypes = [] }
-      IsStatic = false
-      Scope = Public
-      Parameters = []
-      Statements = []}
+        let data =
+            { Item = "item"
+              TypeName = None
+              Value = StringLiteral "boo!" }
 
-type Property with 
+        { Data = data
+          CSharp = [ "var item = \"boo!\";" ] }
+
+type Parameter with
     static member ForTesting =
-    { Name = "MyProperty"
-      Type = { Name = "MyReturnType"; GenericTypes = []}
-      IsStatic = false
-      Scope = Public
-      GetStatements = []
-      SetStatements = []}
+        let data =
+            { Name = "param1"
+              Type = { Name = "string"; GenericTypes = [] }
+              Default = None
+              IsParams = false }
 
-type Class with 
-    static member ForTesting = 
-    { Name = GenericNamedItem.ForTesting
-      IsStatic = false
-      Scope = Public
-      Members = []}
+        { Data = data
+          CSharp = [ "string param1" ] }
 
-type Using with 
-    static member ForTesting = 
-    { Namespace = "System"
-      Alias = None}
+type Method with
+    static member ForTesting =
+        let data =
+            { Name = { Name = "MyMethod"; GenericTypes = [] }
+              ReturnType = { Name = "string"; GenericTypes = [] }
+              IsStatic = false
+              Scope = Public
+              Parameters = []
+              Statements = [] }
 
-type Namespace with 
-    static member ForTesting = 
-    { Name = "MyNamespace"
-      Usings = []
-      Classes = []}
+        { Data = data
+          CSharpOpen = [ "public string MyMethod()"; "{" ]
+          CSharpBlock = []
+          CSharpClose = [ "}" ] }
+
+type Property with
+    static member ForTesting =
+        let data =
+            { Name = "MyProperty"
+              Type =
+                { Name = "MyReturnType"
+                  GenericTypes = [] }
+              IsStatic = false
+              Scope = Public
+              GetStatements = []
+              SetStatements = [] }
+
+        { Data = data
+          CSharpOpen = [ "public string MyMethod {get; set;}" ]
+          CSharpBlock = []
+          CSharpClose = [] }
+
+type Class with
+    static member ForTesting =
+        let data =
+            { Name = GenericNamedItem.ForTesting.Data
+              IsStatic = false
+              Scope = Public
+              Members = [] }
+
+        { Data = data
+          CSharpOpen = [ "public class RonWeasley"; "{" ]
+          CSharpBlock = []
+          CSharpClose = [ "}" ] }
+
+type Using with
+    static member ForTesting =
+        let data = { Namespace = "System"; Alias = None }
+
+        { Data = data
+          CSharp = [ "using system;" ] }
+
+type Namespace with
+    static member ForTesting =
+        let data =
+            { Name = "MyNamespace"
+              Usings = []
+              Classes = [] }
+
+        { Data = data
+          CSharpOpen = [ "namespace MyNamespac"; "{" ]
+          CSharpBlock = []
+          CSharpClose = [ "}" ] }

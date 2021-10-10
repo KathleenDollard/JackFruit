@@ -3,7 +3,7 @@
 open Generator.Language
 open Generator.Models
 
-let OutputCode (outputter: RoslynWriter) (root: CommandDef)=
+let OutputCode (outputter: RoslynOut) (root: CommandDef)=
     let code = 
         { Namespace.Name = "Foo"
           Usings = 

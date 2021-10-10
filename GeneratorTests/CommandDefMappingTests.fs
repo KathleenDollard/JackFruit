@@ -10,7 +10,7 @@ open Generator.Models
 open Generator.Tests.UtilForTests
 open Generator.CommandDefMapping
 open Microsoft.CodeAnalysis
-open Generator.Tests.TestData
+open Generator.Tests.MapData
 
 // KAD: If the parens are ommitted here, FsUnit gives an error about only one constructor allowed.
 //      Maybe it is an error that FS shoudl have captured.
@@ -18,7 +18,7 @@ type ``When evaluating handlers``() =
 
     [<Fact>]
     member _.``Parameters retrieved from Handler``() =
-        let (archetypes, model) = archetypesAndModelFromSource OneMapping.MapInferredStatements
+        let (archetypes, model) = archetypesAndModelFromSource MapData.OneMapping.MapInferredStatements
         let expected = [("one", "string")]
 
         let parameters = ParametersFromArchetype archetypes[0] model
@@ -108,8 +108,8 @@ type ``When building CommandDef parts``() =
 
     [<Fact>]
     member _.``CommandDef is built``() =
-        let source = AddMapStatements false ThreeMappings.MapInferredStatements
-        let expected = ThreeMappings.CommandDef
+        let source = AddMapStatements false MapData.ThreeMappings.MapInferredStatements
+        let expected = MapData.ThreeMappings.CommandDef
         let mutable model = null
         let result = 
             InvocationsAndModelFrom source

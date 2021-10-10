@@ -7,7 +7,6 @@ open Generator.RoslynUtils
 open Generator.Models
 open Xunit
 open Generator.ArchetypeMapping
-open Generator.Tests.TestData
 
 let testNamespace = "TestCode"
 
@@ -137,6 +136,7 @@ let ShouldEqual (expected: 'a) (actual: 'a) =
 
 
 let AddMapStatements includeBad (statements: string list) =
+    let BadMappingStatement = "builder.MapInferredX(\"\", Handlers.X);"
     AddMapStatementToTestCode [ "var builder = new ConsoleSupport.BuilderInferredParser();";
                                 if includeBad then BadMappingStatement
                                 for s in statements do s ]
