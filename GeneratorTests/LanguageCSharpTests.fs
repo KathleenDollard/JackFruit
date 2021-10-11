@@ -208,6 +208,20 @@ type ``When working with members`` () =
     member _.``Expanded properties output correctly``() =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
+        // **Don**: This is the issue from VS
+        let issue = 
+          [ "public MyReturnType MyProperty "
+            "{"
+            "get"
+            "{"
+             "return x;"
+            "}"
+            "set"
+            "{"
+             "value = x;"
+            "}"
+            "}" ]
+
         let expected = 
             [ (0, Property.ForTesting.CSharpOpen |> List.head)
               (0, "{")

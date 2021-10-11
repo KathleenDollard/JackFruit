@@ -65,10 +65,9 @@ type ``When building CommandDef parts``() =
 
         let (arg, options) = argAndOptions parameters raw
 
-        // KAD-Don:*** This is related to the problem argAndOptions. This should be None, not null
-        arg |> should be (ofCase <@ None @>)
-        //arg |> should be null
+        arg |> should equal None
         options |> should equal expected
+        if arg <> None then failwith "Wat!"
 
     [<Fact>]
     member _.``Two options and one argument are found``() =
