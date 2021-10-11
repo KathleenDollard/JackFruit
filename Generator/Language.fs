@@ -13,7 +13,7 @@ type ILanguage =
     abstract member StaticKeyword: string with get
 
     // Language structure
-    abstract member Using: Using -> string
+    abstract member Using: Using -> string list
     abstract member NamespaceOpen: Namespace -> string list
     abstract member NamespaceClose: Namespace -> string list
     abstract member ClassOpen: Class -> string list
@@ -29,7 +29,7 @@ type ILanguage =
     abstract member SetClose: Property -> string list
 
     // Statements
-    abstract member IfOpen: If -> unit
+    abstract member IfOpen: If -> string list
     abstract member IfClose: If -> string list
     abstract member ForEachOpen: ForEach -> string list
     abstract member ForEachClose: ForEach -> string list
@@ -185,56 +185,62 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         | SimpleCall x -> this.OutputSimpleCall x
 
     member this.OutputStatements (statements: Statement list) =
-        [ for statement in statements do 
-            this.OutputStatement statement ]
-        |> List.concat
+        for statement in statements do 
+            this.OutputStatement statement
 
     member this.OutputIf (ifInfo: If) = 
-        writer.AddLines (language.IfOpen ifInfo) 
-        writer.AddLines (this.OutputStatements ifInfo.Statements)
+        writer.AddLines (language.IfOpen ifInfo)
+        writer.IncreaseIndent()
+        this.OutputStatements ifInfo.Statements
+        writer.DecreaseIndent()
         writer.AddLines (language.IfClose ifInfo)
 
     member _.OutputAssignWithDeclare assign =
-        language.AssignWithDeclare assign
+        writer.AddLines (language.AssignWithDeclare assign)
 
     member _.OutputAssignment assignment =
-        language.Assignment assignment 
+        writer.AddLines (language.Assignment assignment)
 
     member _.OutputReturn ret =
-        language.Return ret 
+        writer.AddLines (language.Return ret)
 
-    member this.OutputForEach foreach =
-        []
-        |> addLines (language.ForEachOpen foreach) 
-        |> addLines (this.OutputStatements foreach.Statements)
-        |> addLines (language.ForEachClose foreach)
+    member this.OutputForEach foreach :unit =
+        writer.AddLines (language.ForEachOpen foreach) 
+        writer.IncreaseIndent()
+        this.OutputStatements foreach.Statements
+        writer.DecreaseIndent()
+        writer.AddLines (language.ForEachClose foreach)
 
     member _.OutputSimpleCall simple =
-        language.SimpleCall simple 
+        writer.AddLines (language.SimpleCall simple)
 
     member this.OutputMethod (method: Method) =
-        []
-        |> addLines (language.MethodOpen method) 
-        |> addLines (this.OutputStatements method.Statements)
-        |> addLines (language.MethodClose method)
-        |> List.rev
+        writer.AddLines (language.MethodOpen method) 
+        writer.IncreaseIndent()
+        this.OutputStatements method.Statements
+        writer.DecreaseIndent()
+        writer.AddLines (language.MethodClose method)
 
     member this.OutputProperty prop =
         let isAutoProp = 
             prop.SetStatements.IsEmpty && prop.GetStatements.IsEmpty
         if isAutoProp then
-            language.AutoProperty prop
+            writer.AddLines (language.AutoProperty prop)
         else
-            []
-            |> addLines (language.PropertyOpen prop)
-            |> addLines (language.GetOpen prop)
-            |> addLines (this.OutputStatements prop.GetStatements)
-            |> addLines (language.GetClose prop)
-            |> addLines (language.SetOpen prop)
-            |> addLines (this.OutputStatements prop.SetStatements)
-            |> addLines (language.SetClose prop)
-            |> addLines (language.PropertyClose prop)
-            |> List.rev
+            writer.AddLines (language.PropertyOpen prop)
+            writer.IncreaseIndent()
+            writer.AddLines (language.GetOpen prop)
+            writer.IncreaseIndent()
+            this.OutputStatements prop.GetStatements
+            writer.DecreaseIndent()
+            writer.AddLines (language.GetClose prop)
+            writer.AddLines (language.SetOpen prop)
+            writer.IncreaseIndent()
+            this.OutputStatements prop.SetStatements
+            writer.DecreaseIndent()
+            writer.AddLines (language.SetClose prop)
+            writer.DecreaseIndent()
+            writer.AddLines (language.PropertyClose prop)
 
     member this.OutputMember mbr =
         match mbr with 
@@ -242,34 +248,31 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         | Property p -> this.OutputProperty p
 
     member this.OutputMembers (members: Member list) =
-        let mutable retLines = []
         for mbr in members do 
-            retLines <- addLines (this.OutputMember mbr) retLines
-        retLines
+            this.OutputMember mbr
 
     member this.OutputClass cls =
-        []
-        |> addLines (language.ClassOpen cls)
-        |> addLines (this.OutputMembers cls.Members)
-        |> addLines (language.ClassClose cls)
+        writer.AddLines (language.ClassOpen cls)
+        writer.IncreaseIndent()
+        this.OutputMembers cls.Members
+        writer.DecreaseIndent()
+        writer.AddLines (language.ClassClose cls)
 
     member this.OutputClasses (classes: Class list) =
-        // KAD-Don: Are there any shortcuts to pipelining in a loop?
-        let mutable retLines = []
         for cls in classes do 
-            retLines <- addLines (this.OutputClass cls) retLines
-        retLines
+            this.OutputClass cls
 
     member this.OutputUsings (usings: Using list) =
-        [ for using in usings do 
-            language.Using using]
+        for using in usings do 
+            writer.AddLines (language.Using using)
 
-    member this.Output spaces (nspace: Namespace) = 
-        []
-        |> addLines (language.NamespaceOpen nspace)
-        |> addLines (this.OutputUsings nspace.Usings)
-        |> addLines (this.OutputClasses nspace.Classes)
-        |> addLines (language.NamespaceClose nspace)
+    member this.Output (nspace: Namespace) = 
+        writer.AddLines (language.NamespaceOpen nspace)
+        this.OutputUsings nspace.Usings
+        writer.IncreaseIndent()
+        this.OutputClasses nspace.Classes
+        writer.DecreaseIndent()
+        writer.AddLines (language.NamespaceClose nspace)
 
 
 

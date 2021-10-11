@@ -8,11 +8,14 @@ type StringBuilderWriter(indentSize: int) =
     let sb = StringBuilder()
 
     interface IWriter with
+
+        member this.AddLine newLine =
+            let space = String.replicate (currentIndent * indentSize) " "
+            sb.AppendLine (space + newLine) |> ignore
+
         member this.AddLines newLines =
             for line in newLines do
-                let space = String.replicate (currentIndent * indentSize) " "
-                sb.AppendLine (space + line) |> ignore
-            this
+                (this :> IWriter).AddLine line
 
         member _.IncreaseIndent() =
             currentIndent <- currentIndent + 1

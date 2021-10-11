@@ -40,7 +40,7 @@ type LanguageCSharp() =
                 match using.Alias with 
                 | Some a -> $"{a} = "
                 | None -> ""
-            $"using {alias}{using.Namespace};"
+            [ $"using {alias}{using.Namespace};" ]
 
         member __.NamespaceOpen(nspace) = 
             [$"namespace {nspace.Name}"; "{"]
@@ -78,7 +78,7 @@ type LanguageCSharp() =
             ["}"]
 
         member __.ForEachOpen(forEach) =
-            [$"for (var {forEach.LoopVar} in {forEach.LoopOver})"; "{"]
+            [$"foreach (var {forEach.LoopVar} in {forEach.LoopOver})"; "{"]
         member __.ForEachClose(_) =
             ["}"]
 

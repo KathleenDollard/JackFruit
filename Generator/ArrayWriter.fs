@@ -9,11 +9,16 @@ type ArrayWriter(indentSize: int) =
     let mutable currentIndent = 0
     let mutable linePairs = []
 
+    member _.LinePairs() = linePairs
+
     interface IWriter with
+
+        member _.AddLine newLine =
+            linePairs <- List.append linePairs [ (currentIndent, newLine) ]
+
         member this.AddLines newLines =
-            let withIndent = newLines |> List.map (fun x -> (currentIndent, x))
-            linePairs <- List.append linePairs withIndent
-            this
+            for line in newLines do
+                (this :> IWriter).AddLine line
 
         member _.IncreaseIndent() =
             currentIndent <- currentIndent + 1

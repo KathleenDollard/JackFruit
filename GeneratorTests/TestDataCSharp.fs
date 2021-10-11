@@ -62,7 +62,7 @@ type If with
               Elses = [] }
 
         { Data = data
-          CSharpOpen = [ "if (A = 42)"; "{" ]
+          CSharpOpen = [ "if (A == 42)"; "{" ]
           CSharpBlock = []
           CSharpClose = [ "}" ] }
 
@@ -139,9 +139,9 @@ type Property with
               SetStatements = [] }
 
         { Data = data
-          CSharpOpen = [ "public string MyMethod {get; set;}" ]
+          CSharpOpen = [ "public MyReturnType MyProperty"; "{"]
           CSharpBlock = []
-          CSharpClose = [] }
+          CSharpClose = [ "}"] }
 
 type Class with
     static member ForTesting =
@@ -161,7 +161,7 @@ type Using with
         let data = { Namespace = "System"; Alias = None }
 
         { Data = data
-          CSharp = [ "using system;" ] }
+          CSharp = [ "using System;" ]}
 
 type Namespace with
     static member ForTesting =
@@ -171,6 +171,6 @@ type Namespace with
               Classes = [] }
 
         { Data = data
-          CSharpOpen = [ "namespace MyNamespac"; "{" ]
+          CSharpOpen = [ "namespace MyNamespace"; "{" ]
           CSharpBlock = []
           CSharpClose = [ "}" ] }
