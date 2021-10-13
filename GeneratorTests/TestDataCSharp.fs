@@ -93,7 +93,7 @@ type Assignment with
 type AssignWithDeclare with
     static member ForTesting =
         let data =
-            { Item = "item"
+            { VariableName = "item"
               TypeName = None
               Value = StringLiteral "boo!" }
 
@@ -113,13 +113,7 @@ type Parameter with
 
 type Method with
     static member ForTesting =
-        let data =
-            { Name = { Name = "MyMethod"; GenericTypes = [] }
-              ReturnType = { Name = "string"; GenericTypes = [] }
-              IsStatic = false
-              Scope = Public
-              Parameters = []
-              Statements = [] }
+        let data = Method.Create "MyMethod" (Some { Name = "string"; GenericTypes = [] })
 
         { Data = data
           CSharpOpen = [ "public string MyMethod()"; "{" ]

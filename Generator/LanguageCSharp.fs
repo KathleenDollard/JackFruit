@@ -30,74 +30,83 @@ type LanguageCSharp() =
 
     interface ILanguage with 
 
-        member __.PrivateKeyword = "private"
-        member __.PublicKeyword = "public"
-        member __.InternalKeyword = "private"
-        member __.StaticKeyword = "public"
+        member _.PrivateKeyword = "private"
+        member _.PublicKeyword = "public"
+        member _.InternalKeyword = "private"
+        member _.StaticKeyword = "public"
 
-        member __.Using(using) =
+        member _.Using using =
             let alias = 
                 match using.Alias with 
                 | Some a -> $"{a} = "
                 | None -> ""
             [ $"using {alias}{using.Namespace};" ]
 
-        member __.NamespaceOpen(nspace) = 
+        member _.NamespaceOpen nspace = 
             [$"namespace {nspace.Name}"; "{"]
-        member __.NamespaceClose(_) = 
+        member _.NamespaceClose _ = 
             ["}"]
 
-        member __.ClassOpen(cls) =
+        member _.ClassOpen cls =
             [$"{cls.Scope.Output}{staticOutput cls.IsStatic} class {cls.Name.Output}"; "{"]
-        member __.ClassClose(_) =
+        member _.ClassClose _ =
             ["}"]
 
-        member __.MethodOpen(method: Method) =
-            [$"{method.Scope.Output}{staticOutput method.IsStatic} {method.ReturnType.Output} {method.Name.Output}({OutputParameters method.Parameters})"; "{"]
-        member __.MethodClose(_) =
+        member _.MethodOpen(method: Method) =
+            let returnType =
+                match method.ReturnType with 
+                | Some t -> t.Output
+                | None -> ""
+            [$"{method.Scope.Output}{staticOutput method.IsStatic} {returnType} {method.Name.Output}({OutputParameters method.Parameters})"; "{"]
+        member _.MethodClose _ =
             ["}"]
 
-        member __.AutoProperty(property: Property) =
+        member _.AutoProperty(property: Property) =
             [$"{property.Scope.Output}{staticOutput property.IsStatic} {property.Type.Output} {property.Name} {{get; set;}}"]
-        member __.PropertyOpen(property: Property) =
+        member _.PropertyOpen(property: Property) =
             [$"{property.Scope.Output}{staticOutput property.IsStatic} {property.Type.Output} {property.Name}"; "{"]
-        member __.PropertyClose(_) =
+        member _.PropertyClose _ =
             ["}"]
-        member __.GetOpen(_) =
+        member _.GetOpen _ =
             [$"get"; "{"]
-        member __.GetClose(_) =
+        member _.GetClose _ =
             ["}"]
-        member __.SetOpen(_) =
+        member _.SetOpen _ =
             [$"set"; "{"]
-        member __.SetClose(_) =
+        member _.SetClose _ =
             ["}"]
 
-        member __.IfOpen(ifInfo) =
+        member _.IfOpen ifInfo =
             [$"if ({ifInfo.Condition.Output})"; "{"]
-        member __.IfClose(_) =
+        member _.IfClose _ =
             ["}"]
 
-        member __.ForEachOpen(forEach) =
+        member _.ForEachOpen forEach =
             [$"foreach (var {forEach.LoopVar} in {forEach.LoopOver})"; "{"]
-        member __.ForEachClose(_) =
+        member _.ForEachClose _ =
             ["}"]
 
-        member __.Assignment(assignment) =
+        member _.Assignment assignment =
             [$"{assignment.Item} = {assignment.Value.Output};"]
-        member __.AssignWithDeclare(assign) =
+        member _.AssignWithDeclare assign =
             let t = 
                 match assign.TypeName with 
                 | Some n -> n.Output
                 | None -> "var"
-            [$"{t} {assign.Item} = {assign.Value.Output};"]
-        member __.Return(ret) =
+            [$"{t} {assign.VariableName} = {assign.Value.Output};"]
+        member _.Return ret =
             [$"return {ret.Output};"]
-        member __.SimpleCall(simple) =
+        member _.SimpleCall simple =
             [$"{simple.Output};"]
+        member _.Comment comment =
+            [$"{comment.Output}"]
+        member _.Pragma pragma =
+            [$"{pragma.Output}"]
 
-        member __.Invocation(invocation) =
+
+        member _.Invocation invocation =
             $"{invocation.Instance}.{invocation.MethodName}({OutputArguments invocation.Arguments})"
-        member __.Comparison(comparison) =
+        member _.Comparison comparison =
             $"{comparison.Left.Output}.{comparison.Operator.Output} {comparison.Right.Output}"
 
 

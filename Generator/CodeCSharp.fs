@@ -1,4 +1,4 @@
-﻿module Generator.CodeCSharp
+﻿module rec Generator.CodeCSharp
 
 open Generator.Language
 open GeneralUtils
@@ -39,6 +39,7 @@ let OutputMember (sb: SpaceStringBuilder) mbr =
     match mbr with 
     | Method m -> OutputMethod sb m
     | Property p -> OutputProperty sb p
+    | Class c -> OutputClass sb c
 
 
 let OutputClass (sb: SpaceStringBuilder) cls =

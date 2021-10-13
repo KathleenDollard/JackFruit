@@ -11,7 +11,6 @@
     <Compile Include="Models.fs" />
     <Compile Include="GeneralUtils.fs" />
     <Compile Include="Language.fs" />
-    <Compile Include="ILanguage.fs" />
     <Compile Include="ArrayWriter.fs" />
     <Compile Include="StringBuilderWriter.fs" />
     <Compile Include="CSharpLanguageExtensions.fs" />
@@ -25,6 +24,9 @@
 
     <Compile Include="ArchetypeMapping.fs" />
     <Compile Include="CommandDefMapping.fs" />
+    <Compile Include="CommandOutput.fs" />
+    <Compile Include="CommonOutput.fs" />
+    <Compile Include="OutputCode.fs" />
   </ItemGroup>
 
   <ItemGroup>

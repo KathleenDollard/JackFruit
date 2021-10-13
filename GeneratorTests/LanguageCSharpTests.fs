@@ -93,8 +93,10 @@ type ``When working with language parts`` () =
         let actual = cSharp.ForEachClose ForEach.ForTesting.Data
         actual |> should equal ForEach.ForTesting.CSharpClose
 
+    // Assignment, AssigWithDeclare, Return, SimpleCall and Comment 
+    // are sufficiently simple they are only tested as outputs below
 
-type ``When working with members`` () =
+type ``When outputting code`` () =
     let writer = RoslynOut(LanguageCSharp(),ArrayWriter(3))
 
 
@@ -189,6 +191,19 @@ type ``When working with members`` () =
 
         actual |> should equal expected
 
+    [<Fact>]
+    member _.``Comment outputs correctly``() =
+        let writer = ArrayWriter(3)
+        let outPutter = RoslynOut(LanguageCSharp(),writer)
+        let expected = 
+            [ (0,"// This is a Comment") ]
+        let data = Comment "This is a Comment"
+
+        outPutter.OutputComment data
+        let actual = writer.LinePairs()
+
+        actual |> should equal expected
+
 
     [<Fact>]
     member _.``Auto-properties output correctly``() =
@@ -208,19 +223,19 @@ type ``When working with members`` () =
     member _.``Expanded properties output correctly``() =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        // **Don**: This is the issue from VS
-        let issue = 
-          [ "public MyReturnType MyProperty "
-            "{"
-            "get"
-            "{"
-             "return x;"
-            "}"
-            "set"
-            "{"
-             "value = x;"
-            "}"
-            "}" ]
+        //// **Don**: This is the issue from VS
+        //let issue = 
+        //  [ "public MyReturnType MyProperty "
+        //    "{"
+        //    "get"
+        //    "{"
+        //     "return x;"
+        //    "}"
+        //    "set"
+        //    "{"
+        //     "value = x;"
+        //    "}"
+        //    "}" ]
 
         let expected = 
             [ (0, Property.ForTesting.CSharpOpen |> List.head)
@@ -258,7 +273,7 @@ type ``When working with members`` () =
         let data = 
             { Method.ForTesting.Data with 
                 Statements = 
-                    [ AssignWithDeclare { Item = "x"; TypeName = None; Value = (NonStringLiteral "42")}
+                    [ AssignWithDeclare { VariableName = "x"; TypeName = None; Value = (NonStringLiteral "42")}
                       SimpleCall (Invocation { Instance = (GenericNamedItem.Create "Console"); MethodName = "WriteLine"; Arguments = [] }) ] }
 
         outPutter.OutputMethod data

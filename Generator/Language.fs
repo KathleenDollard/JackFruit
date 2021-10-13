@@ -33,10 +33,13 @@ type ILanguage =
     abstract member IfClose: If -> string list
     abstract member ForEachOpen: ForEach -> string list
     abstract member ForEachClose: ForEach -> string list
+
     abstract member Assignment: Assignment -> string list
     abstract member AssignWithDeclare: AssignWithDeclare -> string list
     abstract member Return: Expression -> string list
     abstract member SimpleCall: Expression -> string list
+    abstract member Comment: Expression -> string list
+    abstract member Pragma: Expression -> string list
 
     abstract member Invocation: Invocation -> string
     abstract member Comparison: Comparison -> string
@@ -84,6 +87,8 @@ type Expression =
     | StringLiteral of string
     | NonStringLiteral of string
     | Symbol of string
+    | Comment of string
+    | Pragma of string
 
 type If =
     { Condition: Expression
@@ -100,7 +105,7 @@ type Assignment =
       Value: Expression}
 
 type AssignWithDeclare =
-    { Item: string
+    { VariableName: string
       TypeName: GenericNamedItem option
       Value: Expression}
 
@@ -120,11 +125,20 @@ type Parameter =
 
 type Method =
     { Name: GenericNamedItem
-      ReturnType: GenericNamedItem
+      ReturnType: GenericNamedItem option
       IsStatic: bool
+      IsExtension: bool
       Scope: Scope
       Parameters: Parameter list
       Statements: Statement list}
+    with static member Create name returnType =
+        { Name = { Name = name; GenericTypes = [] }
+          ReturnType = returnType
+          IsStatic = false
+          IsExtension = false
+          Scope = Public
+          Parameters = []
+          Statements = [] }
 
 type Property =
     { Name: string
@@ -137,6 +151,7 @@ type Property =
 type Member =
     | Method of Method
     | Property of Property
+    | Class of Class
 
 type Class = 
     { Name: GenericNamedItem
@@ -174,6 +189,8 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
     //        retLines <- line::retLines
     //    retLines
 
+    member _.BlankLine() =
+        writer.AddLine ""
 
     member this.OutputStatement (statement: Statement) =
         match statement with 
@@ -214,6 +231,12 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
     member _.OutputSimpleCall simple =
         writer.AddLines (language.SimpleCall simple)
 
+    member _.OutputComment comment =
+        writer.AddLines (language.Comment comment)
+
+    member _.OutputPragma pragma =
+        writer.AddLines (language.Pragma pragma)
+
     member this.OutputMethod (method: Method) =
         writer.AddLines (language.MethodOpen method) 
         writer.IncreaseIndent()
@@ -246,6 +269,7 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         match mbr with 
         | Method m -> this.OutputMethod m
         | Property p -> this.OutputProperty p
+        | Class c -> this.OutputClass c
 
     member this.OutputMembers (members: Member list) =
         for mbr in members do 
@@ -262,7 +286,7 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         for cls in classes do 
             this.OutputClass cls
 
-    member this.OutputUsings (usings: Using list) =
+    member _.OutputUsings (usings: Using list) =
         for using in usings do 
             writer.AddLines (language.Using using)
 

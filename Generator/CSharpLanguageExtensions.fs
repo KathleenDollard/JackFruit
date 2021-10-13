@@ -57,6 +57,8 @@ type Expression with
         | StringLiteral x -> "\"" + x + "\""
         | NonStringLiteral x -> x
         | Symbol x -> x
+        | Comment x -> $"// {x}"
+        | Pragma x -> $"# {x}"
 
 type Assignment with 
      member this.Output =
