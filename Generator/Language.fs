@@ -122,6 +122,11 @@ type Parameter =
       Type: GenericNamedItem
       Default: Expression option
       IsParams: bool}
+    with static member Create name paramType =
+        { Name = name
+          Type = paramType
+          Default = None
+          IsParams = false }
 
 type Method =
     { Name: GenericNamedItem
