@@ -273,7 +273,7 @@ type ``When outputting code`` () =
         let data = 
             { Method.ForTesting.Data with 
                 Statements = 
-                    [ AssignWithDeclare { VariableName = "x"; TypeName = None; Value = (NonStringLiteral "42")}
+                    [ AssignWithDeclare { Variable = "x"; TypeName = None; Value = (NonStringLiteral "42")}
                       SimpleCall (Invocation { Instance = (GenericNamedItem.Create "Console"); MethodName = "WriteLine"; Arguments = [] }) ] }
 
         outPutter.OutputMethod data

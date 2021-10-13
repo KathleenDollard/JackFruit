@@ -93,7 +93,7 @@ type Assignment with
 type AssignWithDeclare with
     static member ForTesting =
         let data =
-            { VariableName = "item"
+            { Variable = "item"
               TypeName = None
               Value = StringLiteral "boo!" }
 
@@ -103,7 +103,7 @@ type AssignWithDeclare with
 type Parameter with
     static member ForTesting =
         let data =
-            { Name = "param1"
+            { ParameterName = "param1"
               Type = { Name = "string"; GenericTypes = [] }
               Default = None
               IsParams = false }
@@ -123,7 +123,7 @@ type Method with
 type Property with
     static member ForTesting =
         let data =
-            { Name = "MyProperty"
+            { PropertyName = "MyProperty"
               Type =
                 { Name = "MyReturnType"
                   GenericTypes = [] }
@@ -140,7 +140,7 @@ type Property with
 type Class with
     static member ForTesting =
         let data =
-            { Name = GenericNamedItem.ForTesting.Data
+            { ClassName = GenericNamedItem.ForTesting.Data
               IsStatic = false
               Scope = Public
               Members = [] }
@@ -160,7 +160,7 @@ type Using with
 type Namespace with
     static member ForTesting =
         let data =
-            { Name = "MyNamespace"
+            { NamespaceName = "MyNamespace"
               Usings = []
               Classes = [] }
 

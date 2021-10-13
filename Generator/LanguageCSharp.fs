@@ -43,12 +43,12 @@ type LanguageCSharp() =
             [ $"using {alias}{using.Namespace};" ]
 
         member _.NamespaceOpen nspace = 
-            [$"namespace {nspace.Name}"; "{"]
+            [$"namespace {nspace.NamespaceName}"; "{"]
         member _.NamespaceClose _ = 
             ["}"]
 
         member _.ClassOpen cls =
-            [$"{cls.Scope.Output}{staticOutput cls.IsStatic} class {cls.Name.Output}"; "{"]
+            [$"{cls.Scope.Output}{staticOutput cls.IsStatic} class {cls.ClassName.Output}"; "{"]
         member _.ClassClose _ =
             ["}"]
 
@@ -57,14 +57,14 @@ type LanguageCSharp() =
                 match method.ReturnType with 
                 | Some t -> t.Output
                 | None -> ""
-            [$"{method.Scope.Output}{staticOutput method.IsStatic} {returnType} {method.Name.Output}({OutputParameters method.Parameters})"; "{"]
+            [$"{method.Scope.Output}{staticOutput method.IsStatic} {returnType} {method.MethodName.Output}({OutputParameters method.Parameters})"; "{"]
         member _.MethodClose _ =
             ["}"]
 
         member _.AutoProperty(property: Property) =
-            [$"{property.Scope.Output}{staticOutput property.IsStatic} {property.Type.Output} {property.Name} {{get; set;}}"]
+            [$"{property.Scope.Output}{staticOutput property.IsStatic} {property.Type.Output} {property.PropertyName} {{get; set;}}"]
         member _.PropertyOpen(property: Property) =
-            [$"{property.Scope.Output}{staticOutput property.IsStatic} {property.Type.Output} {property.Name}"; "{"]
+            [$"{property.Scope.Output}{staticOutput property.IsStatic} {property.Type.Output} {property.PropertyName}"; "{"]
         member _.PropertyClose _ =
             ["}"]
         member _.GetOpen _ =
@@ -93,7 +93,7 @@ type LanguageCSharp() =
                 match assign.TypeName with 
                 | Some n -> n.Output
                 | None -> "var"
-            [$"{t} {assign.VariableName} = {assign.Value.Output};"]
+            [$"{t} {assign.Variable} = {assign.Value.Output};"]
         member _.Return ret =
             [$"return {ret.Output};"]
         member _.SimpleCall simple =

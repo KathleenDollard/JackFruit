@@ -105,7 +105,7 @@ type Assignment =
       Value: Expression}
 
 type AssignWithDeclare =
-    { VariableName: string
+    { Variable: string
       TypeName: GenericNamedItem option
       Value: Expression}
 
@@ -118,18 +118,18 @@ type Statement =
     | SimpleCall of Expression
 
 type Parameter =
-    { Name: string
+    { ParameterName: string
       Type: GenericNamedItem
       Default: Expression option
       IsParams: bool}
     with static member Create name paramType =
-        { Name = name
+        { ParameterName = name
           Type = paramType
           Default = None
           IsParams = false }
 
 type Method =
-    { Name: GenericNamedItem
+    { MethodName: GenericNamedItem
       ReturnType: GenericNamedItem option
       IsStatic: bool
       IsExtension: bool
@@ -137,7 +137,7 @@ type Method =
       Parameters: Parameter list
       Statements: Statement list}
     with static member Create name returnType =
-        { Name = { Name = name; GenericTypes = [] }
+        { MethodName = { Name = name; GenericTypes = [] }
           ReturnType = returnType
           IsStatic = false
           IsExtension = false
@@ -146,7 +146,7 @@ type Method =
           Statements = [] }
 
 type Property =
-    { Name: string
+    { PropertyName: string
       Type: GenericNamedItem
       IsStatic: bool
       Scope: Scope
@@ -159,7 +159,7 @@ type Member =
     | Class of Class
 
 type Class = 
-    { Name: GenericNamedItem
+    { ClassName: GenericNamedItem
       IsStatic: bool
       Scope: Scope
       Members: Member list}
@@ -172,7 +172,7 @@ type Using =
           Alias = None }
 
 type Namespace = 
-    { Name: string
+    { NamespaceName: string
       Usings: Using list
       Classes: Class list}
 

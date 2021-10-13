@@ -55,7 +55,7 @@ let OutputClass (sb: SpaceStringBuilder) cls =
 let Output spaces (nspace: Namespace) = 
     let sb = new SpaceStringBuilder(spaces)
 
-    let _ = sb.AppendLine $"namespace {nspace.Name}"
+    let _ = sb.AppendLine $"namespace {nspace.NamespaceName}"
     let _ = sb.AppendLine "{"
     let _ = sb.IncreaseIndent
     for cls in nspace.Classes do

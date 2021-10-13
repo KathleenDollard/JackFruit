@@ -72,7 +72,7 @@ let OutputParameters (parameters: Parameter list) =
             | Some def -> " " + def.Output
     
     let s = [ for param in parameters do
-                $"{param.Type} {param.Name}{getDefault param}"]
+                $"{param.Type} {param.ParameterName}{getDefault param}"]
     String.Join("", s)
     
 let OutputArguments (arguments: Expression list) = 

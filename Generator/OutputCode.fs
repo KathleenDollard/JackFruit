@@ -39,7 +39,7 @@ let private CommonMembers pos commandDefs : Member list =
                 ]
           // TODO: Figure out the scenario where there are multiple generic types
           Method
-              { Name =
+              { MethodName =
                   { Name = "SetHandler"
                     GenericTypes = [ GenericNamedItem.Create "T1" ] }
                 ReturnType = None
@@ -50,7 +50,7 @@ let private CommonMembers pos commandDefs : Member list =
                 Statements = [] }
 
           Class
-              { Name =
+              { ClassName =
                   { Name = "GeneratedHandler"
                     GenericTypes = [] }
                 IsStatic = false
@@ -74,43 +74,43 @@ let private CommandMembers (commandDefs: CommandDef list) : Member list = []
     //         None -> () ]
 
 
-//let private OutputCommandCode commandDefs =
-//    { Name = GenericNamedItem.Create "GeneratedCommandHandlers"
-//      IsStatic = true
-//      Scope = Internal
-//      Members = CommandMembers commandDefs }
+let private OutputCommandCode commandDefs =
+    { ClassName = GenericNamedItem.Create "GeneratedCommandHandlers"
+      IsStatic = true
+      Scope = Internal
+      Members = CommandMembers commandDefs }
 
 
-//let NamespaceFrom commandDefs includeCommandCode =
-//    let commonCode =
-//        // TODO: There are some important attributes to add
-//        { Name = GenericNamedItem.Create "GeneratedCommandHandlers"
-//          IsStatic = true
-//          Scope = Internal
-//          Members = CommonMembers 1 commandDefs }
+let NamespaceFrom commandDefs includeCommandCode =
+    let commonCode =
+        // TODO: There are some important attributes to add
+        { ClassName = GenericNamedItem.Create "GeneratedCommandHandlers"
+          IsStatic = true
+          Scope = Internal
+          Members = CommonMembers 1 commandDefs }
 
-//    { Name = "System.CommandLine"
-//      Usings =
-//        [ Using.Create "System.ComponentModel"
-//          Using.Create "System.CommandLine.Binding"
-//          Using.Create "System.Reflection"
-//          Using.Create "System.Threading.Tasks"
-//          Using.Create "System.CommandLine.Invocation;" ]
-//      Classes =
-//        [ if includeCommandCode then
-//              OutputCommandCode commandDefs
-//          commonCode ] }
-
-
-//let CodeFrom includeCommandCode (language: ILanguage) writer commandDefs =
-//    let outputter = RoslynOut(LanguageCSharp(), writer)
-
-//    let nspace =
-//        NamespaceFrom commandDefs includeCommandCode
-
-//    OutputHeader outputter
-//    outputter.Output nspace
+    { NamespaceName = "System.CommandLine"
+      Usings =
+        [ Using.Create "System.ComponentModel"
+          Using.Create "System.CommandLine.Binding"
+          Using.Create "System.Reflection"
+          Using.Create "System.Threading.Tasks"
+          Using.Create "System.CommandLine.Invocation;" ]
+      Classes =
+        [ if includeCommandCode then
+              OutputCommandCode commandDefs
+          commonCode ] }
 
 
+let CodeFrom includeCommandCode (language: ILanguage) writer commandDefs =
+    let outputter = RoslynOut(LanguageCSharp(), writer)
 
-//    writer.Output
+    let nspace =
+        NamespaceFrom commandDefs includeCommandCode
+
+    OutputHeader outputter
+    outputter.Output nspace
+
+
+
+    writer.Output
