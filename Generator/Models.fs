@@ -16,77 +16,70 @@ type AppErrors =
     | Aggregate of Errors: AppErrors list
 
 
-type ArgDef =
-    { ArgId: string
-      Name: string
-      Description: string option
-      Required: bool option
-      TypeName: string }
-    with static member Create argId typeName =
-        { ArgId = argId
-          Name = argId
-          Description = None
-          Required = None
-          TypeName = typeName }
+type MemberKind =
+    | Option
+    | Argument
+    | Service
 
-
-type OptionDef =
-    { OptionId: string
-      Name: string
-      Description: string option
+type MemberDef =
+    { MemberId: string
+      TypeName: string
+      MemberKind: MemberKind option
       Aliases: string list
-      //Arity: Arity
-      Required: bool option
-      TypeName: string }   // Is this good enough? Do we ever have generics?
-    static member Create optionId typeName=
-        { OptionId = optionId
-          Name = optionId
-          Description = None
+      ArgDisplayName: string option
+      Description: string option
+      RequiredOverride: bool option }
+    static member Create memberId typeName =
+        { MemberId = memberId
+          TypeName = typeName
+          MemberKind = None
           Aliases = []
-          Required = None
-          TypeName = typeName }
-
-type ServiceDef = 
-    { ServiceId: string
-      TypeName: string }  // Is this good enough? Do we ever have generics?
-
-type ArgOptionDef =
-    | ArgDef of ArgDef
-    | OptionDef of OptionDef
-    | ServiceDef of ServiceDef
+          ArgDisplayName = None
+          Description = None
+          RequiredOverride = None }
+    member this.UseMemberKind =
+        match this.MemberKind with
+        | Some k -> k
+        | None -> MemberKind.Option
+    // KAD-Don: Remind me the downside of using "this"
+    member this.Name =
+        let innerName = 
+            if this.Aliases.IsEmpty then
+                this.MemberId
+            else
+                this.Aliases.Head
+        match this.UseMemberKind with
+        | Argument -> 
+            match this.ArgDisplayName with 
+            | Some n -> n
+            | None -> innerName
+        | _ -> innerName
 
 
 type CommandDef =
     { CommandId: string
       Path: string list
-      Name: string
-      Description: string option
       Aliases: string list
-      ArgOptions: ArgOptionDef list
-      SubCommands: CommandDef list}
+      Description: string option
+      Members: MemberDef list
+      SubCommands: CommandDef list
+      Pocket: (string * obj) list}
     static member Create commandId =
         { CommandId = commandId
           Path = []
-          Name = commandId
           Description = None
           Aliases = []
-          ArgOptions = []
-          SubCommands = [] }
+          Members = []
+          SubCommands = [] 
+          Pocket = [] }
     static member CreateRoot =
         { CommandId = ""
           Path = []
-          Name = ""
-          Description = None
           Aliases = []
-          ArgOptions = []
-          SubCommands = [] }
-
-
-
-//type SymbolDef =
-//    | ArgDef of ArgDef
-//    | OptionDef of OptionDef
-//    | CommandDef of CommandDef
+          Description = None
+          Members = []
+          SubCommands = [] 
+          Pocket =[] }
 
 
 type ArchPart = 
@@ -105,5 +98,6 @@ type ArchetypePart =
 type ArchetypeInfo =
     { Path: string list 
       ArchetypeParts: ArchetypePart list
-      Handler: SyntaxNode option }
+      Handler: SyntaxNode option
+      }
 

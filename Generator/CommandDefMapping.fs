@@ -9,7 +9,7 @@ open System
 // TODO: More work is needed because there is more we can get from the parameter
 // But it was being difficult and I wanted to get the main logic done. This will 
 // need to switch to a record or similar to carry the parameter information. 
-let ParametersFromArchetype archetypeInfo model =
+let ParametersFromArchetype (archetypeInfo: ArchetypeInfo) model =
     match archetypeInfo.Handler with 
     | Some handler -> 
         match MethodFromHandler model handler with 
@@ -21,44 +21,12 @@ let ParametersFromArchetype archetypeInfo model =
     | None -> [] // Interim subcommands do not have handlers
 
 
-let private getArgDef part id typeName : ArgOptionDef =
+let private getMemberDef part id typeName : MemberDef =
     // TODO: Get values from part
-    let name = id
-    let desc = None
-    let required = None
-    let typeName = typeName
-
-    ArgDef
-        { ArgId = id 
-          Name = name
-          Description = desc
-          Required = required
-          TypeName = typeName }
+    MemberDef.Create id typeName
 
 
-let private getOptionDefInternal id name desc aliases required typeName =
-    OptionDef 
-        { OptionId = id 
-          Name = 
-            match name with 
-            | Some n -> n
-            | None -> id
-          Description = desc
-          Aliases = aliases
-          Required = required
-          TypeName = typeName }
-      
-let private getOptionDef (part, id, typeName) : ArgOptionDef =
-    // TODO: Get this info from archetype
-    getOptionDefInternal id None None [] None typeName
-
-let private getDefaultOptionDef id typeName : ArgOptionDef =
-    getOptionDefInternal id None None [] None typeName
-
-
-
-
-let getCommandDef parts archInfo argOptions subCommands=
+let getCommandDef parts archInfo members subCommands=
     let commandArchetpes =
          [for part in parts do
             match part with  
@@ -66,19 +34,17 @@ let getCommandDef parts archInfo argOptions subCommands=
             | _ -> ()]
     let commandArch = commandArchetpes |> List.exactlyOne
     let desc = None
-    let aliases = []
 
     { CommandId = commandArch.Id 
       Path = archInfo.Path
-      Name = commandArch.Name
       Description = desc
-      Aliases = aliases 
-      ArgOptions = argOptions
+      Aliases = [commandArch.Name] 
+      Members = members
       SubCommands = subCommands}
 
 let KnownService = ["IConsole"]
 
-let private ArgOptions (parameters: (string * string) list) (parts: ArchetypePart list) :  ArgOptionDef option list * string * string = 
+let private ArgOptions (parameters: (string * string) list) (parts: ArchetypePart list) :  MemberDef option list = 
     let lookup = 
         [ for part in parts do
             match part with 
