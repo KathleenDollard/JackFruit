@@ -57,21 +57,64 @@ let private CommonMembers pos commandDefs : Member list =
                 Scope = Private
                 Members = [] } ]
 
+let private TypeForSymbol symbolName typeName =
+    { Name = symbolName 
+      GenericTypes = [ { Name = typeName; GenericTypes = []} ]}
+    
 
-let private CommandMembers (commandDefs: CommandDef list) : Member list = []
-    //[ for (commandDef: CommandDef) in commandDefs do
-    //    // TODO: Change to path and camel
-    //    { Name = GenericNamedItem.Create $"{CommandDef.Name}Symbols"
-    //      } 
 
-    //     match commandDef.Arg with
-    //         Some arg ->
-    //             { VariableName = commandDef.Arg.
-    //               TypeName = None
-    //               Value = Instantiation
-    //                 { TypeName = GenericNamedItem "Argument" (GenericNamedItem "string")
-    //                   Arguments = [] }}
-    //         None -> () ]
+let private CommandCreateStatements (commandDef: CommandDef) : Statement list =
+    let Argument (arg: ArgDef) =
+        let name = $"{arg.ArgId}Argument"
+        let args = [ StringLiteral arg.Name ] // Add other fields
+        name, args
+        
+    let Option (option: OptionDef) =
+        let name = $"{option.OptionId}Option"
+        let args = [ StringLiteral option.Name ] // Add Other fields
+        name, args
+
+    let ArgumentsForCommand =
+        [ StringLiteral commandDef.Name ] // Other fields
+
+    // This needs to be done as we go because it's essential the order be the same
+    let mutable handlerTypes = []
+    let addHandlerType typeName =
+        handlerTypes <- handlerTypes 
+        |> List.insertAt 
+            handlerTypes.Length { Name = typeName; GenericTypes = []}
+ 
+    [
+        AssignVar "command" (New "Command" ArgumentsForCommand)
+
+        match commandDef.Arg with 
+        | Some arg -> 
+            let name, args = Argument arg
+            AssignVar name (NewGeneric "Argument" arg.TypeName args)
+            SimpleCall (Invoke "command" "AddSymbol" [(Symbol name)])
+            addHandlerType arg.TypeName
+            
+        | None -> ()
+
+        for option in commandDef.Options do
+            let name, args = Option option
+            AssignVar name (NewGeneric "Option" option.TypeName args)
+            SimpleCall (Invoke "command" "AddSymbol" [(Symbol name)])
+            addHandlerType option.TypeName
+    ]
+    
+
+let private CommandMembers commandDefs : Member list = 
+    [ for (commandDef: CommandDef) in commandDefs do
+        // TODO: Change to path and camel
+        Method
+            { MethodName = GenericNamedItem.Create $"{commandDef.CommandId}Symbols"
+              ReturnType = Some { Name = "Command"; GenericTypes=[] } 
+              IsStatic = true
+              IsExtension = false
+              Scope = Public
+              Parameters = []
+              Statements = CommandCreateStatements commandDef } ]
 
 
 let private OutputCommandCode commandDefs =

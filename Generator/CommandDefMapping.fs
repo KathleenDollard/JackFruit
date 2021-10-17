@@ -21,35 +21,44 @@ let ParametersFromArchetype archetypeInfo model =
     | None -> [] // Interim subcommands do not have handlers
 
 
-let getArgDef (part, id, typeName) =
+let private getArgDef part id typeName : ArgOptionDef =
+    // TODO: Get values from part
     let name = id
     let desc = None
     let required = None
     let typeName = typeName
 
-    { ArgId = id 
-      Name = name
-      Description = desc
-      Required = required
-      TypeName = typeName }
+    ArgDef
+        { ArgId = id 
+          Name = name
+          Description = desc
+          Required = required
+          TypeName = typeName }
 
 
-let getOptionDef (part, id, typeName) =
-    let name = id
-    let desc = None
-    let aliases = []
-    let required = None
-    let typeName = typeName
+let private getOptionDefInternal id name desc aliases required typeName =
+    OptionDef 
+        { OptionId = id 
+          Name = 
+            match name with 
+            | Some n -> n
+            | None -> id
+          Description = desc
+          Aliases = aliases
+          Required = required
+          TypeName = typeName }
+      
+let private getOptionDef (part, id, typeName) : ArgOptionDef =
+    // TODO: Get this info from archetype
+    getOptionDefInternal id None None [] None typeName
 
-    { OptionId = id 
-      Name = name
-      Description = desc
-      Aliases = aliases
-      Required = required
-      TypeName = typeName }
+let private getDefaultOptionDef id typeName : ArgOptionDef =
+    getOptionDefInternal id None None [] None typeName
 
 
-let getCommandDef parts archInfo arg options subCommands=
+
+
+let getCommandDef parts archInfo argOptions subCommands=
     let commandArchetpes =
          [for part in parts do
             match part with  
@@ -64,12 +73,35 @@ let getCommandDef parts archInfo arg options subCommands=
       Name = commandArch.Name
       Description = desc
       Aliases = aliases 
-      Arg = arg
-      Options = options
+      ArgOptions = argOptions
       SubCommands = subCommands}
 
+let KnownService = ["IConsole"]
 
-let argAndOptions (parameters: (string * string) list) (parts: ArchetypePart list) = 
+let private ArgOptions (parameters: (string * string) list) (parts: ArchetypePart list) :  ArgOptionDef option list * string * string = 
+    let lookup = 
+        [ for part in parts do
+            match part with 
+            | ArgArchetype x
+            | OptionArchetype x -> (ToCamel x.Id, part)
+            | _ -> () ]
+        |> Map.ofList
+    [ for (id, typeName) in parameters do 
+        let part = lookup.TryFind id
+        match part with
+        | Some a ->
+            match a with 
+            | ArgArchetype arg -> getArgDef (arg, id, typeName)
+            | OptionArchetype option -> getOptionDef (option, id, typeName)
+            | _ -> invalidOp "There should be no other archetype types"
+        | None -> 
+            if KnownServices.Contains typeName then
+                { ServiceId = id
+                  TypeName = typeName }
+            else 
+                None, id, typeName
+    ]
+
 
     // KAD-Don: Any shortcuts to this pattern?
     let isArg (part: ArchetypePart option, _, _) =
@@ -81,16 +113,10 @@ let argAndOptions (parameters: (string * string) list) (parts: ArchetypePart lis
         | None -> false
 
     // KAD-Don: Is there a way I could have designed ArchetypeParts so that I would not have to match here
-    let lookup = 
-        [ for part in parts do
-            match part with 
-            | ArgArchetype x
-            | OptionArchetype x -> (ToCamel x.Id, part)
-            | _ -> () ]
-        |> Map.ofList
+
 
     let pairWithPart (id: string, typeName: string) =
-         let x = lookup.TryFind id, id, typeName
+         let x = (lookup.TryFind id), id, typeName
          x
 
     let args, options = 
@@ -119,9 +145,9 @@ let CommandDefFrom model archTree =
 
         let archetypeInfo = archTree.Data
         let parameters = ParametersFromArchetype archetypeInfo model
-        let (arg, options) = argAndOptions parameters archetypeInfo.ArchetypeParts
+        let (argOptions) = ArgOptions parameters archetypeInfo.ArchetypeParts
         
-        getCommandDef archetypeInfo.ArchetypeParts archetypeInfo arg options subCommands
+        getCommandDef archetypeInfo.ArchetypeParts archetypeInfo argOptions subCommands
 
     [ for topLevelArch in archTree do
         depthFirstCreate topLevelArch ]

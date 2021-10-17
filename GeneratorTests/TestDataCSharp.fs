@@ -45,7 +45,7 @@ type Comparison with
         let data =
             { Left = Symbol "left"
               Right = StringLiteral "qwerty"
-              Operator = Equals }
+              Operator = Operator.Equals }
 
         { Data = data
           CSharp = [ "left = \"querty\"" ] }
@@ -57,7 +57,7 @@ type If with
                 Comparison
                     { Left = Symbol "A"
                       Right = NonStringLiteral "42"
-                      Operator = Equals }
+                      Operator = Operator.Equals }
               Statements = []
               Elses = [] }
 

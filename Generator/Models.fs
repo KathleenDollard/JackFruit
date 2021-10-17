@@ -37,7 +37,7 @@ type OptionDef =
       Aliases: string list
       //Arity: Arity
       Required: bool option
-      TypeName: string }
+      TypeName: string }   // Is this good enough? Do we ever have generics?
     static member Create optionId typeName=
         { OptionId = optionId
           Name = optionId
@@ -46,6 +46,15 @@ type OptionDef =
           Required = None
           TypeName = typeName }
 
+type ServiceDef = 
+    { ServiceId: string
+      TypeName: string }  // Is this good enough? Do we ever have generics?
+
+type ArgOptionDef =
+    | ArgDef of ArgDef
+    | OptionDef of OptionDef
+    | ServiceDef of ServiceDef
+
 
 type CommandDef =
     { CommandId: string
@@ -53,8 +62,7 @@ type CommandDef =
       Name: string
       Description: string option
       Aliases: string list
-      Arg: ArgDef option
-      Options: OptionDef list 
+      ArgOptions: ArgOptionDef list
       SubCommands: CommandDef list}
     static member Create commandId =
         { CommandId = commandId
@@ -62,8 +70,7 @@ type CommandDef =
           Name = commandId
           Description = None
           Aliases = []
-          Arg = None
-          Options = []
+          ArgOptions = []
           SubCommands = [] }
     static member CreateRoot =
         { CommandId = ""
@@ -71,15 +78,15 @@ type CommandDef =
           Name = ""
           Description = None
           Aliases = []
-          Arg = None
-          Options = []
+          ArgOptions = []
           SubCommands = [] }
 
 
-type SymbolDef =
-    | ArgDef of ArgDef
-    | OptionDef of OptionDef
-    | CommandDef of CommandDef
+
+//type SymbolDef =
+//    | ArgDef of ArgDef
+//    | OptionDef of OptionDef
+//    | CommandDef of CommandDef
 
 
 type ArchPart = 

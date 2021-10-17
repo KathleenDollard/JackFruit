@@ -109,7 +109,7 @@ type ``When outputting code`` () =
               (0, "{")
               (1, Assignment.ForTesting.CSharp |> List.head)
               (0, "}")]
-        let data = { If.ForTesting.Data with Statements = [Assignment Assignment.ForTesting.Data] }
+        let data = { If.ForTesting.Data with Statements = [ Statement.Assign Assignment.ForTesting.Data] }
 
         // KAD-Don: Ick, where did my design go wrong that I have things like Assignment Assignment
         // KAD-Don: Why isn't there a warning when I assign unit? I know it is legal, but is it ever sensible?
@@ -128,7 +128,7 @@ type ``When outputting code`` () =
               (0, "{")
               (1, Assignment.ForTesting.CSharp |> List.head)
               (0, "}")]
-        let data = { ForEach.ForTesting.Data with Statements = [Assignment Assignment.ForTesting.Data] }
+        let data = { ForEach.ForTesting.Data with Statements = [ Statement.Assign Assignment.ForTesting.Data] }
 
         outPutter.OutputForEach data
         let actual = writer.LinePairs()
@@ -252,7 +252,7 @@ type ``When outputting code`` () =
         let data = 
             { Property.ForTesting.Data with 
                 GetStatements = [Return (Symbol "x")]
-                SetStatements = [Assignment { Item = "value"; Value = (Symbol "x")}] }
+                SetStatements = [Statement.Assign { Item = "value"; Value = (Symbol "x")}] }
 
         outPutter.OutputProperty data
         let actual = writer.LinePairs()

@@ -109,4 +109,5 @@ type LanguageCSharp() =
         member _.Comparison comparison =
             $"{comparison.Left.Output}.{comparison.Operator.Output} {comparison.Right.Output}"
 
-
+        member _.NamedItemOutput namedItem =
+            $"{namedItem.Output}"

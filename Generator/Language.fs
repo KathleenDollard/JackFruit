@@ -44,6 +44,9 @@ type ILanguage =
     abstract member Invocation: Invocation -> string
     abstract member Comparison: Comparison -> string
 
+    // Other
+    abstract member NamedItemOutput: GenericNamedItem -> string
+
 type Scope =
     | Public
     | Private
@@ -56,16 +59,40 @@ type GenericNamedItem =
     static member Create name =
         { Name = name 
           GenericTypes = [] }
+let As name =
+    { Name = name
+      GenericTypes = []}
+let Of = As
+let AsGeneric name genericTypes =
+    { Name = name
+      GenericTypes = genericTypes }
+let OfGeneric = AsGeneric
 
 
 type Invocation =
     { Instance: GenericNamedItem
       MethodName: string
       Arguments: Expression list}
+let Invoke instanceName methodName arguments =
+    Expression.Invocation
+        { Instance = { Name = instanceName; GenericTypes = [] }
+          MethodName = methodName
+          Arguments = arguments }
+let With (arguments: Expression list) = arguments 
 
 type Instantiation =
     { TypeName: GenericNamedItem
       Arguments: Expression list}
+let New typeName arguments = 
+    Expression.Instantiation 
+        { TypeName = { Name = typeName; GenericTypes = []}
+          Arguments = arguments }
+let NewGeneric typeName genericName arguments =
+    Expression.Instantiation
+        { TypeName = 
+            { Name = typeName
+              GenericTypes = [{ Name = genericName; GenericTypes = [] }]}
+          Arguments = arguments }
 
 type Operator =
     | Equals
@@ -79,6 +106,14 @@ type Comparison =
     { Left: Expression
       Right: Expression
       Operator: Operator}
+let Equals left right =
+    { Left = left
+      Right = right
+      Operator = Operator.Equals }
+let NotEquals left right =
+    { Left = left
+      Right = right
+      Operator = Operator.NotEquals }    
 
 type Expression =
     | Invocation of Invocation
@@ -103,15 +138,25 @@ type ForEach =
 type Assignment = 
     { Item: string
       Value: Expression}
+let Assign item value =
+    Statement.Assign 
+        { Item = item 
+          Value = value}
+
 
 type AssignWithDeclare =
     { Variable: string
       TypeName: GenericNamedItem option
       Value: Expression}
+let AssignVar variable value =
+    Statement.AssignWithDeclare 
+        { Variable = variable
+          Value = value 
+          TypeName = None }
 
 type Statement =
     | If of If
-    | Assignment of Assignment
+    | Assign of Assignment
     | AssignWithDeclare of AssignWithDeclare
     | ForEach of ForEach
     | Return of Expression
@@ -200,7 +245,7 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
     member this.OutputStatement (statement: Statement) =
         match statement with 
         | If x -> this.OutputIf x
-        | Assignment x -> this.OutputAssignment x
+        | Assign x -> this.OutputAssignment x
         | AssignWithDeclare x -> this.OutputAssignWithDeclare x
         | Return x -> this.OutputReturn x
         | ForEach x -> this.OutputForEach x

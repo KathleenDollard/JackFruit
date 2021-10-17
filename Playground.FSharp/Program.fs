@@ -173,6 +173,10 @@ let t = (42, "yellow", true)
 type cust = {id: int; faveColor: string; active: bool}
 let c = {id = 42; faveColor = "yellow"; active = true}
 
+let xx = seq { "red"; "yellow"; "blue"}
+let yy = ["red"; "yellow"; "blue"] |> List.toSeq
+let zz = ["red"; "yellow"; "blue"] : seq<string>
+let vv: seq<string> = ["red"; "yellow"; "blue"]
            
     
 [<EntryPoint>]
