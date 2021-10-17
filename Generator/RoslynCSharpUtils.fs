@@ -82,7 +82,7 @@ let ExpressionFrom (syntaxNode: CSharpSyntaxNode) =
 
 
 let InvocationsFrom (syntaxTree: CSharpSyntaxTree) name =
-   [ for node in syntaxTree.GetRoot().DescendantNodes() do
+   Ok [ for node in syntaxTree.GetRoot().DescendantNodes() do
         match node with 
         | SimpleInvocationByName name (caller, argList) 
             -> (caller, 

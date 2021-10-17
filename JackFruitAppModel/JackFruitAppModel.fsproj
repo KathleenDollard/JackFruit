@@ -7,9 +7,9 @@
 
   <ItemGroup>
     <Compile Include="Models.fs" />
-    <Compile Include="Generator.fs" />
     <Compile Include="ArchetypeMapping.fs" />
     <Compile Include="BuildTree.fs" />
+    <Compile Include="Generator.fs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,18 +1,22 @@
 ﻿
 module JackFruitAppModel.Generator
 
-open Generator.RoslynUtils
-open Microsoft.CodeAnalysis
+    open Generator.RoslynUtils
+    open Microsoft.CodeAnalysis
+    open JackFruit.ArchetypeMapping
+    open JackFruit
+    open Generator.NewMapping
 
     let private mapMethodName = "MapInferred"
+    let private appModel =  AppModel()
 
     let BuildModel (model:SemanticModel) = 
 
-        let invocations = 
-            InvocationsFromModel mapMethodName model
-            |> Result.bind ArchetypeInfoListFrom
-            |> Result.map ArchetypeInfoTreeFrom
-            |> Result.map (CommandDefFrom model)
+
+        InvocationsFromModel mapMethodName model
+        |> Result.bind ArchetypeInfoListFrom
+        |> Result.map ArchetypeInfoTreeFrom
+        |> Result.map (CommandDefFrom model appModel)
         // Find Archetypes and build tree
         // Use Generator to find CommandDef info for handlers
         // Run archetype provider

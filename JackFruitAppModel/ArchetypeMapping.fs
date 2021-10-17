@@ -1,34 +1,10 @@
-﻿module JackfruitAppModel.ArchetypeMapping
+﻿module JackFruit.ArchetypeMapping
 
-//let BuildCommandDef model archInfoTree =
-//    let recurse model tree =
-        
-
-//// invocations list is built in the SyntaxReciever and then changed to a tuple in the
-//// language specific code of the generator
-//let generate invocations model= 
-//    ArchetypeInfoListFrom invocations   // invocations                      -> archetypeInfo list Result
-//    |> bind BuildTree               // archetypeInfo list Result        -> treeNode<archetypeInfo> Result
-//    |> bind BuildCommandDef model   // treeNode<archetypeInfo> Result   -> CommandDef list Result
-//    |> bind BuildCode CSharp        // CommandDef list Result           -> string
 
 open Generator.GeneralUtils
 open Generator.Models
 open Generator.RoslynUtils
 open Microsoft.CodeAnalysis
-
-// Support these syntaxes
-//
-// Arg is singular for now because management of an item is different than a list and I want that experience
-//
-// one two three <arg> --option1 <optionArg> --option2
-// one|longOrShortOne --option1|o
-//
-// I want to support hidden args in the future. For that, square brackets. 
-// This is for deprecation and handler mismatches, and may help a common case where option names don't match their arg names
-// System.CommandLine does not yet support this. 
-//
-// one|[old] --option1|o|[old]
 
 let (|Command|Arg|Option|) (part: string) =
     let part = part.Trim()
@@ -155,7 +131,7 @@ let ExpresionOption expression =
         Some expression
 
 
-let  invocations =
+let ArchetypeInfoListFrom invocations =
         let archetypeInfoWithResults =
             let mutable pos = 0
             [ for invoke in invocations do

@@ -1,53 +1,48 @@
-﻿module JackfruitAppModel.CommandDefMapping
+﻿namespace JackFruit
 
 open Generator.RoslynUtils
 open Generator.GeneralUtils
 open Generator.Models
+open Generator.NewMapping
 
-let private GetCommandArchetype parts =
-    let commandArchetpes =
-         [for part in parts do
-            match part with  
-            | CommandArchetype c -> c
-            | _ -> ()]
-    commandArchetpes |> List.exactlyOne
+type AppModel() =
 
-let private MethodAndMembers model archetypeInfo =
-    let method = 
-        match archetypeInfo.Handler with
-        | None -> None
-        | Some handler -> MethodFromHandler model handler
-    let members =
-        match method with
-        | Some method -> 
-            [ for parameter in method.Parameters do
-                // KAD-Don: Why does this error without parens? What is "Function application"?
-                MemberDef.Create parameter.Name (parameter.Type.ToDisplayString()) ]
-        | None -> [] 
-    method, members
-
-let CommandDefFrom model (archTree: seq<TreeNodeType<ArchetypeInfo>>) =
-
-    let rec depthFirstCreate archTree  =
-        let subCommands = 
-            [ for child in archTree.Children do
-                yield depthFirstCreate child ]
-
-        let archetypeInfo = archTree.Data
-        let method, members = MethodAndMembers model archetypeInfo
-        let commandArchetype = GetCommandArchetype archetypeInfo.ArchetypeParts
-
-        { CommandId = commandArchetype.Id 
-          Path = archetypeInfo.Path
-          Description = None
-          Aliases = [commandArchetype.Name] 
-          Members = members
-          SubCommands = subCommands
-          Pocket = 
-            [ "Method", method
-              "ArchetypeInfo", archetypeInfo]}
+    let GetCommandArchetype parts =
+        let commandArchetpes =
+             [for part in parts do
+                match part with  
+                | CommandArchetype c -> c
+                | _ -> ()]
+        commandArchetpes |> List.exactlyOne
+    
+    interface IAppModel<TreeNodeType<ArchetypeInfo>> with 
         
-        // GetCommandDef archetypeInfo.ArchetypeParts archetypeInfo members subCommands
+        member _.Children archTree =
+            archTree.Children
+        
+        // Id, method, stuff for pocket
+        member _.Info model archTree =
+            let archetypeInfo = archTree.Data
+            let method = 
+                match archetypeInfo.Handler with
+                | None -> None
+                | Some handler -> MethodFromHandler model handler
+            let commandArchetype = GetCommandArchetype archetypeInfo.ArchetypeParts
+            commandArchetype.Id, method, ["ArchetypeInfo", archetypeInfo]
+        
+        member _.RunProviders commandDef =
+            commandDef
 
-    [ for topLevelArch in archTree do
-        depthFirstCreate topLevelArch ]
+type ManualSymbolModel() =
+    interface IAppModel<Microsoft.CodeAnalysis.IMethodSymbol> with 
+        
+        member _.Children _ = []
+        
+        // Id, method, stuff for pocket
+        member _.Info model method =
+            method.Name, Some method, [] // method already added
+        
+        member _.RunProviders commandDef =
+            commandDef
+
+

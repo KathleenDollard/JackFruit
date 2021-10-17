@@ -6,10 +6,6 @@ type AppErrors =
     | Roslyn of Diagnostics: Diagnostic list
     | UnexpectedExpression of Message: string
     | UnexpectednumberOfArguments
-    | UnexpectedExpressionForHandler of Archetype: string
-    | UnexpectedExpressionForArchetype of Position: int
-    | ParsingArchetype of Message: string
-    | BulidingTree of Message: string
     | BuildingCommanDef of Message: string
     | NotImplemented of Message: string
     | Other of Message: string
@@ -81,23 +77,4 @@ type CommandDef =
           SubCommands = [] 
           Pocket =[] }
 
-
-type ArchPart = 
-    { Id: string
-      Name: string
-      Aliases: string list
-      HiddenAliases: string list }
-
-
-type ArchetypePart =
-    | CommandArchetype of part: ArchPart
-    | OptionArchetype of part: ArchPart
-    | ArgArchetype of part: ArchPart
-
-
-type ArchetypeInfo =
-    { Path: string list 
-      ArchetypeParts: ArchetypePart list
-      Handler: SyntaxNode option
-      }
 

@@ -47,7 +47,7 @@ let ExpressionFrom (node: SyntaxNode)  =
 
 let InvocationsFrom name (syntaxTree: SyntaxTree) =
     match syntaxTree with 
-    | :? CSharp.CSharpSyntaxTree as tree-> RoslynCSharpUtils.InvocationsFrom tree name
+    | :? CSharp.CSharpSyntaxTree as tree -> RoslynCSharpUtils.InvocationsFrom tree name
     | :? VisualBasic.VisualBasicSyntaxTree as tree -> RoslynVBUtils.InvocationsFrom tree name
     | _ -> invalidOp "Invalid node type"
 

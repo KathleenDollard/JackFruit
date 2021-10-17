@@ -1,4 +1,4 @@
-﻿module JackfruitAppModel.Models
+﻿module JackFruit.Models
 
 open Microsoft.CodeAnalysis
 
@@ -20,3 +20,4 @@ type ArchetypeInfo =
       ArchetypeParts: ArchetypePart list
       Handler: SyntaxNode option
       }
+

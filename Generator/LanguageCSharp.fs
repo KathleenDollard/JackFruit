@@ -13,20 +13,6 @@ type LanguageCSharp() =
         else
             ""
 
-    //let getParameters (parameters: Parameter list) = 
-    //    let getDefault parameter =
-    //        match parameter.Default with 
-    //            | None -> ""
-    //            | Some def -> " " + getExpression def
-
-    //    let s = [ for param in parameters do
-    //                $"{param.Type} {param.Name}{getDefault param}"]
-    //    String.Join("", s)
-
-    //let getArguments arguments = 
-    //    let s = [ for arg in arguments do
-    //                $"{getExpression arg}"]
-    //    String.Join("", s)
 
     interface ILanguage with 
 
