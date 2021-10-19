@@ -1,5 +1,5 @@
 ﻿global using ConsoleSupport;
-global using JackFruit;
+global using Jackfruit;
 
 global using System;
 global using System.Collections.Generic;

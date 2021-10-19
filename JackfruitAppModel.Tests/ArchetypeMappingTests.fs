@@ -4,10 +4,10 @@
 open Xunit
 open FsUnit.Xunit
 open FsUnit.CustomMatchers
-open Generator.ArchetypeMapping
+open Jackfruit.ArchetypeMapping
 open Generator.RoslynUtils
 open Generator.GeneralUtils
-open Generator.Models
+open Jackfruit.Models
 open Generator.Tests.UtilForTests
 open Microsoft.CodeAnalysis
 open Generator.Tests.MapData
@@ -210,7 +210,7 @@ type ``When creating archetypeInfo from mapping``() =
 
         let result = 
             ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
-            |> Result.map (InvocationsFromModel "MapInferred")
+            |> Result.bind (InvocationsFromModel "MapInferred")
             |> Result.bind ArchetypeInfoListFrom 
             |> Result.map commandNames
 
@@ -267,7 +267,7 @@ type ``When creating archetypeInfo from mapping``() =
         let source = AddMapStatements false MapData.ThreeMappings.MapInferredStatements
         let result = 
             SyntaxTreeResult (CSharpCode source)
-            |> Result.map (InvocationsFrom "MapInferred")
+            |> Result.bind (InvocationsFrom "MapInferred")
             |> Result.bind ArchetypeInfoListFrom
             |> Result.map ArchetypeInfoTreeFrom
 

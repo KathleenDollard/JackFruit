@@ -2,19 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <IsPackable>false</IsPackable>
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="TestDataCSharp.fs" />
-    <Compile Include="MapData.fs" />
     <Compile Include="UtilForTests.fs" />
-    
-    <Compile Include="LanguageCSharpTests.fs" />
-    <Compile Include="OutputMapingTests.fs" />
-    <Compile Include="GeneralUtilsTests.fs" />
-    <Compile Include="RoslynUtilsTests.fs" />
-    <Compile Include="CommandDefMappingTests.fs" />
+    <Compile Include="MapData.fs" />
+    <Compile Include="ArchetypeMappingTests.fs" />
+    <Compile Include="Tests.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,8 +32,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ConsoleSupport\ConsoleSupport.csproj" />
     <ProjectReference Include="..\Generator\Generator.fsproj" />
-    <ProjectReference Include="..\Jackfruit\Jackfruit.csproj" />
+    <ProjectReference Include="..\JackfruitAppModel\JackfruitAppModel.fsproj" />
   </ItemGroup>
 
 </Project>

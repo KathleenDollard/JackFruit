@@ -4,7 +4,6 @@ namespace Generator.Tests.MapData
 
 open Generator.Models
 
-// TODO: Remove MapInferredStatements from this file
 type MapData =
     { MapInferredStatements: string list
       CommandNames: string list

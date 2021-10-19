@@ -1,6 +1,6 @@
 ﻿
 
-namespace JackFruit
+namespace Jackfruit
 {
     // This is from Damian's MinimalApiPlayground
     public class FirstPlayground

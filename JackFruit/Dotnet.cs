@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace JackFruit
+namespace Jackfruit
 {
     public enum RollForward
     {

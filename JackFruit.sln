@@ -21,7 +21,9 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Generator", "Generator\Gene
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GeneratorTests", "GeneratorTests\GeneratorTests.fsproj", "{9ABF8ADB-4736-4043-89FC-D37A0B619615}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "JackFruitAppModel", "JackFruitAppModel\JackFruitAppModel.fsproj", "{DCE3DF3F-F440-403D-BB5A-88B9E10DA570}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "JackfruitAppModel", "JackFruitAppModel\JackfruitAppModel.fsproj", "{DCE3DF3F-F440-403D-BB5A-88B9E10DA570}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "JackfruitAppModel.Tests", "JackfruitAppModel.Tests\JackfruitAppModel.Tests.fsproj", "{36DED83A-2920-4FC6-A042-26DB7FE440B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{DCE3DF3F-F440-403D-BB5A-88B9E10DA570}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCE3DF3F-F440-403D-BB5A-88B9E10DA570}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCE3DF3F-F440-403D-BB5A-88B9E10DA570}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36DED83A-2920-4FC6-A042-26DB7FE440B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36DED83A-2920-4FC6-A042-26DB7FE440B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36DED83A-2920-4FC6-A042-26DB7FE440B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36DED83A-2920-4FC6-A042-26DB7FE440B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

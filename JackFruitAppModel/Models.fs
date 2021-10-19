@@ -1,4 +1,4 @@
-﻿module JackFruit.Models
+﻿module Jackfruit.Models
 
 open Microsoft.CodeAnalysis
 

@@ -1,9 +1,9 @@
-﻿namespace JackFruit
+﻿namespace Jackfruit
 
 open Generator.RoslynUtils
 open Generator.GeneralUtils
-open Generator.Models
-open Generator.NewMapping
+open Jackfruit.Models
+open Generator
 
 type AppModel() =
 

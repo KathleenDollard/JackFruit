@@ -23,11 +23,6 @@ let CommandDefFromMethod model (method: IMethodSymbol option) id =
       [ "Method", method 
         "SemanticModel", model] }
 
-type IAppModel<'T> =
-    abstract member Children: 'T -> 'T list
-    // Id, method, stuff for pocket
-    abstract member Info: SemanticModel -> 'T -> string * IMethodSymbol option * (string * obj) list
-    abstract member RunProviders: CommandDef -> CommandDef
 
 let CommandDefFrom<'T> model (appModel: IAppModel<'T>) (items: 'T list)  =
 

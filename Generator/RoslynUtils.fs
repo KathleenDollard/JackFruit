@@ -4,6 +4,8 @@ open Microsoft.CodeAnalysis
 //open Microsoft.CodeAnalysis.CSharp
 //open Microsoft.CodeAnalysis.VisualBasic
 open Generator.Models
+open Generator.AppErrors
+
 
 type Source =
     | CSharpTree of SyntaxTree

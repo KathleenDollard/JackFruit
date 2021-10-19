@@ -1,12 +1,12 @@
-﻿module Generator.Tests.
-
+﻿module Generator.Tests.UtilForTests
 
 open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp
 open System
 open Generator.RoslynUtils
-open Generator.Models
+open Jackfruit.Models
 open Xunit
+open Jackfruit.ArchetypeMapping
 open Generator.AppErrors
 
 let testNamespace = "TestCode"
@@ -141,6 +141,38 @@ let AddMapStatements includeBad (statements: string list) =
     AddMapStatementToTestCode [ "var builder = new ConsoleSupport.BuilderInferredParser();";
                                 if includeBad then BadMappingStatement
                                 for s in statements do s ]
+
+
+let archetypesAndModelFromSource source =
+    let source = AddMapStatements false source
+    let mutable model:SemanticModel option = None
+
+    // KAD: Any better way to catch an interim value in a pipeline
+    let updateModel newModel = 
+        model <- Some newModel
+        newModel
+
+    let result1 = 
+        ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
+        |> Result.map updateModel
+
+    let result2 = 
+        result1
+        |> Result.bind (InvocationsFromModel "MapInferred")
+
+    let result = 
+        result2
+        |> Result.bind ArchetypeInfoListFrom
+
+        //InvocationsFromModel mapMethodName model
+        //|> Result.bind ArchetypeInfoListFrom
+        //|> Result.map ArchetypeInfoTreeFrom
+        //|> Result.map (CommandDefFrom model appModel)
+
+    match result with
+    | Ok archetypeList -> (archetypeList, model.Value)
+    | Error err -> invalidOp $"Test failed building archetypes from source {err}"
+
 
 
 let InvocationsAndModelFrom source =

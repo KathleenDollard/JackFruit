@@ -1,7 +1,7 @@
 ﻿using System.CommandLine;
 using System.IO;
 
-namespace JackFruit
+namespace Jackfruit
 {
     public class SystemCommandLineImplementation
     {

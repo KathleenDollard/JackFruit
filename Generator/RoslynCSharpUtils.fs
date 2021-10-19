@@ -4,6 +4,8 @@ open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp
 open Microsoft.CodeAnalysis.CSharp.Syntax
 open Generator.Models
+open Generator.AppErrors
+
 
 let (|StringLiteralExpression|_|) (n: CSharpSyntaxNode) =
     match n.Kind() with

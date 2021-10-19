@@ -3,8 +3,8 @@ module JackFruitAppModel.Generator
 
     open Generator.RoslynUtils
     open Microsoft.CodeAnalysis
-    open JackFruit.ArchetypeMapping
-    open JackFruit
+    open Jackfruit.ArchetypeMapping
+    open Jackfruit
     open Generator.NewMapping
 
     let private mapMethodName = "MapInferred"

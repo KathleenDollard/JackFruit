@@ -1,10 +1,12 @@
-﻿module JackFruit.ArchetypeMapping
+﻿module Jackfruit.ArchetypeMapping
 
 
 open Generator.GeneralUtils
-open Generator.Models
+open Jackfruit.Models
 open Generator.RoslynUtils
 open Microsoft.CodeAnalysis
+open Generator.AppErrors
+
 
 let (|Command|Arg|Option|) (part: string) =
     let part = part.Trim()
@@ -142,8 +144,8 @@ let ArchetypeInfoListFrom invocations =
                     let expression = ExpressionFrom d
                     match (archetype, expression) with
                     | Ok arch, Ok expr -> Ok (ParseArchetypeInfo arch (ExpresionOption expr))
-                    | Error _, _ ->  Error (UnexpectedExpressionForArchetype pos)
-                    | Ok arch, Error _ ->  Error (UnexpectedExpressionForHandler arch)
+                    | Error _, _ ->  Error (AppModelIssue $"Unexpected expression for frchetype at {pos}")
+                    | Ok arch, Error _ ->  Error (AppModelIssue $"Unexpected expression for handler {arch}")
                 | _ -> Error UnexpectednumberOfArguments ]
         let errors = [
             for result in archetypeInfoWithResults do
