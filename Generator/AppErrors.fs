@@ -1,4 +1,4 @@
-﻿namespace Generator.AppErrors
+﻿namespace Generator
 
 open Microsoft.CodeAnalysis
 

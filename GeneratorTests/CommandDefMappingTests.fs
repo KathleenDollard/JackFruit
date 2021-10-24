@@ -6,125 +6,73 @@ open FsUnit.CustomMatchers
 open Generator.RoslynUtils
 open Generator.GeneralUtils
 open Generator.Models
-open Generator.Tests.UtilForTests
+open Generator.Tests.UtilsForTests
 open Microsoft.CodeAnalysis
-open Generator.Tests.MapData
+open Generator.Tests
+open Generator.NewMapping
 
-// KAD: If the parens are ommitted here, FsUnit gives an error about only one constructor allowed.
-//     Maybe a better error
-type ``When evaluating handlers``() =
+
+// I'm not sure what we should be testing first
+//  * Creating CommandDef from random method (per most APpModels)
+//  * Creating CommandDef from SetHandler (Kevin's model)
+//  * Creating a CommandDef by hand and testing providers
+//  * Creating a CommandDef by hand and generating Kevin's code
+//  * Something else 
+
+type ``When building CommandDefs``() =
+
+    let MethodSymbolsFromSource source =
+        let code = AddMethodsToClass source
+        let modelResult = ModelFrom [ CSharpCode code ]
+        let model =
+            match modelResult with 
+            | Ok model -> model
+            | Error _ -> invalidOp "Test failed during SemanticModel creation"
+        let declarationsResults = MethodDeclarationNodesFrom model.SyntaxTree
+        let declarations =
+             match declarationsResults with 
+             | Ok d -> d
+             | Error _ -> invalidOp "Test failed during Method syntax lookup"
+        let methods =
+            [ for declaration in declarations do
+                let methodResult = MethodFromHandler model declaration 
+                match methodResult with 
+                | Some method -> method 
+                | None -> invalidOp "Test failed during Method symbol lookup" ]
+        model, methods
+
+    let TestCommandDefFromSource map =
+        let model, methods = MethodSymbolsFromSource map.HandlerCode
+        let expected = map.CommandDef
+
+        let actual = 
+            [ for method in methods do
+                CommandDefFromMethod model (Some method) None ]
+        let differences = (CommandDefDifferences expected actual)
+
+        match differences with 
+        | None -> () // All is great!
+        | Some issues -> 
+            // KAD-Don: Why the second (from left) set of parens?
+            raise (MatchException (expected.ToString(), actual.ToString(), (String.concat "\r\n" issues)))
+        
+
 
     [<Fact>]
-    member _.``Parameters retrieved from Handler``() =
-        let (archetypes, model) = archetypesAndModelFromSource MapData.OneMapping.MapInferredStatements
-        let expected = [("one", "string")]
+    member _.``One simple comand built``() =
+        TestCommandDefFromSource MapData.OneSimpleMapping
 
-        let parameters = ParametersFromArchetype archetypes[0] model
-        let actual = 
-            [ for tuple in parameters do
-                match tuple with 
-                | (name, t) -> (name, t.ToString())]
+    [<Fact>]
+    member _.``One complex comand built``() =
+        TestCommandDefFromSource MapData.OneComplexMapping
 
-        actual |> should matchList expected
+    [<Fact>]
+    member _.``Three simple commands built``() =
+        TestCommandDefFromSource MapData.ThreeMappings
 
+    [<Fact>]
+    member _.``No command does noto throw``() =
+        TestCommandDefFromSource MapData.NoMapping
 
-//type ``When building CommandDef parts``() =
+                
 
-    
-//    [<Fact>]
-//    member _.``Argument is found``() =
-//        let parameters = [("two", "int")]
-//        let raw = [ ArgArchetype { Id = "two"; Name = "two"; Aliases = []; HiddenAliases = [] } ]
-//        let expected = Some {
-//            ArgId = "two" 
-//            Name = "two"
-//            Description = None
-//            Required = None
-//            TypeName = "int" }
-
-//        let (arg, options) = argAndOptions parameters raw
-
-//        options |> should be Empty
-//        arg |> should be (ofCase <@ Some @>)
-//        arg |> should equal expected 
-
-    
-//    [<Fact>]
-//    member _.``One option is found``() =
-//        let parameters = [("one", "string")]
-//        let raw = [ OptionArchetype { Id = "one"; Name = "one"; Aliases = []; HiddenAliases = [] } ]
-//        let expected = [{
-//            OptionId = "one" 
-//            Name = "one"
-//            Description = None
-//            Aliases = []
-//            Required = None
-//            TypeName = "string" }]
-
-//        let (arg, options) = argAndOptions parameters raw
-
-//        arg |> should equal None
-//        options |> should equal expected
-//        if arg <> None then failwith "Wat!"
-
-//    [<Fact>]
-//    member _.``Two options and one argument are found``() =
-//        let parameters = [("one", "string"); ("two", "int"); ("three", "int")]
-//        let raw = 
-//            [ OptionArchetype { Id = "one"; Name = "one"; Aliases = []; HiddenAliases = [] } 
-//              ArgArchetype { Id = "two"; Name = "two"; Aliases = []; HiddenAliases = [] } 
-//              OptionArchetype { Id = "three"; Name = "three"; Aliases = []; HiddenAliases = [] } ]
-
-//        let optionDefOne = {
-//            OptionId = "one" 
-//            Name = "one"
-//            Description = None
-//            Aliases = []
-//            Required = None
-//            TypeName = "string" };
-//        let optionDefThree = {
-//            OptionId = "three" 
-//            Name = "three"
-//            Description = None
-//            Aliases = []
-//            Required = None
-//            TypeName = "int" }
-//        let expectedOptions = [ optionDefOne; optionDefThree ]
-//        let expectedArg = Some {
-//            ArgId = "two" 
-//            Name = "two"
-//            Description = None
-//            Required = None
-//            TypeName = "int" }
-
-//        let (arg, options) = argAndOptions parameters raw
-
-//        arg |> should equal expectedArg
-//        options |> should equal expectedOptions
-
-
-//    [<Fact>]
-//    member _.``CommandDef is built``() =
-//        let source = AddMapStatements false MapData.ThreeMappings.MapInferredStatements
-//        let expected = MapData.ThreeMappings.CommandDef
-//        let mutable model = null
-//        let result = 
-//            InvocationsAndModelFrom source
-//            |> Result.map (
-//                fun (invocations, m) -> 
-//                    model <- m
-//                    invocations)
-//            |> Result.bind ArchetypeInfoListFrom
-//            |> Result.map ArchetypeInfoTreeFrom
-//            |> Result.map (CommandDefFrom model)
-
-//        let actual = 
-//            match result with 
-//            | Ok tree -> tree
-//            | Error err -> invalidOp $"Failed to build tree {err}" // TODO: Work on error reporting
-
-//        actual.Length |> should equal 1
-//        let actual = actual.Head
-//        let errors = MatchCommandDef expected actual
-//        errors |> should equal ""
-//        actual |> should equal expected

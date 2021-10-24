@@ -17,18 +17,13 @@ type MapData =
     static member OneMapping =
         { MapInferredStatements = [ "builder.MapInferred(\"\", Handlers.A);" ]
           CommandNames = [ "" ]
-          CommandDef =
-            { CommandId = ""
-              Path = [ "" ]
-              Description = None
-              Aliases = []
-              Members = []
-              SubCommands = []
-              Pocket = []} }
+          CommandDef = CommandDef.CreateRoot }
+        
 
     static member ThreeMappings =
         let package =
             { CommandId = "package"
+              GenerateSetHandler = true
               Path = [ "dotnet"; "add"; "package" ]
               Description = None
               Aliases = [ "package" ]
@@ -40,6 +35,7 @@ type MapData =
 
         let add =
             { CommandId = "add"
+              GenerateSetHandler = true
               Path = [ "dotnet"; "add" ]
               Description = None
               Aliases = [ "add" ]
@@ -54,6 +50,7 @@ type MapData =
           CommandNames = [ "dotnet"; "add"; "package" ]
           CommandDef =
             { CommandId = "dotnet"
+              GenerateSetHandler = true
               Path = [ "dotnet" ]
               Description = None
               Aliases = [ "dotnet" ]

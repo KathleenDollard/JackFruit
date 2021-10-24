@@ -4,7 +4,7 @@ open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.VisualBasic
 open Microsoft.CodeAnalysis.VisualBasic.Syntax
 open Generator.Models
-open Generator.AppErrors
+open Generator
 
 
 let (|StringLiteralExpression|_|) (n: VisualBasicSyntaxNode) =
@@ -30,4 +30,10 @@ let rec ExpressionFrom syntaxNode =
 
 
 let InvocationsFrom (syntaxTree: VisualBasicSyntaxTree) name =
+    invalidOp "Not yet implemented"
+
+let MethodDeclarationFrom(syntaxTree: VisualBasicSyntaxTree) =
+    invalidOp "Not yet implemented"
+
+let MethodDeclarationNodesFrom(syntaxTree: VisualBasicSyntaxTree) =
     invalidOp "Not yet implemented"

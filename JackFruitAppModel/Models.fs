@@ -18,6 +18,5 @@ type ArchetypePart =
 type ArchetypeInfo =
     { Path: string list 
       ArchetypeParts: ArchetypePart list
-      Handler: SyntaxNode option
-      }
+      Handler: SyntaxNode option }
 

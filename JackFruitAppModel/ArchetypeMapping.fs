@@ -5,7 +5,7 @@ open Generator.GeneralUtils
 open Jackfruit.Models
 open Generator.RoslynUtils
 open Microsoft.CodeAnalysis
-open Generator.AppErrors
+open Generator
 
 
 let (|Command|Arg|Option|) (part: string) =

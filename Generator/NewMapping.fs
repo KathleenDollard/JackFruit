@@ -3,7 +3,7 @@
 open Microsoft.CodeAnalysis
 open Generator.Models
 
-let CommandDefFromMethod model (method: IMethodSymbol option) id =
+let CommandDefFromMethod model (method: IMethodSymbol option) (id: string option) =
 
     let members = 
         match method with
@@ -13,15 +13,20 @@ let CommandDefFromMethod model (method: IMethodSymbol option) id =
                      MemberDef.Create parameter.Name (parameter.Type.ToDisplayString()) ]
              | None -> [] 
 
-    { CommandId = id
-      Path = []
-      Description = None
-      Aliases = [] 
-      Members = members
-      SubCommands = []
-      Pocket = 
-      [ "Method", method 
-        "SemanticModel", model] }
+    let id = 
+        match id with
+        | Some i -> i
+        | None -> 
+            match method with 
+            | Some m -> m.Name
+            | None -> "<unknown>"
+
+    let commandDef = CommandDef.Create id
+    { commandDef with 
+        Members = members
+        Pocket = 
+        [ "Method", method 
+          "SemanticModel", model] }
 
 
 let CommandDefFrom<'T> model (appModel: IAppModel<'T>) (items: 'T list)  =
@@ -31,7 +36,7 @@ let CommandDefFrom<'T> model (appModel: IAppModel<'T>) (items: 'T list)  =
             [ for child in (appModel.Children item) do
                 yield depthFirstCreate child ]
         let (id, method, forPocket) = appModel.Info model item
-        let commandDef = CommandDefFromMethod model method id
+        let commandDef = CommandDefFromMethod model method (Some id)
         appModel.RunProviders commandDef
 
     [ for item in items do

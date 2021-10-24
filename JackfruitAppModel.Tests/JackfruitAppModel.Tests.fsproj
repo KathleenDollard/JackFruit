@@ -11,7 +11,6 @@
     <Compile Include="UtilForTests.fs" />
     <Compile Include="MapData.fs" />
     <Compile Include="ArchetypeMappingTests.fs" />
-    <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
@@ -34,6 +33,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ConsoleSupport\ConsoleSupport.csproj" />
     <ProjectReference Include="..\Generator\Generator.fsproj" />
+    <ProjectReference Include="..\GeneratorTests\GeneratorTests.fsproj" />
     <ProjectReference Include="..\JackfruitAppModel\JackfruitAppModel.fsproj" />
   </ItemGroup>
 

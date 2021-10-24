@@ -1,4 +1,4 @@
-﻿module Generator.Tests.
+﻿module Generator.Tests.UtilsForTests
 
 
 open Microsoft.CodeAnalysis
@@ -7,9 +7,10 @@ open System
 open Generator.RoslynUtils
 open Generator.Models
 open Xunit
-open Generator.AppErrors
+open Generator
 
 let testNamespace = "TestCode"
+let private seperator = "\r\n"
 
 
 let ConcatErrors error = 
@@ -31,19 +32,19 @@ let CreateMethod name (statements: string list) =
     "
 
 
-let createClass name code = @$"
+let CreateClass name (code: string list) = @$"
     public class {name}
     {{
-        {code}
+        { code |> String.concat seperator }
     }}"
 
 
-let CreateNamespace (usings:string list) name code = 
+let CreateNamespace (usings:string list) name (code: string) = 
     let usings = String.concat " " usings
     @$"using System;
     namespace {name}
     {{
-        {code}
+        { code }
     }}"
 
 
@@ -51,29 +52,15 @@ let ReadCodeFromFile fileName =
     System.IO.File.ReadAllText fileName
 
 
-//let CommandNamesFromArchetypeInfo (result: Result<ArchetypeInfo list, Diagnostic list>) = 
-//    match result with 
-//    | Ok archetypes -> [for arch in archetypes do
-//                            arch.Archetype.CommandName ]
-//    | Error errors-> invalidOp (concatErrors errors)
+let AddMethodsToClass (methods:string list) =
+    CreateNamespace [] testNamespace (CreateClass "ClassA" methods)
 
 
-let AddMapStatementToTestCode (statements:string list) =
-    let methods = 
-        [ CreateMethod "MethodA" statements ]
-        |> String.concat ""
-    CreateNamespace [] testNamespace (createClass "ClassA" methods)
+let AddStatementsToMethod (statements:string list) =
+    AddMethodsToClass [ CreateMethod "MethodA" statements ]
 
 
-let HandlerSource = ReadCodeFromFile "..\..\..\TestHandlers.cs"
-let OneMapping = AddMapStatementToTestCode ["""var x = new ConsoleSupport.BuilderInferredParser(); x.MapInferred("", Handlers.A);"""]
-
-
-let GetSemanticModelFromFirstTree inputTrees =
-    let trees = 
-        match inputTrees with 
-        | f, s -> [f; s]
-
+let GetSemanticModelFromFirstTree trees =
     let compilation = 
         let core = typeof<obj>.Assembly.Location
         let runtime = 
@@ -116,18 +103,29 @@ let IsModelOk modelResult =
     IsResultOk modelResult
 
 
-let ModelFrom (source: Source) (handlerSource: Source) =
-    let makeTuple tree handlerTree =
-        (tree, handlerTree)
 
-    let combineTrees hSource (tree: SyntaxTree) =
-        SyntaxTreeResult hSource
-        |> Result.map (makeTuple tree)
 
-    SyntaxTreeResult source
-    |> Result.bind (combineTrees handlerSource)
-    |> Result.bind GetSemanticModelFromFirstTree 
+let ModelFrom(sources: Source list) =
+    let combineTrees (trees: SyntaxTree list) source =
+        let newTreeResult = SyntaxTreeResult source
+        match newTreeResult with 
+        | Ok newTree -> Ok (List.concat [trees; [newTree]])
+        | Error err -> Error err
 
+    let mutable result: Result<SyntaxTree list, AppErrors> = 
+        match SyntaxTreeResult sources.Head with 
+        | Ok tree -> Ok [tree]
+        | Error err -> Error err
+    for source in sources.Tail do
+        let newResult = 
+            match result with 
+            | Ok trees -> combineTrees trees source
+            | Error _ -> result
+        result <- newResult
+    match result with 
+    | Ok trees -> GetSemanticModelFromFirstTree trees
+    | Error err -> Error err
+        
 
 let ShouldEqual (expected: 'a) (actual: 'a) =     
     try
@@ -135,36 +133,84 @@ let ShouldEqual (expected: 'a) (actual: 'a) =
     with
         | _ -> printf "Expected: %A\nActual: %A" expected actual 
 
-
-let AddMapStatements includeBad (statements: string list) =
-    let BadMappingStatement = "builder.MapInferredX(\"\", Handlers.X);"
-    AddMapStatementToTestCode [ "var builder = new ConsoleSupport.BuilderInferredParser();";
-                                if includeBad then BadMappingStatement
-                                for s in statements do s ]
-
-
-let InvocationsAndModelFrom source =
-    //let source = AddMapStatements false source
-    let mutable model:SemanticModel = null
-
-    // KAD: Any better way to catch an interim value in a pipeline
-    let updateModel newModel = 
-        model <- newModel
-        newModel
-
-    ModelFrom (CSharpCode source) (CSharpCode HandlerSource)
-    |> Result.map updateModel
-    |> Result.map (InvocationsFromModel "MapInferred")
-    |> Result.map (fun invocations -> (invocations, model))
+   
 
 // KAD-Don Any shortcuts in this? I need a diff, not just that they do not match
-//let MatchCommandDef expected actual =
-//    let mutable errors = []
-//    let addError err = errors <- err::errors // added backwards, then reverse
-//    let checkForMatch valueName expectedValue actualValue =
-//        if expectedValue <> actualValue then
-//            addError $"Mismatch: {actualValue} not equal to {expectedValue} for {valueName}"
-//        ()
+
+/// This custom comparer accomplishes two things: it ignores the Pocket and 
+/// it gives the object on which an issue occurs. 
+let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) =
+    let CompareMember commandId exp act =
+        [ let id = commandId = if String.IsNullOrEmpty(exp.MemberId) then act.MemberId else exp.MemberId
+          if exp.MemberId <> act.MemberId then $"MemberId {exp.MemberId} does not match {act.MemberId}"
+          if exp.TypeName <> act.TypeName then $"{id}: TypeName {exp.TypeName} does not match {act.TypeName}"
+          if exp.MemberUsage <> act.MemberUsage then $"{id}: MemberUsage {exp.MemberUsage} does not match {act.MemberUsage}"
+          if exp.GenerateSymbol <> act.GenerateSymbol then $"{id}: GenerateSymbol {exp.GenerateSymbol} does not match {act.GenerateSymbol}"
+          if exp.MemberKind <> act.MemberKind then $"{id}: MemberKind {exp.MemberKind} does not match {act.MemberKind}"
+          if exp.Aliases <> act.Aliases then $"{id}: Aliases {exp.Aliases} does not match {act.Aliases}"
+          if exp.ArgDisplayName <> act.ArgDisplayName then $"{id}: ArgDisplayName {exp.ArgDisplayName} does not match {act.ArgDisplayName}"
+          if exp.Description <> act.Description then $"{id}: Description {exp.Description} does not match {act.Description}"
+          if exp.RequiredOverride <> act.RequiredOverride then $"{id}: RequiredOverride {exp.RequiredOverride} does not match {act.RequiredOverride}"
+     
+        
+        ]
+
+    let rec CompareCommand parentId exp act =
+        [ let id = parentId + if String.IsNullOrEmpty(exp.CommandId) then act.CommandId else exp.CommandId
+          if exp.CommandId <> act.CommandId then $"CommandId {exp.CommandId} does not match {act.CommandId}"
+          if exp.GenerateSetHandler <> act.GenerateSetHandler then $"{id}: GenerateSetHandler {exp.GenerateSetHandler} does not match {act.GenerateSetHandler}"
+          if exp.Path <> act.Path then $"{id}: Path {exp.Path} does not match {act.Path}"
+          if exp.Aliases <> act.Aliases then $"{id}: Aliases {exp.Aliases} does not match {act.Aliases}"
+          if exp.Description <> act.Description then $"{id}: Description {exp.Description} does not match {act.Description}" 
+          
+          if exp.Members.Length > act.Members.Length then $"{id}: Length of expected ({exp.Members.Length}) is different than the length of actual ({act.Members.Length})"
+          let members = List.zip exp.Members act.Members
+          for expMember, actMember in members do
+            // KAD-Don: Is there an easier way to flatten into this list comprehension?
+            let issues = CompareMember id expMember actMember
+            for issue in issues do issue
+
+          if exp.SubCommands.Length > act.SubCommands.Length then $"{id}: Length of expected ({exp.SubCommands.Length}) is different than the length of actual ({act.SubCommands.Length})"
+          let subCommands = List.zip exp.SubCommands act.SubCommands
+          for expSubCommand, actSubCommand in subCommands do
+              let issues = CompareCommand id expSubCommand actSubCommand
+              for issue in issues do issue
+        ]
+
+
+    // if an error occurs in the following, update it _and update the comparison_
+    let test = { CommandId = ""
+                 GenerateSetHandler = true
+                 Path = []
+                 Aliases = []
+                 Description = None
+                 Members = []
+                 SubCommands = []
+                 Pocket = [] }
+    if expected.Length > actual.Length then 
+        Some [ $"Length of expected ({expected.Length}) is different than the length of actual ({actual.Length})"]
+    else 
+        let data = List.zip expected actual
+        let errors =
+            [ for (exp, act) in data do
+                let issues = CompareCommand "" exp act
+                for issue in issues do issue
+            ]
+        match errors with 
+        | [] -> None
+        | _ -> Some errors
+
+     
+
+
+
+
+    //let mutable errors = []
+    //let addError err = errors <- err::errors // added backwards, then reverse
+    //let checkForMatch valueName expectedValue actualValue =
+    //    if expectedValue <> actualValue then
+    //        addError $"Mismatch: {actualValue} not equal to {expectedValue} for {valueName}"
+    //    ()
 
 //    let CheckArgDef path expected actual =
 //        let matchesHandled = 

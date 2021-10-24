@@ -4,7 +4,7 @@ open Microsoft.CodeAnalysis
 //open Microsoft.CodeAnalysis.CSharp
 //open Microsoft.CodeAnalysis.VisualBasic
 open Generator.Models
-open Generator.AppErrors
+open Generator
 
 
 type Source =
@@ -54,6 +54,18 @@ let InvocationsFrom name (syntaxTree: SyntaxTree) =
     | _ -> invalidOp "Invalid node type"
 
 
+let MethodDeclarationsFrom (syntaxTree: SyntaxTree) = 
+    match syntaxTree with 
+    | :? CSharp.CSharpSyntaxTree as tree -> RoslynCSharpUtils.MethodDeclarationsFrom tree
+    | :? VisualBasic.VisualBasicSyntaxTree as tree -> RoslynVBUtils.MethodDeclarationFrom tree
+    | _ -> invalidOp "Invalid node type"
+
+let MethodDeclarationNodesFrom (syntaxTree: SyntaxTree) = 
+    match syntaxTree with 
+    | :? CSharp.CSharpSyntaxTree as tree -> RoslynCSharpUtils.MethodDeclarationNodesFrom tree
+    | :? VisualBasic.VisualBasicSyntaxTree as tree -> RoslynVBUtils.MethodDeclarationNodesFrom tree
+    | _ -> invalidOp "Invalid node type"
+
 let IsNullLiteral (expression: SyntaxNode) =
     match expression with 
     | :? CSharp.CSharpSyntaxNode as node-> RoslynCSharpUtils.IsNullLiteral node
@@ -66,13 +78,12 @@ let InvocationsFromModel name (model:SemanticModel) =
 
 let MethodFromHandler (model: SemanticModel) (expression: SyntaxNode) =
     let handler =
-        model.GetSymbolInfo expression
+        model.GetDeclaredSymbol expression
 
     let symbol =
-        match handler.Symbol with
-        | null when handler.CandidateSymbols.IsDefaultOrEmpty -> invalidOp "Delegate not found"
-        | null -> handler.CandidateSymbols.[0]
-        | _ -> handler.Symbol
+        match handler with
+        | null -> invalidOp "Delegate not found"
+        | _ -> handler
 
     match symbol with
     | :? IMethodSymbol as m -> Some m

@@ -13,8 +13,8 @@
     <Compile Include="LanguageCSharpTests.fs" />
     <Compile Include="OutputMapingTests.fs" />
     <Compile Include="GeneralUtilsTests.fs" />
-    <Compile Include="RoslynUtilsTests.fs" />
     <Compile Include="CommandDefMappingTests.fs" />
+    <Compile Include="RoslynUtilsTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
