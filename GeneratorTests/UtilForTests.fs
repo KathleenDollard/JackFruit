@@ -163,23 +163,29 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
           if exp.Aliases <> act.Aliases then $"{id}: Aliases {exp.Aliases} does not match {act.Aliases}"
           if exp.Description <> act.Description then $"{id}: Description {exp.Description} does not match {act.Description}" 
           
-          if exp.Members.Length > act.Members.Length then $"{id}: Length of expected ({exp.Members.Length}) is different than the length of actual ({act.Members.Length})"
-          let members = List.zip exp.Members act.Members
-          for expMember, actMember in members do
-            // KAD-Don: Is there an easier way to flatten into this list comprehension?
-            let issues = CompareMember id expMember actMember
-            for issue in issues do issue
+          if exp.Members.Length > act.Members.Length then 
+            $"{id}: Length of expected ({exp.Members.Length}) is different than the length of actual ({act.Members.Length})"
+          else
+            let members = List.zip exp.Members act.Members
+            for expMember, actMember in members do
+                // KAD-Don: Is there an easier way to flatten into this list comprehension?
+                let issues = CompareMember id expMember actMember
+                for issue in issues do issue
 
-          if exp.SubCommands.Length > act.SubCommands.Length then $"{id}: Length of expected ({exp.SubCommands.Length}) is different than the length of actual ({act.SubCommands.Length})"
-          let subCommands = List.zip exp.SubCommands act.SubCommands
-          for expSubCommand, actSubCommand in subCommands do
-              let issues = CompareCommand id expSubCommand actSubCommand
-              for issue in issues do issue
+          if exp.SubCommands.Length > act.SubCommands.Length then 
+            $"{id}: Length of expected ({exp.SubCommands.Length}) is different than the length of actual ({act.SubCommands.Length})"
+          else
+            let subCommands = List.zip exp.SubCommands act.SubCommands
+            for expSubCommand, actSubCommand in subCommands do
+                let issues = CompareCommand id expSubCommand actSubCommand
+                for issue in issues do issue
         ]
 
 
     // if an error occurs in the following, update it _and update the comparison_
+    // ** This should remain, although it is unused, and should not switch to Create method call **
     let test = { CommandId = ""
+                 ReturnType = None
                  GenerateSetHandler = true
                  Path = []
                  Aliases = []

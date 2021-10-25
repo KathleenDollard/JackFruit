@@ -10,10 +10,11 @@ open Generator.Tests.UtilsForTests
 open Microsoft.CodeAnalysis
 open Generator.Tests
 open Generator.NewMapping
+open Generator
 
 
 // I'm not sure what we should be testing first
-//  * Creating CommandDef from random method (per most APpModels)
+//  * Creating CommandDef from random method (per most APpModels) : ``When building CommandDefs``
 //  * Creating CommandDef from SetHandler (Kevin's model)
 //  * Creating a CommandDef by hand and testing providers
 //  * Creating a CommandDef by hand and generating Kevin's code
@@ -35,7 +36,7 @@ type ``When building CommandDefs``() =
              | Error _ -> invalidOp "Test failed during Method syntax lookup"
         let methods =
             [ for declaration in declarations do
-                let methodResult = MethodFromHandler model declaration 
+                let methodResult = MethodSymbolFromMethodDeclaration model declaration 
                 match methodResult with 
                 | Some method -> method 
                 | None -> invalidOp "Test failed during Method symbol lookup" ]
@@ -47,7 +48,7 @@ type ``When building CommandDefs``() =
 
         let actual = 
             [ for method in methods do
-                CommandDefFromMethod model (Some method) None ]
+                CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} ]
         let differences = (CommandDefDifferences expected actual)
 
         match differences with 

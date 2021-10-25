@@ -5,7 +5,8 @@ open Generator.GeneralUtils
 open Jackfruit.Models
 open Generator.RoslynUtils
 open Microsoft.CodeAnalysis
-open Generator
+// KAD-Don:** When the following line is uncommented, inference does something unexpected
+//open Generator
 
 
 let (|Command|Arg|Option|) (part: string) =
@@ -144,9 +145,9 @@ let ArchetypeInfoListFrom invocations =
                     let expression = ExpressionFrom d
                     match (archetype, expression) with
                     | Ok arch, Ok expr -> Ok (ParseArchetypeInfo arch (ExpresionOption expr))
-                    | Error _, _ ->  Error (AppModelIssue $"Unexpected expression for frchetype at {pos}")
-                    | Ok arch, Error _ ->  Error (AppModelIssue $"Unexpected expression for handler {arch}")
-                | _ -> Error UnexpectednumberOfArguments ]
+                    | Error _, _ ->  Error (Generator.AppModelIssue $"Unexpected expression for frchetype at {pos}")
+                    | Ok arch, Error _ ->  Error (Generator.AppModelIssue $"Unexpected expression for handler {arch}")
+                | _ -> Error Generator.UnexpectednumberOfArguments ]
         let errors = [
             for result in archetypeInfoWithResults do
                 match result with 
@@ -158,10 +159,12 @@ let ArchetypeInfoListFrom invocations =
                 match result with
                 | Ok arch -> arch
                 | _ -> () ]
-        | _ -> Error (Aggregate errors)
+        | _ -> Error (Generator.Aggregate errors)
 
-
-let ArchetypeInfoTreeFrom archetypeInfoList = 
+// KAD-Don:** Prior to the addition of AppModelInfo, this had no annotations and worked. 
+//            After adding that type, annotations here do not help and TreeFromList stubbornly 
+//            infers it's generic as AppModelInfo, unless taken out of scope by removing "open"
+let ArchetypeInfoTreeFrom (archetypeInfoList: ArchetypeInfo list): TreeNodeType<ArchetypeInfo> list = 
     let mapBranch parents item childList=
         let data = 
             match item with

@@ -31,6 +31,29 @@ let AddMapStatements includeBad (statements: string list) =
           for s in statements do s ]
 
 
+let AddMethodsToClassWithBuilder (source: string list) =
+    let source = source |> String.concat "\r\n"
+    @$"
+    using System;
+
+    namespace TestCode
+    {{
+        public class Builder
+        {{
+            public void MapInferred(string archetype, Delegate handler) {{}}
+        }}
+
+        public class ClassA
+        {{
+            public void RandMethod()
+            {{
+                var builder = new Builder();
+                {source}
+            }}
+        }}
+ 
+    }}"
+
 //let ArchetypesAndModelFromSource source =
 //    let source = AddMapStatements false source
 //    AddStatementToTestCodeModel option = None

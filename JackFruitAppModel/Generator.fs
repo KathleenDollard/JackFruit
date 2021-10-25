@@ -16,7 +16,7 @@ module JackFruitAppModel.Generator
         InvocationsFromModel mapMethodName model
         |> Result.bind ArchetypeInfoListFrom
         |> Result.map ArchetypeInfoTreeFrom
-        |> Result.map (CommandDefFrom model appModel)
+        |> Result.map (CommandDefsFrom model appModel)
         // Find Archetypes and build tree
         // Use Generator to find CommandDef info for handlers
         // Run archetype provider

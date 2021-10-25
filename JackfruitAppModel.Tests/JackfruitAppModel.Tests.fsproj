@@ -11,6 +11,7 @@
     <Compile Include="UtilForTests.fs" />
     <Compile Include="MapData.fs" />
     <Compile Include="ArchetypeMappingTests.fs" />
+    <Compile Include="AppModelTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

@@ -1,28 +1,31 @@
 ﻿// KAD-Don: What is the difference between a type being in a namespace and in a module?
 
-namespace Generator.Tests.MapData
+namespace Jackfruit.Tests
 
 open Generator.Models
 
 type MapData =
     { MapInferredStatements: string list
       CommandNames: string list
-      CommandDef: CommandDef }
+      CommandDefs: CommandDef list }
 
     static member NoMapping =
         { MapInferredStatements = []
           CommandNames = []
-          CommandDef = CommandDef.CreateRoot }
+          CommandDefs = [ ] }
 
     static member OneMapping =
+        let commandDef = CommandDef.Create "A"
+        let commandDef = {commandDef with Members = [ MemberDef.Create "one" "string"]}
         { MapInferredStatements = [ "builder.MapInferred(\"\", Handlers.A);" ]
           CommandNames = [ "" ]
-          CommandDef = CommandDef.CreateRoot }
+          CommandDefs = [ commandDef ] }
         
 
     static member ThreeMappings =
         let package =
             { CommandId = "package"
+              ReturnType = None
               GenerateSetHandler = true
               Path = [ "dotnet"; "add"; "package" ]
               Description = None
@@ -35,6 +38,7 @@ type MapData =
 
         let add =
             { CommandId = "add"
+              ReturnType = None
               GenerateSetHandler = true
               Path = [ "dotnet"; "add" ]
               Description = None
@@ -48,12 +52,13 @@ type MapData =
               "builder.MapInferred(\"dotnet add\", null);"
               "builder.MapInferred(\"dotnet add package <PACKAGE_NAME>\", DotnetHandlers.AddPackage);" ]
           CommandNames = [ "dotnet"; "add"; "package" ]
-          CommandDef =
-            { CommandId = "dotnet"
-              GenerateSetHandler = true
-              Path = [ "dotnet" ]
-              Description = None
-              Aliases = [ "dotnet" ]
-              Members = [(MemberDef.Create "project" "string")]
-              SubCommands = [ add ]
-              Pocket = [] } }
+          CommandDefs =
+            [ { CommandId = "dotnet"
+                ReturnType = None
+                GenerateSetHandler = true
+                Path = [ "dotnet" ]
+                Description = None
+                Aliases = [ "dotnet" ]
+                Members = [(MemberDef.Create "project" "string")]
+                SubCommands = [ add ]
+                Pocket = [] }  ] }

@@ -10,8 +10,9 @@ open Generator.GeneralUtils
 open Jackfruit.Models
 open Generator.Tests.UtilsForTests
 open Microsoft.CodeAnalysis
-open Generator.Tests.MapData
+open Generator.Tests
 open Jackfruit.UtilsForTests
+open Jackfruit.Tests
 
 
 type ``When parsing archetypes``() =
@@ -244,71 +245,3 @@ type ``When creating archetypeInfo from mapping``() =
 
         actual |> should matchList MapData.ThreeMappings.CommandNames
 
-
- //type ``When working with  handlers``() =
-
- //   [<Fact>]
- //   member _.``Handler name is found as method in separate class``() =
- //       let (archetypes, model) = archetypesAndModelFromSource MapData.OneMapping.MapInferredStatements
- //       let archetypeInfo = archetypes |> List.exactlyOne
-
- //       let actual = 
- //           match archetypeInfo.Handler with 
- //           | Some handler -> MethodFromHandler model handler
- //           | None -> invalidOp "Test failed because no handler found"
-
- //       actual |> should not' (be Null)
-
- //       actual.ToString() |> should haveSubstring "Handlers.A"
-
-
-
- //   [<Fact>]
- //   member _.``Tree is built with ArchetypeInfoTreeFrom``() =
- //       let source = AddMapStatements false MapData.ThreeMappings.MapInferredStatements
- //       let result = 
- //           SyntaxTreeResult (CSharpCode source)
- //           |> Result.bind (InvocationsFrom "MapInferred")
- //           |> Result.bind ArchetypeInfoListFrom
- //           |> Result.map ArchetypeInfoTreeFrom
-
- //       let actual = 
- //           match result with 
- //           | Ok tree -> tree
- //           | Error err -> invalidOp $"Failed to build tree {err}" // TODO: Work on error reporting
-
- //       actual[0].Data.Path |> should equal ["dotnet"]
- //       actual[0].Children[0].Data.Path |> should equal ["dotnet"; "add"]
- //       actual[0].Children[0].Children[0].Data.Path |> should equal ["dotnet";"add"; "package"]
-
-
- //   [<Fact>]
- //   member _.``CommandDef built from ArchetypeInfo with Handler``() =
- //       let (archetypes, model) = archetypesAndModelFromSource MapData.OneMapping.MapInferredStatements
- //       let archetypeInfo = archetypes |> List.exactlyOne
-
- //       let actual = 
- //           match archetypeInfo.Handler with 
- //           | Some handler -> MethodFromHandler model handler
- //           | None -> invalidOp "Test failed because no handler found"
-
- //       actual |> should not' (be Null)
-
- //       actual.ToString()
- //       |> should haveSubstring "Handlers.A"
-
-    //[<Fact>]
-    //member _.``Option and Argument types are updated on command``() =
-    //    let (archetypes, model) = archetypesAndModelFromSource oneMapping
-    //    let archetypeInfo = archetypes |> List.exactlyOne 
-    //    let methodSymbolResult = MethodFromHandler model archetypeInfo.HandlerExpression
-
-    //    let actual = 
-    //        match methodSymbolResult with 
-    //        | Some methodSymbol -> copyUpdateArchetypeInfoFromSymbol archetypeInfo methodSymbol
-    //        | None -> invalidOp "Method symbol not found during arrange"
-
-    //    actual.Archetype.Arg |> shouldBeNone
-    //    actual.Archetype.Options |> should haveLength 1
-    //    let firstOption = actual.Archetype.Options.[0]
-    //    firstOption |> should equal {OptionName="one"; TypeName=Some "string"}

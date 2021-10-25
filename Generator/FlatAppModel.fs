@@ -8,7 +8,10 @@ type FlatAppModel() =
         
         // Id, method, stuff for pocket
         member _.Info model method =
-            method.Name, Some method, [] // method already added
+            { InfoCommandId = Some method.Name
+              Path = [ method.Name ]
+              Method = Some method
+              ForPocket = [] }
         
         member _.RunProviders commandDef =
             commandDef
