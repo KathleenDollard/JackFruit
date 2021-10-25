@@ -16,7 +16,11 @@ type MapData =
 
     static member OneMapping =
         let commandDef = CommandDef.Create "A"
-        let commandDef = {commandDef with Members = [ MemberDef.Create "one" "string"]}
+        let commandDef = 
+            { commandDef with 
+                Members = [ MemberDef.Create "one" "string"]
+                Path = [""]
+                Aliases = ["A"] }
         { MapInferredStatements = [ "builder.MapInferred(\"\", Handlers.A);" ]
           CommandNames = [ "" ]
           CommandDefs = [ commandDef ] }
@@ -31,8 +35,16 @@ type MapData =
               Description = None
               Aliases = [ "package" ]
               Members = 
-                [ (MemberDef.Create "other" "int") 
-                  (MemberDef.Create "packageName" "string")]
+                [ (MemberDef.Create "packageName" "string") 
+                  (MemberDef.Create "version" "string")
+                  (MemberDef.Create "framework" "string")
+                  (MemberDef.Create "noRestore" "bool")
+                  (MemberDef.Create "source" "string")
+                  (MemberDef.Create "packageDirectory" "string")
+                  (MemberDef.Create "interactive" "bool")
+                  (MemberDef.Create "prerelease" "bool")
+
+                  ]
               SubCommands = [] 
               Pocket = []}
 

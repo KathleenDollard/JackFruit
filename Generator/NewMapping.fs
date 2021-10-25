@@ -23,6 +23,8 @@ let CommandDefFromMethod model (info: AppModelInfo) =
 
     let commandDef = CommandDef.Create id
     { commandDef with 
+        Path = info.Path
+        Aliases = [id]
         Members = members
         Pocket = 
         [ "Method", info.Method 

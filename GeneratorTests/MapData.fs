@@ -8,40 +8,48 @@ open Generator.Models
 type MapData =
     { HandlerCode: string list
       CommandDef: CommandDef list
-      OutputCode: string list}
+      OutputCode: string list }
 
     static member NoMapping =
         { HandlerCode = []
           CommandDef = []
-          OutputCode = [""]}
+          OutputCode = [ "" ] }
 
     static member OneSimpleMapping =
         let commandDef = CommandDef.Create "A"
-        let commandDef = {commandDef with Members = [ MemberDef.Create "one" "string"]}
-        { HandlerCode = ["public static void A(string one) {}"]
-          CommandDef = [commandDef]        
-          OutputCode = [""]}
+
+        let commandDef =
+            { commandDef with
+                Members = [ MemberDef.Create "one" "string" ]
+                Aliases = [ "A" ] }
+
+        { HandlerCode = [ "public static void A(string one) {}" ]
+          CommandDef = [ commandDef ]
+          OutputCode = [ "" ] }
 
     static member OneComplexMapping =
         let commandDef = CommandDef.Create "BLongName"
         let commandDef = 
-            {commandDef 
-                with 
+            {commandDef with
                 Members = 
                     [ MemberDef.Create "packageName" "string"
                       MemberDef.Create "two" "int"
-                      MemberDef.Create "three" "string" ] }
+                      MemberDef.Create "three" "string" ] 
+                Aliases = ["BLongName"]}
         { HandlerCode = [ "public static void BLongName(string packageName, int two, string three) {}" ]
           CommandDef = [commandDef]
           OutputCode = [""]}
 
     static member ThreeMappings =
+        let makeCommandDef id =
+            let commandDef = CommandDef.Create id
+            { commandDef with Aliases = [ id ]}
         { HandlerCode = 
             [ "public static void A() { }"
               "public static void B() { }"
               "public static void C() { }" ]
           CommandDef =
-            [ CommandDef.Create "A"
-              CommandDef.Create "B"
-              CommandDef.Create "C" ]
+            [ makeCommandDef "A"
+              makeCommandDef "B"
+              makeCommandDef "C" ]
           OutputCode = [""]}

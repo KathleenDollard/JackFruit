@@ -38,4 +38,11 @@
     <ProjectReference Include="..\JackfruitAppModel\JackfruitAppModel.fsproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- KAD-Don: Is there any mechanism to copy a file to the output directory. This didn't work. -->
+    <Compile Update="TestHandlers.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
 </Project>

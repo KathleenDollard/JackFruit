@@ -45,14 +45,20 @@ type MemberDef =
       /// The id for the member, which must be unique within the command.
       /// Note that this is not the name the user sees, but is generally 
       /// the usage name, such as the parameter name.
+      ///
+      /// Never changed by transformers.
       MemberId: string
 
       /// The name of the type, as a string. We may need work here for 
       /// nullable, etc.
+      ///
+      /// Never changed by transformers.
       TypeName: string
 
       /// Member usage is how the member appears during application running.
       /// The only currently supported usage is parameter. 
+      ///
+      /// Never changed by transformers.
       MemberUsage: MemberUsage
 
       /// Indicates whether an option or argument should be generated. 
@@ -62,12 +68,16 @@ type MemberDef =
       /// have the full System.CommandLine power, although these AppModels
       /// are not yet designed. If the MemberKind is Service, a symbol
       ///  is never generated, so GenerateSymbol is ignored. 
+      ///
+      /// Set by AppModel. Never changed by transformers.
       GenerateSymbol: bool
 
       /// Indicates whether the member is an argument, option (also called
       /// a switch) or a service. This field should not be used during 
       /// generation. Instead use the UseMemberKind property which supplies
       /// the default if MemberKind is not set. The default is Option.
+      ///
+      /// This is always sets by transformers. 
       MemberKind: MemberKind option
 
       /// Aliases for the member. Arguments do not have aliases, so only
@@ -164,14 +174,14 @@ type CommandDef =
       /// This defaults to the method name if not set by the AppModel. For single 
       /// layer CLIs, the method name is fine, if it is known by the end user, such as 
       /// when it is also the Name/main alias. This should be set by the end of 
-      /// structural eval.
+      /// structural eval and cannot be changed by transformers
       Path: string list
 
       /// Commands can have aliases, often because there are deprecated versions. 
       /// (We have not yet added deprecation to System.CommandLine).  
       ///
       /// This is always set by the AppModel structural eval or transforms. Generally 
-      /// set via a transformer.
+      /// set via transformers.
       Aliases: string list
 
       /// The description set for help. 
@@ -192,7 +202,8 @@ type CommandDef =
       /// core SetHandler/symbol generator will probably use a tree structure. 
       /// If used, SubCommands are set during structure setup.
       ///
-      /// This always comes from the AppModel during structural eval. 
+      /// This always comes from the AppModel during structural eval and cannot 
+      /// be changed by tranformers.
       SubCommands: CommandDef list
 
       /// Pocket is a property bag for the AppModel use. During structural 
@@ -204,7 +215,8 @@ type CommandDef =
       /// the order of transformer evaluation is strictly for precedence, and thus
       /// it is not ideal for transformers to use the pocket to communicate because it
       /// sets a transformer dependency order. But if transformers need to communicate
-      /// something that can't be set during structural eval, then OK. 
+      /// something that can't be set during structural eval, then OK. But don't take
+      /// anything out of the pocket ;-)
       Pocket: (string * obj) list}
 
     /// CommandDef's should generally be created via the Create method
