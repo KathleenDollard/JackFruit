@@ -5,8 +5,7 @@ open Generator.GeneralUtils
 open Jackfruit.Models
 open Generator.RoslynUtils
 open Microsoft.CodeAnalysis
-// KAD-Don:** When the following line is uncommented, inference does something unexpected
-//open Generator
+open Generator
 
 
 let (|Command|Arg|Option|) (part: string) =
@@ -161,9 +160,6 @@ let ArchetypeInfoListFrom invocations =
                 | _ -> () ]
         | _ -> Error (Generator.Aggregate errors)
 
-// KAD-Don:** Prior to the addition of AppModelInfo, this had no annotations and worked. 
-//            After adding that type, annotations here do not help and TreeFromList stubbornly 
-//            infers it's generic as AppModelInfo, unless taken out of scope by removing "open"
 let ArchetypeInfoTreeFrom (archetypeInfoList: ArchetypeInfo list): TreeNodeType<ArchetypeInfo> list = 
     let mapBranch parents item childList=
         let data = 
@@ -175,6 +171,6 @@ let ArchetypeInfoTreeFrom (archetypeInfoList: ArchetypeInfo list): TreeNodeType<
                   Handler = None }
         { Data = data; Children = childList }
 
-    let getKey item = item.Path
+    let getKey (item: ArchetypeInfo) = item.Path
 
     TreeFromList getKey mapBranch archetypeInfoList

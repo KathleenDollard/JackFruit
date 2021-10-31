@@ -10,29 +10,50 @@ type AppModelInfo =
       Method: IMethodSymbol option
       ForPocket: (string * obj) list }
 
-// If this feels like overkill for two values, more are coming :)
+// I considered making transformer members options so they might
+// not be run, but there are three cases:
+//      * The transformer never affects this value
+//      * The transformer might affects the value, depending on conditions
+//        (such as the presence of an XML comment or dictionary entry)
+//      * The transformer affects the value to reset it to None
+//
+// The first and second are the common cases, and the optimization of
+// skipping the transformer, rather than returning None, which is the 
+// indicator of the second case. 
+//
+// Identity transforms are not used because we could not log what is
+// causing the transformation, which I think is probably important. 
+//
+// If anyone actually needs the third option, we can add reset methods. 
+// Ugly, but effective.
+//
+// Writing all this here, because I switched back and forth multiple times
+// and I am still not certain this is correct. 
 type ICommandDefTransformer =
-    { 
-      // KAD-Don:** I have having trouble with this signature. What I want is
-      // X: ((CommandDef (string list)) -> string list) option
-      // I can do it with a tuple, but why require a tuple of users>
-      Aliases: (string list -> string list) option
-      Description: (string option -> string option) option
-      Pocket: ((string * obj) list ->  (string * obj) list) option }
+    { /// The transformer name as used for logging.
+      TransformerName: string
+      Aliases: CommandDef -> string list
+      Description: CommandDef -> string option
+      Pocket: CommandDef ->  (string * obj) list }
+
 
 type IMemberDefTransformer =
-    { MemberKind: (MemberKind option -> MemberKind option) option
-      Aliases: (string list -> string list) option
-      ArgDisplayName: (string list -> string list) option
-      Description: (string option -> string option) option
-      RequiredOverride: (bool option -> bool option) option
-      Pocket: ((string * obj) list ->  (string * obj) list) option }
+    { /// The transformer name as used for logging.
+      TransformerName: string
+      MemberKind: MemberDef -> MemberKind option
+      Aliases: MemberDef -> string list
+      ArgDisplayName: MemberDef -> string list
+      Description: MemberDef -> string option
+      RequiredOverride: MemberDef -> bool option
+      Pocket: MemberDef ->  (string * obj) list }
 
+/// AppModels are distinguished by how they do structural
+/// evaluation (Info and Childre) and transforms defined 
+/// as a set of ICommandDefTransformers and IMemberDefTransformers.
 type IAppModel<'T> =
     abstract member Children: 'T -> 'T list
-    // Id, method, stuff for pocket
     abstract member Info: SemanticModel -> 'T -> AppModelInfo
-    abstract member CommanDDefTransformers: ICommandDefTransformer list
+    abstract member CommandDefTransformers: ICommandDefTransformer list
     abstract member MemberDefTransformers: IMemberDefTransformer list
 
 

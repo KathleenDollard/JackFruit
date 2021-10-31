@@ -41,8 +41,8 @@ type AppModel() =
               Method = method 
               ForPocket = ["ArchetypeInfo", archetypeInfo] }
         
-        member _.RunProviders commandDef =
-            commandDef
+        member _.CommandDefTransformers = []            
 
+        member _.MemberDefTransformers = []
 
    

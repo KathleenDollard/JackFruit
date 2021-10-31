@@ -13,5 +13,6 @@ type FlatAppModel() =
               Method = Some method
               ForPocket = [] }
         
-        member _.RunProviders commandDef =
-            commandDef
+        member _.CommandDefTransformers = []            
+
+        member _.MemberDefTransformers = []
