@@ -2,10 +2,41 @@
 
 namespace Jackfruit
 {
+    // Is it more clear for folks to add extra information? 
+    //app.Map(" --additionalprobingpath --additional-deps --depsfile --fx-version --roll-forward --runtimeconfig",
+    //        (DirectoryInfo additionalprobingpath, FileInfo additionalDeps, FileInfo depsfile, string fxVersion, RollForward roll_forward, FileInfo runtimeconfig)
+    //        => Dotnet.RunRoot(additionalprobingpath, additionalDeps, depsfile, fxVersion, roll_forward, runtimeconfig));
+    //app.MapInferred("",
+    //(DirectoryInfo additionalprobingpath, FileInfo additionalDeps, FileInfo depsfile, string fxVersion, RollForward roll_forward, FileInfo runtimeconfig)
+    //=> Dotnet.RunRoot(additionalprobingpath, additionalDeps, depsfile, fxVersion, roll_forward, runtimeconfig));
+
+    // These are the minimum information. Seems better to me. Details added only when needed
+    //    Args so we know what's not an option
+    //    Option args when the name differs from the option
+    // Naming is inferred. Normal rules plus (Camel in C#, Snake for options and comands, All Caps for arg names)
+    //    <X|Y> turns into x_y
+    //    Casing doesn't matter, it's considered part of the Posix rules/traditions
+    // Not sure what syntax to use when arg/option name does not match parameter name
+    // Not sure this is the right place for aliases
+    // MapInferred should have a warning or error if an arg/option name has no parameter
+    // Main mechanism for DI is the type. Does this method need a way to opt a common type like string into DI? 
+    // Some things like validation and command aliases need to be applied here to the returned command.
+
     public class DotNetPlayground
     {
+        public static void Main2(string[] args)
+        {
+            // Below are notes from conversation with Kevin Bost
+            //var app = DefineCli();
+            //var cmd = app.RootCommand();
+            //var runtime = app.CommandSymbols.Add.Package.Runtime;
+
+            //var weirdOptionOnAddPack = cmd.Descendant(new string[] { "add", "package", "--runtime" });
+            //weirdOptionOnAddPack.Validation = x => true; app.Run();
+        }
+
         public static void DefineCli(ConsoleApplication app)
-        {            
+        {
             // common aliases are applied only if that alias isn't expicit on another option
             // andalso the specified option does not have a different alias.
             app.AddCommonAlias("o", "output")
@@ -15,25 +46,6 @@ namespace Jackfruit
                .AddCommonAlias("c", "configuration")
                .AddCommonAlias("r", "runtime");
 
-            // Is it more clear for folks to add extra information? 
-            //app.Map(" --additionalprobingpath --additional-deps --depsfile --fx-version --roll-forward --runtimeconfig",
-            //        (DirectoryInfo additionalprobingpath, FileInfo additionalDeps, FileInfo depsfile, string fxVersion, RollForward roll_forward, FileInfo runtimeconfig)
-            //        => Dotnet.RunRoot(additionalprobingpath, additionalDeps, depsfile, fxVersion, roll_forward, runtimeconfig));
-            //app.MapInferred("",
-                    //(DirectoryInfo additionalprobingpath, FileInfo additionalDeps, FileInfo depsfile, string fxVersion, RollForward roll_forward, FileInfo runtimeconfig)
-                    //=> Dotnet.RunRoot(additionalprobingpath, additionalDeps, depsfile, fxVersion, roll_forward, runtimeconfig));
-  
-            // These are the minimum information. Seems better to me. Details added only when needed
-            //    Args so we know what's not an option
-            //    Option args when the name differs from the option
-            // Naming is inferred. Normal rules plus (Camel in C#, Snake for options and comands, All Caps for arg names)
-            //    <X|Y> turns into x_y
-            //    Casing doesn't matter, it's considered part of the Posix rules/traditions
-            // Not sure what syntax to use when arg/option name does not match parameter name
-            // Not sure this is the right place for aliases
-            // MapInferred should have a warning or error if an arg/option name has no parameter
-            // Main mechanism for DI is the type. Does this method need a way to opt a common type like string into DI? 
-            // Some things like validation and command aliases need to be applied here to the returned command.
             app.MapInferred("", Dotnet.RunRoot);
             app.MapInferred("add <PROJECT>", null); // null means command won't be run alone. If you need types, use a dummy delegate
             app.MapInferred("add package <PACKAGE_NAME>", Dotnet.RunAddPackage);
@@ -42,6 +54,13 @@ namespace Jackfruit
                             "--runtime <RUNTIME_IDENTIFIER> " +
                             "--output <OUTPUT_DIR>", Dotnet.RunBuild);
 
+            // Below are notes from conversation with Kevin Bost
+            // Generated class could have the generated as available properties that were easily accessed. Possibly 
+            // based on the path
+
+            //var runtime = app.CommandSymbols.Add.Package.Runtime;
+
+            //app.LateBreakingMods.Add(runtime, option => WhateverTheUserWantsToDoWithTheOption(option) )
         }
 
         public static Dictionary<string, string> GetDescriptions()
@@ -60,6 +79,8 @@ namespace Jackfruit
                ["help"] = "Show command line help.",
                ["list"] = "List project references of a .NET project.",
                ["msbuild"] = "Run Microsoft Build Engine (MSBuild) commands.",
+
+
                ["new"] = "Create a new .NET project or file.",
                ["nuget"] = "Provides additional NuGet commands.",
                ["pack"] = "Create a NuGet package.",
@@ -95,15 +116,15 @@ namespace Jackfruit
                ["build --nologo"] = "Do not display the startup banner or the copyright message.",
                ["build --help"] = "Show help and usage information",
 
-               ["package --version"] = "The version of the package to add.",
-               ["package --framework"] = "Add the reference only when targeting a specific framework.",
-               ["package --no-restore"] = "Add the reference without performing restore preview and compatibility check.",
-               ["package --source"] = "The NuGet package source to use during the restore.",
-               ["package --package-directory"] = "The directory to restore packages to.",
-               ["package --interactive"] = "Allows the command to stop and wait for user input or action(for example to complete authentication).",
-               ["package --prerelease"] = "Allows prerelease packages to be installed.",
-               ["reference --framework"] = "Add the reference only when targeting a specific framework.",
-               ["reference --interactive"] = "Allows the command to stop and wait for user input or action(for example to complete authentication).",
+               ["add package --version"] = "The version of the package to add.",
+               ["add package --framework"] = "Add the reference only when targeting a specific framework.",
+               ["add package --no-restore"] = "Add the reference without performing restore preview and compatibility check.",
+               ["add package --source"] = "The NuGet package source to use during the restore.",
+               ["add package --package-directory"] = "The directory to restore packages to.",
+               ["add package --interactive"] = "Allows the command to stop and wait for user input or action(for example to complete authentication).",
+               ["add package --prerelease"] = "Allows prerelease packages to be installed.",
+               ["add reference --framework"] = "Add the reference only when targeting a specific framework.",
+               ["add reference --interactive"] = "Allows the command to stop and wait for user input or action(for example to complete authentication).",
            };
 
     }

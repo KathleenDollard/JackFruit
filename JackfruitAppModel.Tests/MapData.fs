@@ -15,10 +15,10 @@ type MapData =
           CommandDefs = [ ] }
 
     static member OneMapping =
-        let commandDef = CommandDef.Create "A"
+        let commandDef = CommandDef.Create Arbitrary "A"
         let commandDef = 
             { commandDef with 
-                Members = [ MemberDef.Create "one" "string"]
+                Members = [ MemberDef.Create ArbitraryMember "one" "string"]
                 Path = [""]
                 Aliases = ["A"] }
         { MapInferredStatements = [ "builder.MapInferred(\"\", Handlers.A);" ]
@@ -30,19 +30,19 @@ type MapData =
         let package =
             { CommandId = "package"
               ReturnType = None
-              GenerateSetHandler = true
+              CommandDefUsage = Arbitrary
               Path = [ "dotnet"; "add"; "package" ]
               Description = None
               Aliases = [ "package" ]
               Members = 
-                [ (MemberDef.Create "packageName" "string") 
-                  (MemberDef.Create "version" "string")
-                  (MemberDef.Create "framework" "string")
-                  (MemberDef.Create "noRestore" "bool")
-                  (MemberDef.Create "source" "string")
-                  (MemberDef.Create "packageDirectory" "string")
-                  (MemberDef.Create "interactive" "bool")
-                  (MemberDef.Create "prerelease" "bool")
+                [ (MemberDef.Create ArbitraryMember "packageName" "string") 
+                  (MemberDef.Create ArbitraryMember "version" "string")
+                  (MemberDef.Create ArbitraryMember "framework" "string")
+                  (MemberDef.Create ArbitraryMember "noRestore" "bool")
+                  (MemberDef.Create ArbitraryMember "source" "string")
+                  (MemberDef.Create ArbitraryMember "packageDirectory" "string")
+                  (MemberDef.Create ArbitraryMember "interactive" "bool")
+                  (MemberDef.Create ArbitraryMember "prerelease" "bool")
 
                   ]
               SubCommands = [] 
@@ -51,7 +51,7 @@ type MapData =
         let add =
             { CommandId = "add"
               ReturnType = None
-              GenerateSetHandler = true
+              CommandDefUsage = Arbitrary
               Path = [ "dotnet"; "add" ]
               Description = None
               Aliases = [ "add" ]
@@ -67,10 +67,10 @@ type MapData =
           CommandDefs =
             [ { CommandId = "dotnet"
                 ReturnType = None
-                GenerateSetHandler = true
+                CommandDefUsage = Arbitrary
                 Path = [ "dotnet" ]
                 Description = None
                 Aliases = [ "dotnet" ]
-                Members = [(MemberDef.Create "project" "string")]
+                Members = [(MemberDef.Create ArbitraryMember "project" "string")]
                 SubCommands = [ add ]
                 Pocket = [] }  ] }

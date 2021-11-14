@@ -16,11 +16,11 @@ type MapData =
           OutputCode = [ "" ] }
 
     static member OneSimpleMapping =
-        let commandDef = CommandDef.Create "A"
+        let commandDef = CommandDef.Create Arbitrary "A"
 
         let commandDef =
             { commandDef with
-                Members = [ MemberDef.Create "one" "string" ]
+                Members = [ MemberDef.Create ArbitraryMember "one" "string" ]
                 Aliases = [ "A" ] }
 
         { HandlerCode = [ "public static void A(string one) {}" ]
@@ -28,13 +28,13 @@ type MapData =
           OutputCode = [ "" ] }
 
     static member OneComplexMapping =
-        let commandDef = CommandDef.Create "BLongName"
+        let commandDef = CommandDef.Create Arbitrary "BLongName"
         let commandDef = 
             {commandDef with
                 Members = 
-                    [ MemberDef.Create "packageName" "string"
-                      MemberDef.Create "two" "int"
-                      MemberDef.Create "three" "string" ] 
+                    [ MemberDef.Create ArbitraryMember "packageName" "string"
+                      MemberDef.Create ArbitraryMember "two" "int"
+                      MemberDef.Create ArbitraryMember "three" "string" ] 
                 Aliases = ["BLongName"]}
         { HandlerCode = [ "public static void BLongName(string packageName, int two, string three) {}" ]
           CommandDef = [commandDef]
@@ -42,7 +42,7 @@ type MapData =
 
     static member ThreeMappings =
         let makeCommandDef id =
-            let commandDef = CommandDef.Create id
+            let commandDef = CommandDef.Create Arbitrary id
             { commandDef with Aliases = [ id ]}
         { HandlerCode = 
             [ "public static void A() { }"

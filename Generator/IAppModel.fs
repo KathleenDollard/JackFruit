@@ -4,7 +4,7 @@ open Microsoft.CodeAnalysis
 open Generator.Models
 
 
-type AppModelInfo =
+type AppModelCommandInfo =
     { InfoCommandId: string option
       Path: string list
       Method: IMethodSymbol option
@@ -29,32 +29,32 @@ type AppModelInfo =
 //
 // Writing all this here, because I switched back and forth multiple times
 // and I am still not certain this is correct. 
-type ICommandDefTransformer =
-    { /// The transformer name as used for logging.
-      TransformerName: string
-      Aliases: CommandDef -> string list
-      Description: CommandDef -> string option
-      Pocket: CommandDef ->  (string * obj) list }
+//type ICommandDefTransformer =
+//    { /// The transformer name as used for logging.
+//      TransformerName: string
+//      Aliases: CommandDef -> string list
+//      Description: CommandDef -> string option
+//      Pocket: CommandDef ->  (string * obj) list }
 
 
-type IMemberDefTransformer =
-    { /// The transformer name as used for logging.
-      TransformerName: string
-      MemberKind: MemberDef -> MemberKind option
-      Aliases: MemberDef -> string list
-      ArgDisplayName: MemberDef -> string list
-      Description: MemberDef -> string option
-      RequiredOverride: MemberDef -> bool option
-      Pocket: MemberDef ->  (string * obj) list }
+//type IMemberDefTransformer =
+//    { /// The transformer name as used for logging.
+//      TransformerName: string
+//      MemberKind: MemberDef -> MemberKind option
+//      Aliases: MemberDef -> string list
+//      ArgDisplayName: MemberDef -> string list
+//      Description: MemberDef -> string option
+//      RequiredOverride: MemberDef -> bool option
+//      Pocket: MemberDef ->  (string * obj) list }
 
 /// AppModels are distinguished by how they do structural
 /// evaluation (Info and Childre) and transforms defined 
 /// as a set of ICommandDefTransformers and IMemberDefTransformers.
 type IAppModel<'T> =
     abstract member Children: 'T -> 'T list
-    abstract member Info: SemanticModel -> 'T -> AppModelInfo
-    abstract member CommandDefTransformers: ICommandDefTransformer list
-    abstract member MemberDefTransformers: IMemberDefTransformer list
+    abstract member Info: SemanticModel -> 'T -> AppModelCommandInfo
+    //abstract member CommandDefTransformers: ICommandDefTransformer list
+    //abstract member MemberDefTransformers: IMemberDefTransformer list
 
 
 

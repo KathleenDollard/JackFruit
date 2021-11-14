@@ -10,7 +10,7 @@ type ItemReturn<'T> =
 | NewValue of Value: 'T
 | UsePreviousValue
 
-module AppModelCommandDefHelpers =
+module AppModelHelpers =
 
     let DescriptionFromLookup mapOption (commandDef: CommandDef) =
         let key = commandDef.PathString
@@ -22,8 +22,7 @@ module AppModelCommandDefHelpers =
             | Some value -> NewValue (Some value)
             | None -> UsePreviousValue
 
-    
-    let DescFromXmlComment (method: IMethodSymbol) =
+    let DescFromXmlSummary (method: IMethodSymbol) =
         let xmlString = method.GetDocumentationCommentXml()
         if String.IsNullOrEmpty xmlString  then
             UsePreviousValue
@@ -36,9 +35,17 @@ module AppModelCommandDefHelpers =
             match summaries with 
             | [] -> UsePreviousValue
             | head::_ -> if String.IsNullOrEmpty head then UsePreviousValue else NewValue (Some head)
+   
+    let CommandDescFromXmlComment (commandDef: CommandDef) =
+        match commandDef.CommandDefUsage with
+        | UserMethod (method, _) -> DescFromXmlSummary method
+        | _ -> UsePreviousValue
 
+    let MemberDescFromXmlComment (memberDef: MemberDef) =
+        UsePreviousValue
 
-    let DescFromAttribute (roslynSymbol: ISymbol) =
+         
+    let DescFromAttribute (roslynSymbol: ISymbol) = 
         let attributes = 
             [ for attr in roslynSymbol.GetAttributes() do
                 if attr.AttributeClass.Name = "DescriptionAttribute" then
@@ -47,6 +54,16 @@ module AppModelCommandDefHelpers =
         match attributes with 
         | [] -> UsePreviousValue
         | head:: _ -> NewValue (Some (head.ToString()))
+
+    let CommandDescFromAttribute (commandDef: CommandDef) =
+        match commandDef.CommandDefUsage with
+        | UserMethod (method, _) -> DescFromAttribute method
+        | _ -> UsePreviousValue
+
+    let MemberDescFromAttribute (memberDef: MemberDef) =
+        match memberDef.MemberDefUsage with
+        | UserParameter parameter -> DescFromAttribute parameter
+        | _ -> UsePreviousValue
 
 
     // Do we care? If we only use description to create Symbols, we do not care. 
@@ -58,15 +75,3 @@ module AppModelCommandDefHelpers =
         | SetHandlerMethod (_, _, symbol) -> descriptionFromSymbol symbol
         | _ -> UsePreviousValue
 
-
-    let DescriptionFromXmlComment commandDef =
-        match commandDef.CommandDefUsage with 
-        | UserMethod (method, _) -> DescFromXmlComment method
-        | SetHandlerMethod (method, _, _) -> DescFromXmlComment method
-        | _ -> UsePreviousValue
-
-    let DescriptionFromAttribute commandDef =
-        match commandDef.CommandDefUsage with 
-        | UserMethod (method, _) -> DescFromAttribute method
-        | SetHandlerMethod (method, _, _) -> DescFromAttribute method
-        | _ -> UsePreviousValue

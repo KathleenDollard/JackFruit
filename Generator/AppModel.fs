@@ -2,35 +2,35 @@
 
 open Generator.Models
 open System
-open Generator.AppModelCommandDefHelpers
+open Generator.AppModelHelpers
+open AppModelHelpers
 
-type CommandDefTransformer() =
+type Transformer() =
 
-    abstract member AliasesToAdd : CommandDef -> ItemReturn<string list>
-    default _.AliasesToAdd(_) = UsePreviousValue
-    member this.AddToAliases commandDef =
-        match this.AliasesToAdd commandDef with
+    abstract member CommandAliasesToAdd : CommandDef -> ItemReturn<string list>
+    default _.CommandAliasesToAdd(_) = UsePreviousValue
+    member this.AddToCommandAliases commandDef =
+        match this.CommandAliasesToAdd commandDef with
             | UsePreviousValue -> commandDef
             | NewValue value -> 
                 {commandDef with Aliases = (List.append commandDef.Aliases value)}
 
-    abstract member NewDescription : CommandDef -> ItemReturn<string option>
-    default _.NewDescription(_) = UsePreviousValue
-    member this.UpdateDescription commandDef =
-        match this.NewDescription commandDef with
+    abstract member NewCommandDescription : CommandDef -> ItemReturn<string option>
+    default _.NewCommandDescription(_) = UsePreviousValue
+    member this.UpdateCommandDescription commandDef =
+        match this.NewCommandDescription commandDef with
             | UsePreviousValue -> commandDef
             | NewValue value -> 
                 {commandDef with Description = value}
 
-    abstract member PocketItemsToAdd : CommandDef -> ItemReturn<string * option>
-    default _.PocketItemsToAdd(_) = UsePreviousValue
-    member this.AddToPocket commandDef =
-        match this.PocketItemsToAdd commandDef with
+    abstract member CommandPocketItemsToAdd : CommandDef -> ItemReturn<(string * obj) list>
+    default _.CommandPocketItemsToAdd(_) = UsePreviousValue
+    member this.AddToCommandPocket commandDef =
+        match this.CommandPocketItemsToAdd commandDef with
             | UsePreviousValue -> commandDef
             | NewValue value -> 
                 {commandDef with Pocket = (List.append commandDef.Pocket value)}
 
-type MemberDefTransformer() =
     abstract member NewMemberKind : MemberDef -> ItemReturn<MemberKind option>
     default _.NewMemberKind(_) = UsePreviousValue
     member this.UpdateMemberKind memberDef =
@@ -39,71 +39,65 @@ type MemberDefTransformer() =
             | NewValue value -> 
                 {memberDef with MemberKind = value}
 
-    abstract member AliasesToAdd : MemberDef -> ItemReturn<string list>
-    default _.AliasesToAdd(_) = UsePreviousValue
-    member this.AddAliases memberDef =
-        match this.AliasesToAdd memberDef with
+    abstract member MemberAliasesToAdd : MemberDef -> ItemReturn<string list>
+    default _.MemberAliasesToAdd(_) = UsePreviousValue
+    member this.AddMemberAliases memberDef =
+        match this.MemberAliasesToAdd memberDef with
             | UsePreviousValue -> memberDef
             | NewValue value -> 
                 {memberDef with Aliases = (List.append memberDef.Aliases value)}
  
-    abstract member NewArgDisplayName : MemberDef -> ItemReturn<string option>
-    default _.NewArgDisplayName(_) = UsePreviousValue
-    member this.UpdateArgDisplayName memberDef =
-        match this.NewArgDisplayName memberDef with
+    abstract member NewMemberArgDisplayName : MemberDef -> ItemReturn<string option>
+    default _.NewMemberArgDisplayName(_) = UsePreviousValue
+    member this.UpdateMemberArgDisplayName memberDef =
+        match this.NewMemberArgDisplayName memberDef with
             | UsePreviousValue -> memberDef
             | NewValue value -> 
                 {memberDef with ArgDisplayName = value}
 
-    abstract member NewDescription : MemberDef -> ItemReturn<string option>
-    default _.NewDescription(_) = UsePreviousValue
-    member this.UpdateDescription memberDef =
-        match this.NewDescription memberDef with
+    abstract member NewMemberDescription : MemberDef -> ItemReturn<string option>
+    default _.NewMemberDescription(_) = UsePreviousValue
+    member this.UpdateMemberDescription memberDef =
+        match this.NewMemberDescription memberDef with
             | UsePreviousValue -> memberDef
             | NewValue value -> 
                 {memberDef with Description = value}
 
-    abstract member NewRequiredOverride : MemberDef -> ItemReturn<bool option>
-    default _.NewRequiredOverride(_) = UsePreviousValue
-    member this.UpdateRequiredOverride memberDef =
-        match this.NewRequiredOverride memberDef with
+    abstract member NewMemberRequiredOverride : MemberDef -> ItemReturn<bool option>
+    default _.NewMemberRequiredOverride(_) = UsePreviousValue
+    member this.UpdateMemberRequiredOverride memberDef =
+        match this.NewMemberRequiredOverride memberDef with
             | UsePreviousValue -> memberDef
             | NewValue value -> 
                 {memberDef with RequiredOverride = value}
 
-    abstract member PocketItemsToAdd : MemberDef -> ItemReturn<string option>
-    default _.PocketItemsToAdd(_) = UsePreviousValue
-    member this.AddToPocket memberDef =
-        match this.PocketItemsToAdd memberDef with
+    abstract member MemberPocketItemsToAdd : MemberDef -> ItemReturn<(string * obj) list>
+    default _.MemberPocketItemsToAdd(_) = UsePreviousValue
+    member this.AddToMemberPocket memberDef =
+        match this.MemberPocketItemsToAdd memberDef with
             | UsePreviousValue -> memberDef
             | NewValue value -> 
                 {memberDef with Pocket = (List.append memberDef.Pocket value)}
 
-type AppModel =
-    { CommandDefTransformer: CommandDefTransformer
-      MemberDefTransformer: MemberDefTransformer }
-
-    static member Apply model commandDef =
+    member this.Apply commandDef =
         // KAD-Don: When uncommented each line of the following said that commandDef was not used
         //let commandDef = Apply model.NewAliases commandDef
         //let commandDef = Apply model.NewDescription commandDef
         //let commandDef = Apply model.NewPocket commandDef
 
         let rec ApplyToCommandDef commandDef : CommandDef =
-            let commandTransform = model.CommandDefTransformer // just supply shorter name
-            let memberTransform = model.MemberDefTransformer
             let commandDef = 
-                commandTransform.AddToAliases commandDef
-                |> commandTransform.UpdateDescription
-                |> commandTransform.AddToPocket
+                this.AddToCommandAliases commandDef
+                |> this.UpdateCommandDescription
+                |> this.AddToCommandPocket
             let members = 
                 [ for mbr in commandDef.Members do
-                    memberTransform.UpdateMemberKind mbr
-                    |> memberTransform.AddAliases 
-                    |> memberTransform.UpdateArgDisplayName
-                    |> memberTransform.UpdateDescription
-                    |> memberTransform.UpdateRequiredOverride
-                    |> memberTransform.AddToPocket ]
+                    this.UpdateMemberKind mbr
+                    |> this.AddMemberAliases 
+                    |> this.UpdateMemberArgDisplayName
+                    |> this.UpdateMemberDescription
+                    |> this.UpdateMemberRequiredOverride
+                    |> this.AddToMemberPocket ]
             let subCommands = 
                 [ for subCommandDef in commandDef.SubCommands do
                     ApplyToCommandDef subCommandDef ]
@@ -111,36 +105,26 @@ type AppModel =
 
         ApplyToCommandDef commandDef
 
-type DescriptionsFromAttributeAppModel 
-    inherits 
+type DescriptionsFromAttributesTransformer() =
+    inherit Transformer()
+        override this.NewCommandDescription commandDef = CommandDescFromAttribute commandDef
+        override this.NewMemberDescription memberDef = MemberDescFromAttribute memberDef
 
+type DescriptionsFromXmlCommentsTransforer() =
+    inherit Transformer()
+        override this.NewCommandDescription commandDef = CommandDescFromXmlComment commandDef
+        override this.NewMemberDescription memberDef = MemberDescFromXmlComment memberDef
 
-type CommonCommandDefAppModel(descriptionMap: Map<string, string> option, commonAliases: string * string option) =
+// THis conflicts with IAppModel - they need to coincide/merge/play nice
+type AppModel(descriptionMap: Map<string, string> option, commonAliases: string * string option) =
 
-    member this.UpdateCommandDef(commandDef) =
+    abstract member UpdateCommandDef : CommandDef -> CommandDef 
+    default _.UpdateCommandDef(commandDef) =
         // Last wins when multiple things contribute
         // This is deliberately granular
         commandDef 
-        |> DescriptionsFromAttribute.ApplyAppModel model
-        |> DescriptionsFromXmlComment.ApplyAppModel model
-        |> (DescriptionsFromLookup descriptionMap).ApplyAppModel model
-        |> (AliasesForCli commonAliases).ApplyAppModel model
-        |> AliasesFromAttribute.ApplyAppModel model
-
-      
-   
-        
-
-
-
-
-
-
-
-type AppModel =
-    { CommandDefAppModels: CommandDefAppModel list
-      MemberDefAppModels: MemberDefAppModel list }
-
-
-
-
+        |> DescriptionsFromAttributesTransformer().Apply
+        |> DescriptionsFromXmlCommentsTransforer().Apply
+        //|> (DescriptionsFromTransformer descriptionMap).Apply 
+        //|> (AliasesForCli commonAliases).Apply 
+        //|> AliasesFromAttribute.Apply 

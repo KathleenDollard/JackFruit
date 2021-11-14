@@ -140,11 +140,19 @@ let ShouldEqual (expected: 'a) (actual: 'a) =
 /// This custom comparer accomplishes two things: it ignores the Pocket and 
 /// it gives the object on which an issue occurs. 
 let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) =
+    let matchMemberDefUsage exp act =
+        match exp with 
+        | UserParameter _ -> match act with | UserParameter _ -> true | _ -> false
+        | HandlerParameter _ -> match act with | HandlerParameter _ -> true | _ -> false
+        | Property _ -> match act with | Property _ -> true | _ -> false
+        | StaticProperty _ -> match act with | StaticProperty _ -> true | _ -> false
+        | ConstructorParameter _ -> match act with | ConstructorParameter _ -> true | _ -> false
+        | ArbitraryMember _ -> match act with | ArbitraryMember _ -> true | _ -> false
     let CompareMember commandId exp act =
         [ let id = commandId = if String.IsNullOrEmpty(exp.MemberId) then act.MemberId else exp.MemberId
           if exp.MemberId <> act.MemberId then $"MemberId {exp.MemberId} does not match {act.MemberId}"
           if exp.TypeName <> act.TypeName then $"{id}: TypeName {exp.TypeName} does not match {act.TypeName}"
-          if exp.MemberUsage <> act.MemberUsage then $"{id}: MemberUsage {exp.MemberUsage} does not match {act.MemberUsage}"
+          if matchMemberDefUsage exp.MemberDefUsage act.MemberDefUsage then $"{id}: MemberDefUsage {exp.MemberDefUsage} does not match {act.MemberDefUsage}"
           if exp.GenerateSymbol <> act.GenerateSymbol then $"{id}: GenerateSymbol {exp.GenerateSymbol} does not match {act.GenerateSymbol}"
           if exp.MemberKind <> act.MemberKind then $"{id}: MemberKind {exp.MemberKind} does not match {act.MemberKind}"
           if exp.Aliases <> act.Aliases then $"{id}: Aliases {exp.Aliases} does not match {act.Aliases}"
@@ -155,10 +163,17 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
         
         ]
 
+    let matchMemberDefUsage exp act =
+        match exp with 
+        | UserMethod _ -> match act with | UserMethod _ -> true | _ -> false
+        | SetHandlerMethod _ -> match act with | SetHandlerMethod _ -> true | _ -> false
+        | Arbitrary _ -> match act with | Arbitrary _ -> true | _ -> false
+
     let rec CompareCommand parentId exp act =
         [ let id = parentId + if String.IsNullOrEmpty(exp.CommandId) then act.CommandId else exp.CommandId
           if exp.CommandId <> act.CommandId then $"CommandId {exp.CommandId} does not match {act.CommandId}"
-          if exp.GenerateSetHandler <> act.GenerateSetHandler then $"{id}: GenerateSetHandler {exp.GenerateSetHandler} does not match {act.GenerateSetHandler}"
+          if exp.ReturnType <> act.ReturnType then $"{id}: GenerateSetHandler {exp.ReturnType} does not match {act.ReturnType}"
+          if matchMemberDefUsage exp.CommandDefUsage act.CommandDefUsage then $"{id}: GenerateSetHandler {exp.CommandDefUsage} does not match {act.CommandDefUsage}"
           if exp.Path <> act.Path then $"{id}: Path {exp.Path} does not match {act.Path}"
           if exp.Aliases <> act.Aliases then $"{id}: Aliases {exp.Aliases} does not match {act.Aliases}"
           if exp.Description <> act.Description then $"{id}: Description {exp.Description} does not match {act.Description}" 
@@ -186,7 +201,7 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
     // ** This should remain, although it is unused, and should not switch to Create method call **
     let test = { CommandId = ""
                  ReturnType = None
-                 GenerateSetHandler = true
+                 CommandDefUsage = Arbitrary 
                  Path = []
                  Aliases = []
                  Description = None

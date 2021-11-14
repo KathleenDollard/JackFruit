@@ -167,7 +167,7 @@ type Parameter =
       Type: GenericNamedItem
       Default: Expression option
       IsParams: bool}
-    with static member Create name paramType =
+    static member Create name paramType =
         { ParameterName = name
           Type = paramType
           Default = None
@@ -181,7 +181,7 @@ type Method =
       Scope: Scope
       Parameters: Parameter list
       Statements: Statement list}
-    with static member Create name returnType =
+    static member Create name returnType =
         { MethodName = { Name = name; GenericTypes = [] }
           ReturnType = returnType
           IsStatic = false
@@ -212,7 +212,7 @@ type Class =
 type Using = 
     { Namespace: string
       Alias: string option }
-    with static member Create nspace =
+    static member Create nspace =
         { Namespace = nspace
           Alias = None }
 

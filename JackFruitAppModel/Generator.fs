@@ -1,5 +1,5 @@
 ﻿
-module JackFruitAppModel.Generator
+module JackFruitAppModel.Generate
 
     open Generator.RoslynUtils
     open Microsoft.CodeAnalysis

@@ -40,6 +40,8 @@ type MemberDefUsage =
     /// This is not yet supported
     | ConstructorParameter of Parameter: IParameterSymbol
 
+    | ArbitraryMember
+
 type CommandDefUsage =
     | UserMethod of Method: IMethodSymbol * SemanticModel: SemanticModel
     | SetHandlerMethod of Method: IMethodSymbol * SemanticModel: SemanticModel * Symbol: Symbol
