@@ -3,131 +3,77 @@
 open Xunit
 open FsUnit.Xunit
 open FsUnit.CustomMatchers
-open Generator.ArchetypeMapping
 open Generator.RoslynUtils
 open Generator.GeneralUtils
 open Generator.Models
-open Generator.Tests.UtilForTests
-open Generator.CommandDefMapping
+open Generator.Tests.UtilsForTests
 open Microsoft.CodeAnalysis
-open Generator.Tests.TestData
-
-// KAD: If the parens are ommitted here, FsUnit gives an error about only one constructor allowed.
-//      Maybe it is an error that FS shoudl have captured.
-type ``When evaluating handlers``() =
-
-    [<Fact>]
-    member _.``Parameters retrieved from Handler``() =
-        let (archetypes, model) = archetypesAndModelFromSource oneMapping
-        let expected = [("one", "string")]
-
-        let parameters = ParametersFromArchetype archetypes[0] model
-        let actual = 
-            [ for tuple in parameters do
-                match tuple with 
-                | (name, t) -> (name, t.ToString())]
-
-        actual |> should matchList expected
+open Generator.Tests
+open Generator.NewMapping
+open Generator
 
 
-type ``When building CommandDef parts``() =
+// I'm not sure what we should be testing first
+//  * Creating CommandDef from random method (per most APpModels) : ``When building CommandDefs``
+//  * Creating CommandDef from SetHandler (Kevin's model)
+//  * Creating a CommandDef by hand and testing providers
+//  * Creating a CommandDef by hand and generating Kevin's code
+//  * Something else 
 
-    [<Fact>]
-    member _.``Part key retrieved from many valid strings``() =
+type ``When building CommandDefs``() =
 
-        getKey "ABC" |> should equal "ABC"
-        getKey "<ABC>" |> should equal "ABC"
-        getKey "[ABC]" |> should equal "ABC"
+    let MethodSymbolsFromSource source =
+        let code = AddMethodsToClass source
+        let modelResult = ModelFrom [ CSharpCode code ]
+        let model =
+            match modelResult with 
+            | Ok model -> model
+            | Error _ -> invalidOp "Test failed during SemanticModel creation"
+        let declarationsResults = MethodDeclarationNodesFrom model.SyntaxTree
+        let declarations =
+             match declarationsResults with 
+             | Ok d -> d
+             | Error _ -> invalidOp "Test failed during Method syntax lookup"
+        let methods =
+            [ for declaration in declarations do
+                let methodResult = MethodSymbolFromMethodDeclaration model declaration 
+                match methodResult with 
+                | Some method -> method 
+                | None -> invalidOp "Test failed during Method symbol lookup" ]
+        model, methods
 
-    
-    [<Fact>]
-    member _.``Argument is found``() =
-        let parameters = [("two", "int")]
-        let raw = ["<two>"]
-        let expected = Some {
-            ArgId = "two" 
-            Name = "two"
-            Description = None
-            Required = None
-            TypeName = "int" }
-
-        let (arg, options) = argAndOptions parameters raw
-
-        options |> should be Empty
-        arg |> should be (ofCase <@ Some @>)
-        arg |> should equal expected 
-
-    
-    [<Fact>]
-    member _.``One option is found``() =
-        let parameters = [("one", "string")]
-        let raw = ["--one"]
-        let expected = [{
-            OptionId = "one" 
-            Name = "one"
-            Description = None
-            Aliases = []
-            Required = None
-            TypeName = "string" }]
-
-        let (arg, options) = argAndOptions parameters raw
-
-        // KAD: This is related to the problem argAndOptions. This should be None, not null
-        arg |> should be (ofCase <@ None @>)
-        //arg |> should be null
-        options |> should equal expected
-
-    
-    
-    [<Fact>]
-    member _.``Two options and one argument are found``() =
-        let parameters = [("one", "string"); ("two", "int"); ("three", "int")]
-        let raw = ["--one"; "--three"; "<two>"]
-        let optionDefOne = {
-            OptionId = "one" 
-            Name = "one"
-            Description = None
-            Aliases = []
-            Required = None
-            TypeName = "string" };
-        let optionDefThree = {
-            OptionId = "three" 
-            Name = "three"
-            Description = None
-            Aliases = []
-            Required = None
-            TypeName = "int" }
-        let expectedOptions = [ optionDefOne; optionDefThree ]
-        let expectedArg = Some {
-            ArgId = "two" 
-            Name = "two"
-            Description = None
-            Required = None
-            TypeName = "int" }
-
-        let (arg, options) = argAndOptions parameters raw
-
-        arg |> should equal expectedArg
-        options |> should equal expectedOptions
-
-
-    [<Fact>]
-    member _.``CommandDef is built``() =
-        let source = AddMapStatements false threeMappings
-        let mutable model = null
-        let result = 
-            InvocationsAndModelFrom source
-            |> Result.map (
-                fun (invocations, m) -> 
-                    model <- m
-                    invocations)
-            |> Result.bind ArchetypeInfoListFrom
-            |> Result.map ArchetypeInfoTreeFrom
-            |> Result.map (CommandDefFrom model)
+    let TestCommandDefFromSource map =
+        let model, methods = MethodSymbolsFromSource map.HandlerCode
+        let expected = map.CommandDef
 
         let actual = 
-            match result with 
-            | Ok tree -> tree
-            | Error err -> invalidOp $"Failed to build tree {err}" // TODO: Work on error reporting
+            [ for method in methods do
+                CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} ]
+        let differences = (CommandDefDifferences expected actual)
 
-        actual |> should not' (be Null)
+        match differences with 
+        | None -> () // All is great!
+        | Some issues -> 
+            // KAD-Don: Why the second (from left) set of parens?
+            raise (MatchException (expected.ToString(), actual.ToString(), (String.concat "\r\n" issues)))
+        
+
+
+    [<Fact>]
+    member _.``One simple comand built``() =
+        TestCommandDefFromSource MapData.OneSimpleMapping
+
+    [<Fact>]
+    member _.``One complex comand built``() =
+        TestCommandDefFromSource MapData.OneComplexMapping
+
+    [<Fact>]
+    member _.``Three simple commands built``() =
+        TestCommandDefFromSource MapData.ThreeMappings
+
+    [<Fact>]
+    member _.``No command does noto throw``() =
+        TestCommandDefFromSource MapData.NoMapping
+
+                
+

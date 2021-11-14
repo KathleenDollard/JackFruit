@@ -1,27 +1,45 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="AppErrors.fs" />
     <Compile Include="Models.fs" />
+    <Compile Include="IAppModel.fs" />
+    <Compile Include="IWriter.fs" />
     <Compile Include="GeneralUtils.fs" />
+    <Compile Include="Language.fs" />
+    <Compile Include="ArrayWriter.fs" />
+    <Compile Include="StringBuilderWriter.fs" />
+    <Compile Include="CSharpLanguageExtensions.fs" />
+    <Compile Include="LanguageCSharp.fs" />
+    <Compile Include="CodeCSharp.fs" />
+    <Compile Include="OutputMapping.fs" />
     <Compile Include="RoslynVBUtils.fs" />
     <Compile Include="RoslynCSharpUtils.fs" />
     <Compile Include="RoslynUtils.fs" />
     <Compile Include="RoslynPatterns.fs" />
+    <Compile Include="AppModelHelpers.fs" />
+    <Compile Include="AppModel.fs" />
 
-    <Compile Include="ArchetypeMapping.fs" />
-    <Compile Include="CommandDefMapping.fs" />
+    <Compile Include="NewMapping.fs" />
+    <Compile Include="CommandOutput.fs" />
+    <Compile Include="CommonOutput.fs" />
+    <Compile Include="OutputCode.fs" />
+    <Compile Include="FlatAppModel.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.0-3.final" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.0.0-3.final" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21406.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
 
 

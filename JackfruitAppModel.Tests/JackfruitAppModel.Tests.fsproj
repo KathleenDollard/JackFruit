@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+    <GenerateProgramFile>false</GenerateProgramFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="UtilForTests.fs" />
+    <Compile Include="MapData.fs" />
+    <Compile Include="ArchetypeMappingTests.fs" />
+    <Compile Include="AppModelTests.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FsUnit.xUnit" Version="4.0.6" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21406.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="3.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.0-3.final" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ConsoleSupport\ConsoleSupport.csproj" />
+    <ProjectReference Include="..\Generator\Generator.fsproj" />
+    <ProjectReference Include="..\GeneratorTests\GeneratorTests.fsproj" />
+    <ProjectReference Include="..\JackfruitAppModel\JackfruitAppModel.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- KAD-Don: Is there any mechanism to copy a file to the output directory. This didn't work. -->
+    <Compile Update="TestHandlers.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
+</Project>

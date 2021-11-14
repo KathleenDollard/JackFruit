@@ -48,7 +48,7 @@ type ``When working with strings`` () =
         let input = @"""Some stuff"""
         let expected = "Some stuff"
 
-        let actual = Generator.GeneralUtils.RemoveLeadingTrailingDoubleQuote input
+        let actual = Generator.GeneralUtils.RemoveSurroundingDoubleQuote input
 
         actual |> should equal expected
 
@@ -56,10 +56,31 @@ type ``When working with strings`` () =
     member _.``ToCamel works as expected`` () =
         ToCamel("") |> should equal ""
         ToCamel("lower") |> should equal "lower"
-        ToCamel("UPPER") |> should equal "UPPER"
+        ToCamel("UPPER") |> should equal "upper"
         ToCamel("start-end") |> should equal "startEnd"
-        ToCamel("start_middle_end") |> should equal "startMiddleEnd"
+        ToCamel("start_end") |> should equal "startEnd"
+        ToCamel("START_END") |> should equal "startEnd"
         ToCamel("start-middle_end") |> should equal "startMiddleEnd"
+        ToCamel("START-MIDDLE_END") |> should equal "startMiddleEnd"
+        ToCamel("START_MIDDLE_END") |> should equal "startMiddleEnd"
+
+    [<Fact>]
+    member _.``ToSnake works as expected`` () =
+        ToSnake("") |> should equal ""
+        ToSnake("startEnd") |> should equal "start_end"
+        ToSnake("startMiddleEnd") |> should equal "start_middle_end"
+        ToSnake("lower") |> should equal "lower"
+        ToSnake("UPPER") |> should equal "upper"
+        ToSnake("HTTPResult") |> should equal "http_result"
+
+    [<Fact>]
+    member _.``ToKebab works as expected`` () =
+        ToKebab("") |> should equal ""
+        ToKebab("startEnd") |> should equal "start-end"
+        ToKebab("startMiddleEnd") |> should equal "start-middle-end"
+        ToKebab("lower") |> should equal "lower"
+        ToKebab("UPPER") |> should equal "upper"
+        ToKebab("HTTPResult") |> should equal "http-result"
 
 
 // KAD: I want to put the following mess inside the type that it applies to, but got errors: Why?

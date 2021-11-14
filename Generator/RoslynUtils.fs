@@ -4,6 +4,8 @@ open Microsoft.CodeAnalysis
 //open Microsoft.CodeAnalysis.CSharp
 //open Microsoft.CodeAnalysis.VisualBasic
 open Generator.Models
+open Generator
+
 
 type Source =
     | CSharpTree of SyntaxTree
@@ -47,10 +49,22 @@ let ExpressionFrom (node: SyntaxNode)  =
 
 let InvocationsFrom name (syntaxTree: SyntaxTree) =
     match syntaxTree with 
-    | :? CSharp.CSharpSyntaxTree as tree-> RoslynCSharpUtils.InvocationsFrom tree name
+    | :? CSharp.CSharpSyntaxTree as tree -> RoslynCSharpUtils.InvocationsFrom tree name
     | :? VisualBasic.VisualBasicSyntaxTree as tree -> RoslynVBUtils.InvocationsFrom tree name
     | _ -> invalidOp "Invalid node type"
 
+
+let MethodDeclarationsFrom (syntaxTree: SyntaxTree) = 
+    match syntaxTree with 
+    | :? CSharp.CSharpSyntaxTree as tree -> RoslynCSharpUtils.MethodDeclarationsFrom tree
+    | :? VisualBasic.VisualBasicSyntaxTree as tree -> RoslynVBUtils.MethodDeclarationFrom tree
+    | _ -> invalidOp "Invalid node type"
+
+let MethodDeclarationNodesFrom (syntaxTree: SyntaxTree) = 
+    match syntaxTree with 
+    | :? CSharp.CSharpSyntaxTree as tree -> RoslynCSharpUtils.MethodDeclarationNodesFrom tree
+    | :? VisualBasic.VisualBasicSyntaxTree as tree -> RoslynVBUtils.MethodDeclarationNodesFrom tree
+    | _ -> invalidOp "Invalid node type"
 
 let IsNullLiteral (expression: SyntaxNode) =
     match expression with 
@@ -62,16 +76,31 @@ let IsNullLiteral (expression: SyntaxNode) =
 let InvocationsFromModel name (model:SemanticModel) =
     InvocationsFrom name model.SyntaxTree
 
-let MethodFromHandler (model: SemanticModel) (expression: SyntaxNode) =
+let MethodSymbolFromMethodDeclaration (model: SemanticModel) (expression: SyntaxNode) =
     let handler =
-        model.GetSymbolInfo expression
+        model.GetDeclaredSymbol expression
 
     let symbol =
-        match handler.Symbol with
-        | null when handler.CandidateSymbols.IsDefaultOrEmpty -> invalidOp "Delegate not found"
-        | null -> handler.CandidateSymbols.[0]
-        | _ -> handler.Symbol
+        match handler with
+        | null -> invalidOp "Delegate not found"
+        | _ -> handler
 
     match symbol with
     | :? IMethodSymbol as m -> Some m
     | _ -> None
+
+
+let MethodSymbolFromMethodCall (model: SemanticModel) (expression: SyntaxNode) =
+    let handler =
+        model.GetSymbolInfo expression
+
+    match handler.Symbol with 
+    | null when handler.CandidateSymbols.IsEmpty -> None
+    | null -> 
+        match handler.CandidateSymbols.[0] with 
+        | :? IMethodSymbol as m -> Some m
+        | _ -> None
+    | _ -> 
+        match handler.Symbol with
+        | :? IMethodSymbol as m -> Some m
+        | _ -> None
