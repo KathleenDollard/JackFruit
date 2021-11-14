@@ -36,7 +36,7 @@ let CommandDefFromMethod model (info: AppModelCommandInfo) =
         [ "Method", info.Method 
           "SemanticModel", model] }
 
-let CommandDefsFrom<'T> semanticModel (appModel: IAppModel<'T>) (items: 'T list)  =
+let CommandDefsFrom<'T> semanticModel (appModel: AppModel<'T>) (items: 'T list)  =
 
     let rec depthFirstCreate item  =
         let subCommands = 

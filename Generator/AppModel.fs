@@ -4,6 +4,7 @@ open Generator.Models
 open System
 open Generator.AppModelHelpers
 open AppModelHelpers
+open Microsoft.CodeAnalysis
 
 type Transformer() =
 
@@ -115,16 +116,25 @@ type DescriptionsFromXmlCommentsTransforer() =
         override this.NewCommandDescription commandDef = CommandDescFromXmlComment commandDef
         override this.NewMemberDescription memberDef = MemberDescFromXmlComment memberDef
 
-// THis conflicts with IAppModel - they need to coincide/merge/play nice
-type AppModel(descriptionMap: Map<string, string> option, commonAliases: string * string option) =
+type AppModelCommandInfo =
+    { InfoCommandId: string option
+      Path: string list
+      Method: IMethodSymbol option
+      ForPocket: (string * obj) list }
 
-    abstract member UpdateCommandDef : CommandDef -> CommandDef 
-    default _.UpdateCommandDef(commandDef) =
-        // Last wins when multiple things contribute
-        // This is deliberately granular
-        commandDef 
-        |> DescriptionsFromAttributesTransformer().Apply
-        |> DescriptionsFromXmlCommentsTransforer().Apply
-        //|> (DescriptionsFromTransformer descriptionMap).Apply 
-        //|> (AliasesForCli commonAliases).Apply 
-        //|> AliasesFromAttribute.Apply 
+/// AppModels are distinguished by how they do structural
+/// evaluation (Info and Childre) and transforms defined 
+/// as a set of ICommandDefTransformers and IMemberDefTransformers.
+[<AbstractClass>]
+type AppModel<'T>() =
+    abstract member Children: 'T -> 'T list
+    abstract member Info: SemanticModel -> 'T -> AppModelCommandInfo
+    abstract member Transformers: Transformer list
+    default _.Transformers = 
+        [ DescriptionsFromXmlCommentsTransforer() 
+          DescriptionsFromAttributesTransformer()
+              // longish list expected here
+        ]
+
+
+        

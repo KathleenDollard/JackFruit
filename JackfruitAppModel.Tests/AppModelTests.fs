@@ -90,7 +90,7 @@ type ``Can build CommandDef from archetype``() =
     let TestArchetypeHandlerRetrieval (code: string list) (expectedCommandDefs: CommandDef list) =
         let code = AddMethodsToClassWithBuilder code
         let (archetypeTreeList, model) = ArchetypeTree code
-        let appModel = Jackfruit.AppModel() :> Generator.IAppModel<TreeNodeType<ArchetypeInfo>>
+        let appModel = Jackfruit.AppModel() :> Generator.AppModel<TreeNodeType<ArchetypeInfo>>
         let commandDefs =
             [ for node in archetypeTreeList do
                 let nodeDefs = CommandDefsFrom model appModel archetypeTreeList
