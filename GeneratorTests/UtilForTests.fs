@@ -8,6 +8,7 @@ open Generator.RoslynUtils
 open Generator.Models
 open Xunit
 open Generator
+open FsUnit.Xunit
 
 let testNamespace = "TestCode"
 let private seperator = "\r\n"
@@ -126,6 +127,27 @@ let ModelFrom(sources: Source list) =
     | Ok trees -> GetSemanticModelFromFirstTree trees
     | Error err -> Error err
         
+     
+let MethodSymbolsFromSource source =
+    let code = AddMethodsToClass source
+    let modelResult = ModelFrom [ CSharpCode code ]
+    let model =
+        match modelResult with 
+        | Ok model -> model
+        | Error _ -> invalidOp "Test failed during SemanticModel creation"
+    let declarationsResults = MethodDeclarationNodesFrom model.SyntaxTree
+    let declarations =
+         match declarationsResults with 
+         | Ok d -> d
+         | Error _ -> invalidOp "Test failed during Method syntax lookup"
+    let methods =
+        [ for declaration in declarations do
+            let methodResult = MethodSymbolFromMethodDeclaration model declaration 
+            match methodResult with 
+            | Some method -> method 
+            | None -> invalidOp "Test failed during Method symbol lookup" ]
+    model, methods
+
 
 let ShouldEqual (expected: 'a) (actual: 'a) =     
     try
@@ -133,7 +155,6 @@ let ShouldEqual (expected: 'a) (actual: 'a) =
     with
         | _ -> printf "Expected: %A\nActual: %A" expected actual 
 
-   
 
 // KAD-Don Any shortcuts in this? I need a diff, not just that they do not match
 
@@ -204,81 +225,9 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
         | [] -> None
         | _ -> Some errors
 
-     
 
 
 
 
-    //let mutable errors = []
-    //let addError err = errors <- err::errors // added backwards, then reverse
-    //let checkForMatch valueName expectedValue actualValue =
-    //    if expectedValue <> actualValue then
-    //        addError $"Mismatch: {actualValue} not equal to {expectedValue} for {valueName}"
-    //    ()
-
-//    let CheckArgDef path expected actual =
-//        let matchesHandled = 
-//            match (expected, actual) with
-//            | Some _, None -> addError $"Mismatch: Arg expected, but was not found for {path}" ; true
-//            | None, Some _ -> addError $"Mismatch: No Arg expected, but one found for {path}"; true
-//            | None, None -> true
-//            | _ -> false
-//        if not matchesHandled then 
-//            let expected = expected.Value
-//            let actual = actual.Value
-//            checkForMatch $"ArgDef.ArgId for {path}" expected.ArgId actual.ArgId
-//            checkForMatch $"ArgDef.Name for {path}:{expected.ArgId}" expected.Name actual.Name
-//            checkForMatch $"ArgDef.Description for {path}:{expected.ArgId}" expected.Description actual.Description
-//            checkForMatch $"ArgDef.Required for {path}:{expected.ArgId}" expected.Required actual.Required
-//            checkForMatch $"ArgDef.TypeName for {path}:{expected.ArgId}" expected.TypeName actual.TypeName
-//        ()
-
-//    let CheckOptionDef path expected actual =
-//        checkForMatch $"OptionDef.OptionId for {path}" expected.OptionId actual.OptionId
-//        checkForMatch $"OptionDef.Name for {path}:{expected.OptionId}" expected.Name actual.Name
-//        checkForMatch $"OptionDef.Description for {path}:{expected.OptionId}" expected.Description actual.Description
-//        checkForMatch $"OptionDef.Aliases for {path}:{expected.OptionId}" expected.Aliases actual.Aliases
-//        checkForMatch $"OptionDef.Required for {path}:{expected.OptionId}" expected.Required actual.Required
-//        checkForMatch $"OptionDef.TypeName for {path}:{expected.OptionId}" expected.TypeName actual.TypeName
-//        ()
-
-//    let CheckOptionDefs path (expectedOptions: OptionDef list) (actualOptions: OptionDef list) =
-//        if expectedOptions.Length <> actualOptions.Length then 
-//            let newErr = $"Mismacth in number of options for {path}"
-//            errors <- newErr::errors
-//            ()
-//        else
-//            let zipped =  List.zip expectedOptions actualOptions
-//            for (expected, actual) in zipped do 
-//                CheckOptionDef path expected actual
-//            ()
-
-//    let rec CheckCommandDef path expected actual =
-//        let path = if path = "" then "<root>" else path
-                    
-//        checkForMatch $"CommandDef.CommandId for {path}" expected.CommandId actual.CommandId
-//        checkForMatch $"CommandDef.Path for {path}" expected.Path actual.Path
-//        checkForMatch $"CommandDef.Name for {path}" expected.Name actual.Name
-//        checkForMatch $"CommandDef.Description for {path}" expected.Description actual.Description
-//        checkForMatch $"CommandDef.Aliases for {path}" expected.Aliases actual.Aliases
-//        CheckArgDef path expected.Arg actual.Arg
-//        CheckOptionDefs path expected.Options actual.Options
-//        CheckCommandDefs path expected.SubCommands actual.SubCommands
-//        ()
-
-//    and CheckCommandDefs path (expectedCommands: CommandDef list) (actualCommands: CommandDef list) =
-//        if expectedCommands.Length <> actualCommands.Length then 
-//            let newErr = $"Mismacth in number of options for {path}"
-//            errors <- newErr::errors
-//            ()
-//        else
-//            let zipped =  List.zip expectedCommands actualCommands
-//            for (expected, actual) in zipped do 
-//                CheckCommandDef path expected actual
-//            ()
-
-   
-//    CheckCommandDef "" expected actual
-//    errors |> String.Concat
 
 

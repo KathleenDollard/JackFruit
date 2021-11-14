@@ -22,7 +22,8 @@ type Transformer() =
         match this.NewCommandDescription commandDef with
             | UsePreviousValue -> commandDef
             | NewValue value -> 
-                {commandDef with Description = value}
+                let newCommandDef = {commandDef with Description = value}
+                newCommandDef
 
     abstract member CommandPocketItemsToAdd : CommandDef -> ItemReturn<(string * obj) list>
     default _.CommandPocketItemsToAdd(_) = UsePreviousValue
@@ -87,12 +88,12 @@ type Transformer() =
         //let commandDef = Apply model.NewPocket commandDef
 
         let rec ApplyToCommandDef commandDef : CommandDef =
-            let commandDef = 
+            let newCommandDef = 
                 this.AddToCommandAliases commandDef
                 |> this.UpdateCommandDescription
                 |> this.AddToCommandPocket
             let members = 
-                [ for mbr in commandDef.Members do
+                [ for mbr in newCommandDef.Members do
                     this.UpdateMemberKind mbr
                     |> this.AddMemberAliases 
                     |> this.UpdateMemberArgDisplayName
@@ -100,11 +101,12 @@ type Transformer() =
                     |> this.UpdateMemberRequiredOverride
                     |> this.AddToMemberPocket ]
             let subCommands = 
-                [ for subCommandDef in commandDef.SubCommands do
+                [ for subCommandDef in newCommandDef.SubCommands do
                     ApplyToCommandDef subCommandDef ]
-            { commandDef with SubCommands = subCommands; Members = members }
+            { newCommandDef with SubCommands = subCommands; Members = members }
 
-        ApplyToCommandDef commandDef
+        let commandDef2 = ApplyToCommandDef commandDef
+        commandDef2
 
 type DescriptionsFromAttributesTransformer() =
     inherit Transformer()

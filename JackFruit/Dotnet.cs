@@ -33,6 +33,19 @@ namespace Jackfruit
             return 42;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="project"></param>
+        /// <param name="packageName"></param>
+        /// <param name="version"></param>
+        /// <param name="framework"></param>
+        /// <param name="noRestore"></param>
+        /// <param name="source"></param>
+        /// <param name="packageDirectory"></param>
+        /// <param name="interactive"></param>
+        /// <param name="prerelease"></param>
+        /// <returns></returns>
         public static int RunAddPackage(FileInfo project, 
                                         string packageName, 
                                         string version,

@@ -28,7 +28,7 @@ let private FirstNonHiddenWord words =
     for word:string in words do
         if name = "" && word.Length > 0 then
             if word[0] <> '[' then
-                name <- word
+                name <- word 
     if name = "" then
         None
     else
