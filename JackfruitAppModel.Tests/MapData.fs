@@ -35,6 +35,8 @@ type MapData =
               Description = None
               Aliases = [ "package" ]
               Members = 
+                // KAD-Don: Why is this legal?
+                //[ (MemberDef.Create (UserParameter null) "packageName" "string") 
                 [ (MemberDef.Create ArbitraryMember "packageName" "string") 
                   (MemberDef.Create ArbitraryMember "version" "string")
                   (MemberDef.Create ArbitraryMember "framework" "string")
