@@ -86,11 +86,14 @@ let private AddCharsAndLower (add:string) (input: string) =
 let ToCamel input =
     RemoveCharsAndUpper ['-'; '_'] input
 
-// KAD-Don: Is there an easier way to do the following?
 let ToPascal input =
-    let camel = RemoveCharsAndUpper ['-'; '_'] input
-    let first = System.Char.ToUpper(camel[0]).ToString()
-    first + camel[1..]
+    match input with 
+    | null -> null
+    | "" -> ""
+    | _ ->
+        let camel = RemoveCharsAndUpper ['-'; '_'] input
+        let first = System.Char.ToUpper(camel[0]).ToString()
+        first + camel[1..]
 
 let ToSnake input =
     AddCharsAndLower "_" input

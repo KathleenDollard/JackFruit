@@ -10,21 +10,21 @@ open Microsoft.CodeAnalysis
 
 type AppModel() =
 
-    let GetCommandArchetype parts =
-        let commandArchetpes =
-             [for part in parts do
-                match part with  
-                | CommandArchetype c -> c
-                | _ -> ()]
-        commandArchetpes |> List.exactlyOne
-
-    interface IAppModel<TreeNodeType<ArchetypeInfo>> with 
+    inherit AppModel<TreeNodeType<ArchetypeInfo>>() with 
         
-        member _.Children archTree =
+        let GetCommandArchetype parts =
+            let commandArchetpes =
+                 [for part in parts do
+                    match part with  
+                    | CommandArchetype c -> c
+                    | _ -> ()]
+            commandArchetpes |> List.exactlyOne
+        
+        override _.Children archTree =
             archTree.Children
         
         // Id, method, stuff for pocket
-        member _.Info model archTree =
+        override _.Info model archTree =
             let archetypeInfo = archTree.Data
             let commandArchetype = GetCommandArchetype archetypeInfo.ArchetypeParts
             let method = 

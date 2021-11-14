@@ -4,6 +4,7 @@ open Generator.Models
 open System
 open Generator.AppModelHelpers
 open AppModelHelpers
+open Microsoft.CodeAnalysis
 
 type Transformer() =
 
@@ -21,7 +22,8 @@ type Transformer() =
         match this.NewCommandDescription commandDef with
             | UsePreviousValue -> commandDef
             | NewValue value -> 
-                {commandDef with Description = value}
+                let newCommandDef = {commandDef with Description = value}
+                newCommandDef
 
     abstract member CommandPocketItemsToAdd : CommandDef -> ItemReturn<(string * obj) list>
     default _.CommandPocketItemsToAdd(_) = UsePreviousValue
@@ -86,12 +88,12 @@ type Transformer() =
         //let commandDef = Apply model.NewPocket commandDef
 
         let rec ApplyToCommandDef commandDef : CommandDef =
-            let commandDef = 
+            let newCommandDef = 
                 this.AddToCommandAliases commandDef
                 |> this.UpdateCommandDescription
                 |> this.AddToCommandPocket
             let members = 
-                [ for mbr in commandDef.Members do
+                [ for mbr in newCommandDef.Members do
                     this.UpdateMemberKind mbr
                     |> this.AddMemberAliases 
                     |> this.UpdateMemberArgDisplayName
@@ -99,11 +101,12 @@ type Transformer() =
                     |> this.UpdateMemberRequiredOverride
                     |> this.AddToMemberPocket ]
             let subCommands = 
-                [ for subCommandDef in commandDef.SubCommands do
+                [ for subCommandDef in newCommandDef.SubCommands do
                     ApplyToCommandDef subCommandDef ]
-            { commandDef with SubCommands = subCommands; Members = members }
+            { newCommandDef with SubCommands = subCommands; Members = members }
 
-        ApplyToCommandDef commandDef
+        let commandDef2 = ApplyToCommandDef commandDef
+        commandDef2
 
 type DescriptionsFromAttributesTransformer() =
     inherit Transformer()
@@ -115,16 +118,25 @@ type DescriptionsFromXmlCommentsTransforer() =
         override this.NewCommandDescription commandDef = CommandDescFromXmlComment commandDef
         override this.NewMemberDescription memberDef = MemberDescFromXmlComment memberDef
 
-// THis conflicts with IAppModel - they need to coincide/merge/play nice
-type AppModel(descriptionMap: Map<string, string> option, commonAliases: string * string option) =
+type AppModelCommandInfo =
+    { InfoCommandId: string option
+      Path: string list
+      Method: IMethodSymbol option
+      ForPocket: (string * obj) list }
 
-    abstract member UpdateCommandDef : CommandDef -> CommandDef 
-    default _.UpdateCommandDef(commandDef) =
-        // Last wins when multiple things contribute
-        // This is deliberately granular
-        commandDef 
-        |> DescriptionsFromAttributesTransformer().Apply
-        |> DescriptionsFromXmlCommentsTransforer().Apply
-        //|> (DescriptionsFromTransformer descriptionMap).Apply 
-        //|> (AliasesForCli commonAliases).Apply 
-        //|> AliasesFromAttribute.Apply 
+/// AppModels are distinguished by how they do structural
+/// evaluation (Info and Childre) and transforms defined 
+/// as a set of ICommandDefTransformers and IMemberDefTransformers.
+[<AbstractClass>]
+type AppModel<'T>() =
+    abstract member Children: 'T -> 'T list
+    abstract member Info: SemanticModel -> 'T -> AppModelCommandInfo
+    abstract member Transformers: Transformer list
+    default _.Transformers = 
+        [ DescriptionsFromXmlCommentsTransforer() 
+          DescriptionsFromAttributesTransformer()
+              // longish list expected here
+        ]
+
+
+        

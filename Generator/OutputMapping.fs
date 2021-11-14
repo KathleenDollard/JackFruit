@@ -1,4 +1,4 @@
-﻿module Generaor.OutputMapping
+﻿module Generator.OutputMapping
 
 open Generator.Language
 open Generator.Models

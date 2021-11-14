@@ -53,7 +53,7 @@ type ``When working with strings`` () =
         actual |> should equal expected
 
     [<Fact>]
-    member _.``ToCamel works as expected`` () =
+    member _.``ToCamel works on a variety of input`` () =
         ToCamel("") |> should equal ""
         ToCamel("lower") |> should equal "lower"
         ToCamel("UPPER") |> should equal "upper"
@@ -65,7 +65,7 @@ type ``When working with strings`` () =
         ToCamel("START_MIDDLE_END") |> should equal "startMiddleEnd"
 
     [<Fact>]
-    member _.``ToSnake works as expected`` () =
+    member _.``ToSnake works on a variety of input`` () =
         ToSnake("") |> should equal ""
         ToSnake("startEnd") |> should equal "start_end"
         ToSnake("startMiddleEnd") |> should equal "start_middle_end"
@@ -74,7 +74,7 @@ type ``When working with strings`` () =
         ToSnake("HTTPResult") |> should equal "http_result"
 
     [<Fact>]
-    member _.``ToKebab works as expected`` () =
+    member _.``ToKebab works on a variety of input`` () =
         ToKebab("") |> should equal ""
         ToKebab("startEnd") |> should equal "start-end"
         ToKebab("startMiddleEnd") |> should equal "start-middle-end"
@@ -82,7 +82,17 @@ type ``When working with strings`` () =
         ToKebab("UPPER") |> should equal "upper"
         ToKebab("HTTPResult") |> should equal "http-result"
 
-
+    [<Fact>]
+    member _.``ToPascal works on a variety of input`` () =
+        ToPascal("") |> should equal ""
+        ToPascal("lower") |> should equal "Lower"
+        ToPascal("UPPER") |> should equal "Upper"
+        ToPascal("start-end") |> should equal "StartEnd"
+        ToPascal("start_end") |> should equal "StartEnd"
+        ToPascal("START_END") |> should equal "StartEnd"
+        ToPascal("start-middle_end") |> should equal "StartMiddleEnd"
+        ToPascal("START-MIDDLE_END") |> should equal "StartMiddleEnd"
+        ToPascal("START_MIDDLE_END") |> should equal "StartMiddleEnd"
 // KAD: I want to put the following mess inside the type that it applies to, but got errors: Why?
 // TODO: If the above is a real problem not a mistake on my part, move this to a separate file
 

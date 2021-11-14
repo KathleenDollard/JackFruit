@@ -8,7 +8,6 @@
   <ItemGroup>
     <Compile Include="AppErrors.fs" />
     <Compile Include="Models.fs" />
-    <Compile Include="IAppModel.fs" />
     <Compile Include="IWriter.fs" />
     <Compile Include="GeneralUtils.fs" />
     <Compile Include="Language.fs" />
@@ -29,7 +28,6 @@
     <Compile Include="CommandOutput.fs" />
     <Compile Include="CommonOutput.fs" />
     <Compile Include="OutputCode.fs" />
-    <Compile Include="FlatAppModel.fs" />
   </ItemGroup>
 
   <ItemGroup>

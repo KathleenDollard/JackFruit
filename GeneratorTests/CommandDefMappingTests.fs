@@ -22,26 +22,6 @@ open Generator
 
 type ``When building CommandDefs``() =
 
-    let MethodSymbolsFromSource source =
-        let code = AddMethodsToClass source
-        let modelResult = ModelFrom [ CSharpCode code ]
-        let model =
-            match modelResult with 
-            | Ok model -> model
-            | Error _ -> invalidOp "Test failed during SemanticModel creation"
-        let declarationsResults = MethodDeclarationNodesFrom model.SyntaxTree
-        let declarations =
-             match declarationsResults with 
-             | Ok d -> d
-             | Error _ -> invalidOp "Test failed during Method syntax lookup"
-        let methods =
-            [ for declaration in declarations do
-                let methodResult = MethodSymbolFromMethodDeclaration model declaration 
-                match methodResult with 
-                | Some method -> method 
-                | None -> invalidOp "Test failed during Method symbol lookup" ]
-        model, methods
-
     let TestCommandDefFromSource map =
         let model, methods = MethodSymbolsFromSource map.HandlerCode
         let expected = map.CommandDef
@@ -56,7 +36,6 @@ type ``When building CommandDefs``() =
         | Some issues -> 
             // KAD-Don: Why the second (from left) set of parens?
             raise (MatchException (expected.ToString(), actual.ToString(), (String.concat "\r\n" issues)))
-        
 
 
     [<Fact>]
@@ -76,4 +55,121 @@ type ``When building CommandDefs``() =
         TestCommandDefFromSource MapData.NoMapping
 
                 
+type ``Transforms for descriptions``() =
+    let ApplyTransformsToCommandDefs handlerCode (transforms: Transformer list) = 
+        let model, methods = MethodSymbolsFromSource [handlerCode]
 
+        let commandDefs = 
+            [ for method in methods do
+                CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} ]
+        [ for commandDef in commandDefs do 
+            let mutable newCommandDef = commandDef
+            for transform in transforms do
+                newCommandDef <- transform.Apply newCommandDef
+            newCommandDef ]
+
+    let commandDesc = "Command Description"
+    let memberDesc = "Member Description"
+    
+    [<Fact>]
+    member _.``No transformers do not throw``() =
+        let commandDefs =
+            ApplyTransformsToCommandDefs 
+                "" 
+                [DescriptionsFromXmlCommentsTransforer()]
+        Assert.Empty (commandDefs)
+
+    [<Fact>]
+    member _.``XmlComment xform finds command description``() =
+        let commandDef =
+            ApplyTransformsToCommandDefs 
+                @$"/// <summary>
+                 /// {commandDesc}
+                 /// </summary>
+                 /// <param name=""one""></param>
+                 public static void A(string one) {{}}"
+                [DescriptionsFromXmlCommentsTransforer()]
+            |> List.head
+        Assert.Equal (Some commandDesc, commandDef.Description)
+        Assert.Equal (None, commandDef.Members.Head.Description)
+
+    [<Fact>]
+    member _.``XmlComment xform finds member description``() =
+         let commandDef =
+            ApplyTransformsToCommandDefs 
+                @$"/// <summary>
+                 /// 
+                 /// </summary>
+                 /// <param name=""one"">{memberDesc}</param>
+                 public static void A(string one) {{}}"
+                [DescriptionsFromXmlCommentsTransforer()]
+            |> List.head
+         Assert.Equal (None, commandDef.Description)
+         Assert.Equal (Some memberDesc, commandDef.Members.Head.Description)
+
+    [<Fact>]
+    member _.``Attribute xform finds command description``() =
+        let commandDef =
+            ApplyTransformsToCommandDefs 
+                @$"[Description(""{commandDesc}"")]
+                 public static void A(string one) {{}}"
+                [DescriptionsFromAttributesTransformer()]
+            |> List.head
+        Assert.Equal (Some commandDesc, commandDef.Description)
+        Assert.Equal (None, commandDef.Members.Head.Description)
+
+    [<Fact>]
+    member _.``Attribute xform finds member description``() =
+         let commandDef =
+            ApplyTransformsToCommandDefs 
+                @$"/// <summary>
+                 /// 
+                 /// </summary>
+                 /// <param name=""one""></param>
+                 public static void A([Description(""{memberDesc}"")] string one) {{}}"
+                [DescriptionsFromAttributesTransformer()]
+            |> List.head
+         Assert.Equal (None, commandDef.Description)
+         Assert.Equal (Some memberDesc, commandDef.Members.Head.Description)
+
+    //[<Fact>]
+    //member _.``Map xform finds command description``() =
+    //    ApplyTransformsToCommandDefs
+    //        MapData.OneSimpleMapping 
+    //        [DescriptionsFromXmlCommentsTransforer()]
+
+    //[<Fact>]
+    //member _.``Map xform finds member description``() =
+    //    ApplyTransformsToCommandDefs 
+    //        MapData.OneSimpleMapping 
+    //        [DescriptionsFromXmlCommentsTransforer()]
+
+    [<Fact>]
+    member _.``Multiple transforms work together``() =
+         let commandDef =
+            ApplyTransformsToCommandDefs 
+                @$"/// <summary>
+                 /// 
+                 /// </summary>
+                 /// <param name=""one"">{memberDesc}</param>
+                 [Description(""{commandDesc}"")]
+                 public static void A(string one) {{}}"
+                [DescriptionsFromXmlCommentsTransforer()]
+            |> List.head
+         Assert.Equal (Some commandDesc, commandDef.Description)
+         Assert.Equal (Some memberDesc, commandDef.Members.Head.Description)
+
+
+    [<Fact>]
+    member _.``Single transforms work on multiple fields``() =
+        let commandDef =
+            ApplyTransformsToCommandDefs 
+                @$"/// <summary>
+                 /// {commandDesc}
+                 /// </summary>
+                 /// <param name=""one"">{memberDesc}</param>
+                 public static void A(string one) {{}}"
+                [DescriptionsFromXmlCommentsTransforer()]
+            |> List.head
+        Assert.Equal (Some commandDesc, commandDef.Description)
+        Assert.Equal (Some memberDesc, commandDef.Members.Head.Description)
