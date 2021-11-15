@@ -14,7 +14,9 @@ type Transformer() =
         match this.CommandAliasesToAdd commandDef with
             | UsePreviousValue -> commandDef
             | NewValue value -> 
-                {commandDef with Aliases = (List.append commandDef.Aliases value)}
+                commandDef.Aliases <- (List.append commandDef.Aliases value)
+                commandDef
+              //  {commandDef with Aliases = (List.append commandDef.Aliases value)}
 
     abstract member NewCommandDescription : CommandDef -> ItemReturn<string option>
     default _.NewCommandDescription(_) = UsePreviousValue
@@ -22,24 +24,26 @@ type Transformer() =
         match this.NewCommandDescription commandDef with
             | UsePreviousValue -> commandDef
             | NewValue value -> 
-                let newCommandDef = {commandDef with Description = value}
-                newCommandDef
+                commandDef.Description <- value
+                commandDef
 
     abstract member CommandPocketItemsToAdd : CommandDef -> ItemReturn<(string * obj) list>
     default _.CommandPocketItemsToAdd(_) = UsePreviousValue
     member this.AddToCommandPocket commandDef =
         match this.CommandPocketItemsToAdd commandDef with
             | UsePreviousValue -> commandDef
-            | NewValue value -> 
-                {commandDef with Pocket = (List.append commandDef.Pocket value)}
+            | NewValue pairs -> 
+                List.iter (fun (key, value) -> commandDef.AddToPocket key value) pairs
+                commandDef
 
     abstract member NewMemberKind : MemberDef -> ItemReturn<MemberKind option>
     default _.NewMemberKind(_) = UsePreviousValue
     member this.UpdateMemberKind memberDef =
         match this.NewMemberKind memberDef with
             | UsePreviousValue -> memberDef
-            | NewValue value -> 
-                {memberDef with MemberKind = value}
+            | NewValue value ->
+                memberDef.MemberKind <- value
+                memberDef
 
     abstract member MemberAliasesToAdd : MemberDef -> ItemReturn<string list>
     default _.MemberAliasesToAdd(_) = UsePreviousValue
@@ -47,7 +51,8 @@ type Transformer() =
         match this.MemberAliasesToAdd memberDef with
             | UsePreviousValue -> memberDef
             | NewValue value -> 
-                {memberDef with Aliases = (List.append memberDef.Aliases value)}
+                memberDef.Aliases <- (List.append memberDef.Aliases value)
+                memberDef
  
     abstract member NewMemberArgDisplayName : MemberDef -> ItemReturn<string option>
     default _.NewMemberArgDisplayName(_) = UsePreviousValue
@@ -55,7 +60,8 @@ type Transformer() =
         match this.NewMemberArgDisplayName memberDef with
             | UsePreviousValue -> memberDef
             | NewValue value -> 
-                {memberDef with ArgDisplayName = value}
+                memberDef.ArgDisplayName <- value
+                memberDef
 
     abstract member NewMemberDescription : MemberDef -> ItemReturn<string option>
     default _.NewMemberDescription(_) = UsePreviousValue
@@ -63,7 +69,8 @@ type Transformer() =
         match this.NewMemberDescription memberDef with
             | UsePreviousValue -> memberDef
             | NewValue value -> 
-                {memberDef with Description = value}
+                memberDef.Description <- value
+                memberDef
 
     abstract member NewMemberRequiredOverride : MemberDef -> ItemReturn<bool option>
     default _.NewMemberRequiredOverride(_) = UsePreviousValue
@@ -71,15 +78,17 @@ type Transformer() =
         match this.NewMemberRequiredOverride memberDef with
             | UsePreviousValue -> memberDef
             | NewValue value -> 
-                {memberDef with RequiredOverride = value}
+                memberDef.RequiredOverride <- value
+                memberDef
 
     abstract member MemberPocketItemsToAdd : MemberDef -> ItemReturn<(string * obj) list>
     default _.MemberPocketItemsToAdd(_) = UsePreviousValue
-    member this.AddToMemberPocket memberDef =
+    member this.AddToMemberPocket (memberDef: MemberDef) =
         match this.MemberPocketItemsToAdd memberDef with
             | UsePreviousValue -> memberDef
-            | NewValue value -> 
-                {memberDef with Pocket = (List.append memberDef.Pocket value)}
+            | NewValue pairs -> 
+                List.iter (fun (key, value) -> memberDef.AddToPocket key value) pairs
+                memberDef
 
     member this.Apply commandDef =
         // KAD-Don: When uncommented each line of the following said that commandDef was not used
@@ -92,18 +101,16 @@ type Transformer() =
                 this.AddToCommandAliases commandDef
                 |> this.UpdateCommandDescription
                 |> this.AddToCommandPocket
-            let members = 
-                [ for mbr in newCommandDef.Members do
-                    this.UpdateMemberKind mbr
-                    |> this.AddMemberAliases 
-                    |> this.UpdateMemberArgDisplayName
-                    |> this.UpdateMemberDescription
-                    |> this.UpdateMemberRequiredOverride
-                    |> this.AddToMemberPocket ]
-            let subCommands = 
-                [ for subCommandDef in newCommandDef.SubCommands do
-                    ApplyToCommandDef subCommandDef ]
-            { newCommandDef with SubCommands = subCommands; Members = members }
+            for mbr in newCommandDef.Members do
+                this.UpdateMemberKind mbr
+                |> this.AddMemberAliases 
+                |> this.UpdateMemberArgDisplayName
+                |> this.UpdateMemberDescription
+                |> this.UpdateMemberRequiredOverride
+                |> this.AddToMemberPocket |> ignore
+            for subCommandDef in newCommandDef.SubCommands do
+                ApplyToCommandDef subCommandDef |> ignore
+            commandDef
 
         let commandDef2 = ApplyToCommandDef commandDef
         commandDef2
@@ -117,6 +124,7 @@ type DescriptionsFromXmlCommentsTransforer() =
     inherit Transformer()
         override this.NewCommandDescription commandDef = CommandDescFromXmlComment commandDef
         override this.NewMemberDescription memberDef = MemberDescFromXmlComment memberDef
+
 
 type AppModelCommandInfo =
     { InfoCommandId: string option

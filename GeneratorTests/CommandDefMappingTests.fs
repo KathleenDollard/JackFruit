@@ -28,7 +28,7 @@ type ``When building CommandDefs``() =
 
         let actual = 
             [ for method in methods do
-                CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} ]
+                CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} [] ]
         let differences = (CommandDefDifferences expected actual)
 
         match differences with 
@@ -61,7 +61,7 @@ type ``Transforms for descriptions``() =
 
         let commandDefs = 
             [ for method in methods do
-                CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} ]
+                CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} [] ]
         [ for commandDef in commandDefs do 
             let mutable newCommandDef = commandDef
             for transform in transforms do

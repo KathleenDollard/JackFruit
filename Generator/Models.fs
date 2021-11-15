@@ -2,6 +2,7 @@
 
 open Microsoft.CodeAnalysis
 open System.CommandLine
+open System.Collections.Generic
 
 /// MemberKind indicates the System.CommandLine symbol used
 /// for the member. They are treated the same during transformation
@@ -51,84 +52,91 @@ type CommandDefUsage =
 /// The single structure is used so that late transformers can
 /// determine the member type (as opposed to requiring it during
 /// structure evaluation). 
-type MemberDef =
-    { 
-      /// The id for the member, which must be unique within the command.
+type MemberDef(memberId: string, typeName: string, memberDefUsage: MemberDefUsage, generateSymbol: bool) =
+    let pocket = Dictionary<string, obj>()
+
+    /// Indicates whether the member is an argument, option (also called
+    /// a switch) or a service. This field should not be used during 
+    /// generation. Instead use the UseMemberKind property which supplies
+    /// the default if MemberKind is not set. The default is Option.
+    ///
+    /// This is always sets by transformers. 
+    member val MemberKind: MemberKind option = None
+        with get, set
+
+    /// ArgDisplayName manages the case where the argument of an option
+    /// has a different name than the option itself. If both the ArgDisplayName
+    /// and an alias is set for an Argument, the ArgDisplayName is used. 
+    /// Ignored for services.
+    ///
+    /// Often not set, but if it is set, it is always sets by transformers. 
+    member val ArgDisplayName: string option = None
+         with get, set
+
+    /// Aliases for the member. Arguments do not have aliases, so only
+    /// the first value is ever used. Ignored for services. 
+    ///
+    /// Often not set, but if it is set, it is always sets by transformers.  
+    member val Aliases: string list = []
+        with get, set
+    
+    /// The description displayed for help. Ignored for services.
+    ///
+    /// This is always sets by transformers. 
+    member val Description: string option = None
+         with get, set
+
+    /// Required is almost always determined by the type. This should
+    /// only be used if the type does not correctly indicate required 
+    /// status
+    ///
+    /// Rarely should be set, but if it is set, it is always sets by transformers.  
+    member val RequiredOverride: bool option = None
+         with get, set
+
+    /// Pocket is a property bag for the AppModel use. During structural 
+    /// setup there is generally additional information discovered that 
+    /// is needed by later transformers. Put that data in the pocket.
+    ///
+    /// This is manipulated by both the AppModel and the transformers
+    member _.Pocket
+        with get(key) = 
+            match pocket.TryGetValue key with
+            | true, value -> Some value
+            | _           -> None
+
+    member _.AddToPocket key value =
+        pocket.Add(key, value)
+
+    /// The id for the member, which must be unique within the command.
       /// Note that this is not the name the user sees, but is generally 
       /// the usage name, such as the parameter name.
       ///
       /// Never changed by transformers.
-      MemberId: string
+    member _.MemberId = memberId
 
-      /// The name of the type, as a string. We may need work here for 
+    /// The name of the type, as a string. We may need work here for 
       /// nullable, etc.
       ///
       /// Never changed by transformers.
-      TypeName: string
+    member _.TypeName = typeName
 
-      /// Member usage is how the member appears during application running.
+    /// Member usage is how the member appears during application running.
       /// The only currently supported usage is parameter. 
       ///
       /// Never changed by transformers.
-      MemberDefUsage: MemberDefUsage
+    member _.MemberDefUsage = memberDefUsage
 
-      /// Indicates whether an option or argument should be generated. 
-      /// The core SetHandler/symbol AppModel uses symbols as inputs,
-      /// so does not need to generate. There are probably also scenarios
-      /// where an AppModel allows users to create some symbols so they 
-      /// have the MemberDefUsage.CommandLine power, although these AppModels
-      /// are not yet designed. If the MemberKind is Service, a symbol
-      ///  is never generated, so GenerateSymbol is ignored. 
-      ///
-      /// Set by AppModel. Never changed by transformers.
-      GenerateSymbol: bool
-
-      /// Indicates whether the member is an argument, option (also called
-      /// a switch) or a service. This field should not be used during 
-      /// generation. Instead use the UseMemberKind property which supplies
-      /// the default if MemberKind is not set. The default is Option.
-      ///
-      /// This is always sets by transformers. 
-      MemberKind: MemberKind option
-
-      /// Aliases for the member. Arguments do not have aliases, so only
-      /// the first value is ever used. Ignored for services. 
-      Aliases: string list
-
-      /// ArgDisplayName manages the case where the argument of an option
-      /// has a different name than the option itself. If both the ArgDisplayName
-      /// and an alias is set for an Argument, the ArgDisplayName is used. 
-      /// Ignored for services.
-      ArgDisplayName: string option
-
-      /// The description displayed for help. Ignored for services.
-      Description: string option
-
-      /// Required is almost always determined by the type. This should
-      /// only be used if the type does not correctly indicate required 
-      /// status
-      RequiredOverride: bool option 
-
-      /// Pocket is a property bag for the AppModel use. During structural 
-      /// setup there is generally additional information discovered that 
-      /// is needed by later transformers. Put that data in the pocket.
-      Pocket: (string * obj) list}
-
-    /// MemberDef's should generally be created via the Create method
-    /// to increase MemberDef to additional fields. In general, a near
-    /// empty CommandDef is created during structure evaluation and then 
-    /// transformers fill in the details.     
-    static member Create memberDefUsage memberId typeName =
-      { MemberId = memberId
-        TypeName = typeName
-        MemberDefUsage = memberDefUsage
-        GenerateSymbol = true
-        MemberKind = None
-        Aliases = []
-        ArgDisplayName = None
-        Description = None
-        RequiredOverride = None
-        Pocket = [] }
+    /// Indicates whether an option or argument should be generated. 
+    /// The core SetHandler/symbol AppModel uses symbols as inputs,
+    /// so does not need to generate. There are probably also scenarios
+    /// where an AppModel allows users to create some symbols so they 
+    /// have the MemberDefUsage.CommandLine power, although these AppModels
+    /// are not yet designed. If the MemberKind is Service, a symbol
+    ///  is never generated, so GenerateSymbol is ignored. 
+    ///
+    /// Set by AppModel. Never changed by transformers.
+    member _.GenerateSymbol = generateSymbol
 
     /// Used during generation to retrieve the value set or the default of 
     /// option.
@@ -172,69 +180,25 @@ type MemberDef =
 
 
 /// The main structure for commands during transformations
-and CommandDef =
-    { /// The id for the command, which must be unique within the context
-      /// such as a flat list or the parent command. Note that this is not 
-      /// the command name, although it is one of the ways the Name function 
-      /// may determine the name. It is generally the method name used for invocation.
-      ///
-      /// This is set to the method name by the generator during structural eval. 
-      /// It can be overridden by the AppModel. This cannot be changed by transformers.
-      CommandId: string
+type CommandDef(memberId: string, path: string list, returnType: string option, commandDefUsage: CommandDefUsage, members: MemberDef list, subCommands: CommandDef list) =
 
-      /// The return type of the invoked method. System.CommandLine encourages the use of
-      /// the environment return, and thus this is often unit (null)
-      ///
-      /// This always comes from the method and cannot be changed by transformers
-      ReturnType: string option
+    let pocket = Dictionary<string, obj>()
 
-      /// Used by the generator to determine whether to output SetHandler.
-      /// When GenerateSetHandler is set to false, any tree structure is unused
-      /// and it will generally be fine to include a flat list. 
-      ///
-      /// This always comes from the AppModel during structural eval and cannot
-      /// be changed by transformers.
-      CommandDefUsage: CommandDefUsage
+    /// The description set for help. 
+    ///
+    /// This is almost always set by an AppModel transformer.
+    member val Description: string option = None
+         with get, set
 
-      /// Path is used by transformers to find information in dictionaries. Paths 
-      /// should be unique and logical for the user building a lookup. 
-      ///
-      /// This defaults to the method name if not set by the AppModel. For single 
-      /// layer CLIs, the method name is fine, if it is known by the end user, such as 
-      /// when it is also the Name/main alias. This should be set by the end of 
-      /// structural eval and cannot be changed by transformers
-      Path: string list
+    /// Commands can have aliases, often because there are deprecated versions. 
+    /// (We have not yet added deprecation to System.CommandLine).  
+    ///
+    /// This is always set by the AppModel structural eval or transforms. Generally 
+    /// set via transformers.
+    member val Aliases: string list = []
+         with get, set
 
-      /// Commands can have aliases, often because there are deprecated versions. 
-      /// (We have not yet added deprecation to System.CommandLine).  
-      ///
-      /// This is always set by the AppModel structural eval or transforms. Generally 
-      /// set via transformers.
-      Aliases: string list
-
-      /// The description set for help. 
-      ///
-      /// This is almost always set by an AppModel transformer.
-      Description: string option
-
-      /// Members include options, arguments, and services. Services is anything
-      /// not entered by the user, and is generally a well known service from 
-      /// System.CommandLine.  
-      ///
-      /// This always comes from the method during structure eval and can't be changed 
-      /// by transformers. 
-      Members: MemberDef list
-
-      /// All commands need to be in either the flat list or in a tree based on 
-      /// subcommands. They should not be in both. AppModels, other than the 
-      /// core SetHandler/symbol generator will probably use a tree structure. 
-      /// If used, SubCommands are set during structure setup.
-      ///
-      /// This always comes from the AppModel during structural eval and cannot 
-      /// be changed by tranformers.
-      SubCommands: CommandDef list
-
-      /// Pocket is a property bag for the AppModel use. During structural 
+    /// Pocket is a property bag for the AppModel use. During structural 
       /// setup there is generally additional information discovered that 
       /// is needed by later transformers. Put that data in the pocket.
       ///
@@ -252,28 +216,71 @@ and CommandDef =
       /// random string map, or a map based on a DU for expected items. ** Update: This open
       /// question is somewhat less important with the redesign that made expected things 
       /// part of the CommandDef and MemberDef rather than being in the pocket. 
-      Pocket: (string * obj) list}
+    member _.Pocket
+        with get(key) = 
+            match pocket.TryGetValue key with
+            | true, value -> Some value
+            | _           -> None
 
-    /// CommandDef's should generally be created via the Create method
-    /// to increase resiliency to additional fields. In general, a near
-    /// empty CommandDef is created during structure evaluation and then 
-    /// transformers fill in the details. 
-    static member Create commandDefUsage commandId =
-        { CommandId = commandId
-          ReturnType = None
-          CommandDefUsage = commandDefUsage
-          Path = []
-          Description = None
-          Aliases = []
-          Members = []
-          SubCommands = [] 
-          Pocket = [] }
+    member _.AddToPocket key value =
+        pocket.Add(key, value)
+ 
+    /// The id for the command, which must be unique within the context
+    /// such as a flat list or the parent command. Note that this is not 
+    /// the command name, although it is one of the ways the Name function 
+    /// may determine the name. It is generally the method name used for invocation.
+    ///
+    /// This is set to the method name by the generator during structural eval. 
+    /// It can be overridden by the AppModel. This cannot be changed by transformers.
+    member _.CommandId: string = memberId
 
-    /// Roots only differ by the empty Id. This clarifies that point. 
-    /// Roots are only used when SubCommand trees are used, and are 
-    /// optional in that case. They are required if there are members
-    /// on the root, but that may not be supported in V1.
-    static member CreateRoot commandDefUsage = CommandDef.Create commandDefUsage ""
+
+    /// Path is used by transformers to find information in dictionaries. Paths 
+    /// should be unique and logical for the user building a lookup. 
+    ///
+    /// This defaults to the method name if not set by the AppModel. For single 
+    /// layer CLIs, the method name is fine, if it is known by the end user, such as 
+    /// when it is also the Name/main alias. This should be set by the end of 
+    /// structural eval and cannot be changed by transformers
+    member _.Path: string list = path
+
+    /// The return type of the invoked method. System.CommandLine encourages the use of
+    /// the environment return, and thus this is often unit (null)
+    ///
+    /// This always comes from the method and cannot be changed by transformers
+    member _.ReturnType: string option = returnType
+
+    /// Used by the generator to determine whether to output SetHandler.
+    /// When GenerateSetHandler is set to false, any tree structure is unused
+    /// and it will generally be fine to include a flat list. 
+    ///
+    /// This always comes from the AppModel during structural eval and cannot
+    /// be changed by transformers.
+    member _.CommandDefUsage: CommandDefUsage = commandDefUsage
+
+    /// Members include options, arguments, and services. Services is anything
+    /// not entered by the user, and is generally a well known service from 
+    /// System.CommandLine.  
+    ///
+    /// This always comes from the method during structure eval and can't be changed 
+    /// by transformers. 
+    member _.Members: MemberDef list = members
+
+    /// All commands need to be in either the flat list or in a tree based on 
+    /// subcommands. They should not be in both. AppModels, other than the 
+    /// core SetHandler/symbol generator will probably use a tree structure. 
+    /// If used, SubCommands are set during structure setup.
+    ///
+    /// This always comes from the AppModel during structural eval and cannot 
+    /// be changed by tranformers.
+    member _.SubCommands: CommandDef list = subCommands
+
+
+    ///// Roots only differ by the empty Id. This clarifies that point. 
+    ///// Roots are only used when SubCommand trees are used, and are 
+    ///// optional in that case. They are required if there are members
+    ///// on the root, but that may not be supported in V1.
+    //static member CreateRoot commandDefUsage = CommandDef.Create commandDefUsage ""
 
     /// Name is the name the user expects to see, in Pascal or Camel form. 
     member this.Name =

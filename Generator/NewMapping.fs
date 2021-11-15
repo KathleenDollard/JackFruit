@@ -3,15 +3,14 @@
 open Microsoft.CodeAnalysis
 open Generator.Models
 
-let CommandDefFromMethod model (info: AppModelCommandInfo) =
+let CommandDefFromMethod model (info: AppModelCommandInfo) subCommands =
 
     let members = 
         match info.Method with
              | Some method -> 
                  [ for parameter in method.Parameters do
                      let usage = UserParameter parameter
-                     // KAD-Don: Why does this error without parens? 
-                     MemberDef.Create usage parameter.Name (parameter.Type.ToDisplayString()) ]
+                     MemberDef(parameter.Name, parameter.Type.ToDisplayString(), usage, true)]
              | None -> [] 
 
     let id = 
@@ -27,14 +26,10 @@ let CommandDefFromMethod model (info: AppModelCommandInfo) =
         | Some m -> UserMethod (m, model)
         | None -> Arbitrary
 
-    let commandDef = CommandDef.Create usage id
-    { commandDef with 
-        Path = info.Path
-        Aliases = [id]
-        Members = members
-        Pocket = 
-        [ "Method", info.Method 
-          "SemanticModel", model] }
+    let commandDef = CommandDef(id, info.Path, None, usage, members, subCommands)
+    commandDef.AddToPocket "Method" info.Method 
+    commandDef.AddToPocket "SemanticModel" model
+    commandDef
 
 let CommandDefsFrom<'T> semanticModel (appModel: AppModel<'T>) (items: 'T list)  =
 
@@ -43,8 +38,7 @@ let CommandDefsFrom<'T> semanticModel (appModel: AppModel<'T>) (items: 'T list) 
             [ for child in (appModel.Children item) do
                 yield depthFirstCreate child ]
         let info = appModel.Info semanticModel item
-        let commandDef = CommandDefFromMethod semanticModel info
-        let commandDef = { commandDef with SubCommands = subCommands }
+        let commandDef = CommandDefFromMethod semanticModel info subCommands
         //RunTransformers commandDef appModel
         commandDef
 
