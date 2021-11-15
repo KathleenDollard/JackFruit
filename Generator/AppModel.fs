@@ -125,6 +125,7 @@ type DescriptionsFromXmlCommentsTransforer() =
         override this.NewCommandDescription commandDef = CommandDescFromXmlComment commandDef
         override this.NewMemberDescription memberDef = MemberDescFromXmlComment memberDef
 
+
 type AppModelCommandInfo =
     { InfoCommandId: string option
       Path: string list

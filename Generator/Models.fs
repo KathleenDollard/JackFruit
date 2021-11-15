@@ -100,7 +100,10 @@ type MemberDef(memberId: string, typeName: string, memberDefUsage: MemberDefUsag
     ///
     /// This is manipulated by both the AppModel and the transformers
     member _.Pocket
-        with get(index) = pocket[index]
+        with get(key) = 
+            match pocket.TryGetValue key with
+            | true, value -> Some value
+            | _           -> None
 
     member _.AddToPocket key value =
         pocket.Add(key, value)
@@ -214,7 +217,10 @@ type CommandDef(memberId: string, path: string list, returnType: string option, 
       /// question is somewhat less important with the redesign that made expected things 
       /// part of the CommandDef and MemberDef rather than being in the pocket. 
     member _.Pocket
-        with get(index) = pocket[index]
+        with get(key) = 
+            match pocket.TryGetValue key with
+            | true, value -> Some value
+            | _           -> None
 
     member _.AddToPocket key value =
         pocket.Add(key, value)

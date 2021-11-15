@@ -23,12 +23,23 @@ module AppModelHelpers =
             | None -> UsePreviousValue
 
     let XmlCommentFromPocketOrMethod (commandDef: CommandDef) (method: IMethodSymbol) =
-        // The optimization to cache the parsed XML is not yet done, and waiting on mutable CommandDefs
-        let xmlString = method.GetDocumentationCommentXml()
-        if String.IsNullOrEmpty xmlString then
-            None
-        else
-            Some (XDocument.Parse(xmlString))
+        // The expensive part is the parsing, so we do not want to repeat it for every parameter
+        let cacheKey = "XmlComment"
+        let cached = commandDef.Pocket(cacheKey)
+
+        match cached with 
+        | Some xmlAsObject -> 
+            match xmlAsObject with 
+            | :? XDocument as xml -> Some xml
+            | _ -> None
+        | None -> 
+            let xmlString = method.GetDocumentationCommentXml()
+            if String.IsNullOrEmpty xmlString then
+                None
+            else
+                let newXml = XDocument.Parse(xmlString)
+                commandDef.AddToPocket cacheKey newXml
+                Some newXml
         
 
     let private DescFromXmlSummary commandDef (method: IMethodSymbol) =
@@ -83,6 +94,9 @@ module AppModelHelpers =
 
 
     let MemberDescFromXmlComment memberDef =
+        // This currently fails because it doesn't have a CommandDef to pass. 
+        // We either redesign to pass CommandDef to all transforms or we 
+        let desc = DescFromXmlParam memberDef 
         UsePreviousValue
         //let GetDesc method = 
         //    match memberDef.MemberDefUsage with
