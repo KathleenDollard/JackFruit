@@ -3,15 +3,7 @@
 open Microsoft.CodeAnalysis
 open Generator.Models
 
-let CommandDefFromMethod model (info: AppModelCommandInfo) subCommands =
-
-    let members = 
-        match info.Method with
-             | Some method -> 
-                 [ for parameter in method.Parameters do
-                     let usage = UserParameter parameter
-                     MemberDef(parameter.Name, parameter.Type.ToDisplayString(), usage, true)]
-             | None -> [] 
+let CommandDefFromMethod model (info: AppModelCommandInfo) =
 
     let id = 
         match info.InfoCommandId with
@@ -26,7 +18,17 @@ let CommandDefFromMethod model (info: AppModelCommandInfo) subCommands =
         | Some m -> UserMethod (m, model)
         | None -> Arbitrary
 
-    let commandDef = CommandDef(id, info.Path, None, usage, members, subCommands)
+    let commandDef = CommandDef(id, info.Path, None, usage)
+
+    let members = 
+        match info.Method with
+             | Some method -> 
+                 [ for parameter in method.Parameters do
+                     let usage = UserParameter parameter
+                     MemberDef(parameter.Name, commandDef, parameter.Type.ToDisplayString(), usage, true)]
+             | None -> [] 
+
+    commandDef.InitializeMembers members
     commandDef.AddToPocket "Method" info.Method 
     commandDef.AddToPocket "SemanticModel" model
     commandDef

@@ -52,7 +52,7 @@ type CommandDefUsage =
 /// The single structure is used so that late transformers can
 /// determine the member type (as opposed to requiring it during
 /// structure evaluation). 
-type MemberDef(memberId: string, typeName: string, memberDefUsage: MemberDefUsage, generateSymbol: bool) =
+type MemberDef(memberId: string, commandDef: CommandDef, typeName: string, memberDefUsage: MemberDefUsage, generateSymbol: bool) =
     let pocket = Dictionary<string, obj>()
 
     /// Indicates whether the member is an argument, option (also called
@@ -114,6 +114,8 @@ type MemberDef(memberId: string, typeName: string, memberDefUsage: MemberDefUsag
       ///
       /// Never changed by transformers.
     member _.MemberId = memberId
+
+    member _.CommandDef = commandDef
 
     /// The name of the type, as a string. We may need work here for 
       /// nullable, etc.
@@ -180,7 +182,7 @@ type MemberDef(memberId: string, typeName: string, memberDefUsage: MemberDefUsag
 
 
 /// The main structure for commands during transformations
-type CommandDef(memberId: string, path: string list, returnType: string option, commandDefUsage: CommandDefUsage, members: MemberDef list, subCommands: CommandDef list) =
+and CommandDef(memberId: string, path: string list, returnType: string option, commandDefUsage: CommandDefUsage, members: MemberDef list, subCommands: CommandDef list) =
 
     let pocket = Dictionary<string, obj>()
 
