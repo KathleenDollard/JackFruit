@@ -70,7 +70,7 @@ module AppModelHelpers =
             else
                 UsePreviousValue
   
-    let private MethodFromCommandDef commandDef =
+    let private MethodFromCommandDef (commandDef: CommandDef) =
         match commandDef.CommandDefUsage with
         | UserMethod (method, _) -> Some method
         | _ -> None
@@ -116,7 +116,7 @@ module AppModelHelpers =
 
 
     // Do we care? If we only use description to create Symbols, we do not care. 
-    let DescriptionFromSymbol commandDef =
+    let DescriptionFromSymbol (commandDef: CommandDef) =
         let descriptionFromSymbol(symbol) =
             UsePreviousValue
 

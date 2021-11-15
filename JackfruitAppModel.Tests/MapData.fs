@@ -15,64 +15,35 @@ type MapData =
           CommandDefs = [ ] }
 
     static member OneMapping =
-        let commandDef = CommandDef.Create Arbitrary "A"
-        let commandDef = 
-            { commandDef with 
-                Members = [ MemberDef.Create ArbitraryMember "one" "string"]
-                Path = [""]
-                Aliases = ["A"] }
+        let members = [ MemberDef("one", "string", ArbitraryMember, true) ]
+        let commandDef = CommandDef("A", [""], None, Arbitrary, members, [])
+
         { MapInferredStatements = [ "builder.MapInferred(\"\", Handlers.A);" ]
           CommandNames = [ "" ]
           CommandDefs = [ commandDef ] }
         
 
     static member ThreeMappings =
-        let package =
-            { CommandId = "package"
-              ReturnType = None
-              CommandDefUsage = Arbitrary
-              Path = [ "dotnet"; "add"; "package" ]
-              Description = None
-              Aliases = [ "package" ]
-              Members = 
-                // KAD-Don: Why is this legal?
-                //[ (MemberDef.Create (UserParameter null) "packageName" "string") 
-                [ (MemberDef.Create ArbitraryMember "packageName" "string") 
-                  (MemberDef.Create ArbitraryMember "version" "string")
-                  (MemberDef.Create ArbitraryMember "framework" "string")
-                  (MemberDef.Create ArbitraryMember "noRestore" "bool")
-                  (MemberDef.Create ArbitraryMember "source" "string")
-                  (MemberDef.Create ArbitraryMember "packageDirectory" "string")
-                  (MemberDef.Create ArbitraryMember "interactive" "bool")
-                  (MemberDef.Create ArbitraryMember "prerelease" "bool")
+        let packageMembers = 
+            [ MemberDef("packageName", "string", ArbitraryMember, true)
+              MemberDef("version", "string", ArbitraryMember, true)
+              MemberDef("framework", "string", ArbitraryMember, true)
+              MemberDef("noRestore", "bool", ArbitraryMember, true)
+              MemberDef("source", "string", ArbitraryMember, true)
+              MemberDef("packageDirectory", "string", ArbitraryMember, true)
+              MemberDef("interactive", "bool", ArbitraryMember, true)
+              MemberDef("prerelease", "bool", ArbitraryMember, true) ] 
+        let package = CommandDef("package", [ "dotnet"; "add"; "package" ], None, Arbitrary, packageMembers, [])
+   
+        let add = CommandDef("add", [ "dotnet"; "add" ], None, Arbitrary, [], [package])
 
-                  ]
-              SubCommands = [] 
-              Pocket = []}
-
-        let add =
-            { CommandId = "add"
-              ReturnType = None
-              CommandDefUsage = Arbitrary
-              Path = [ "dotnet"; "add" ]
-              Description = None
-              Aliases = [ "add" ]
-              Members = []
-              SubCommands = [ package ]
-              Pocket = []}
+        let dotnetMembers = [ MemberDef("project", "string", ArbitraryMember, true) ]
+        let dotnet = CommandDef("dotnet", [ "dotnet" ], None, Arbitrary, dotnetMembers, [add])
 
         { MapInferredStatements =
             [ "builder.MapInferred(\"dotnet <PROJECT>\", DotnetHandlers.Dotnet);"
               "builder.MapInferred(\"dotnet add\", null);"
               "builder.MapInferred(\"dotnet add package <PACKAGE_NAME>\", DotnetHandlers.AddPackage);" ]
           CommandNames = [ "dotnet"; "add"; "package" ]
-          CommandDefs =
-            [ { CommandId = "dotnet"
-                ReturnType = None
-                CommandDefUsage = Arbitrary
-                Path = [ "dotnet" ]
-                Description = None
-                Aliases = [ "dotnet" ]
-                Members = [(MemberDef.Create ArbitraryMember "project" "string")]
-                SubCommands = [ add ]
-                Pocket = [] }  ] }
+
+          CommandDefs = [ dotnet ] }

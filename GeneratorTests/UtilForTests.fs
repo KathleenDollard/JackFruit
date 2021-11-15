@@ -162,7 +162,7 @@ let ShouldEqual (expected: 'a) (actual: 'a) =
 /// it gives the object on which an issue occurs. 
 let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) =
     // MemberDefUsage and CommandDefUsage are not tested because it contains data that we can't easily replicate in tests
-    let CompareMember commandId exp act =
+    let CompareMember commandId (exp: MemberDef) (act: MemberDef) =
         [ let id = commandId = if String.IsNullOrEmpty(exp.MemberId) then act.MemberId else exp.MemberId
           if exp.MemberId <> act.MemberId then $"MemberId {exp.MemberId} does not match {act.MemberId}"
           if exp.TypeName <> act.TypeName then $"{id}: TypeName {exp.TypeName} does not match {act.TypeName}"
@@ -174,7 +174,7 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
           if exp.RequiredOverride <> act.RequiredOverride then $"{id}: RequiredOverride {exp.RequiredOverride} does not match {act.RequiredOverride}"
         ]
 
-    let rec CompareCommand parentId exp act =
+    let rec CompareCommand parentId (exp: CommandDef) (act: CommandDef) =
         [ let id = parentId + if String.IsNullOrEmpty(exp.CommandId) then act.CommandId else exp.CommandId
           if exp.CommandId <> act.CommandId then $"CommandId {exp.CommandId} does not match {act.CommandId}"
           if exp.ReturnType <> act.ReturnType then $"{id}: GenerateSetHandler {exp.ReturnType} does not match {act.ReturnType}"
@@ -201,17 +201,6 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
         ]
 
 
-    // if an error occurs in the following, update it _and update the comparison_
-    // ** This should remain, although it is unused, and should not switch to Create method call **
-    let test = { CommandId = ""
-                 ReturnType = None
-                 CommandDefUsage = Arbitrary 
-                 Path = []
-                 Aliases = []
-                 Description = None
-                 Members = []
-                 SubCommands = []
-                 Pocket = [] }
     if expected.Length > actual.Length then 
         Some [ $"Length of expected ({expected.Length}) is different than the length of actual ({actual.Length})"]
     else 
