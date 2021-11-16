@@ -18,7 +18,12 @@ let CommandDefFromMethod model (info: AppModelCommandInfo) =
         | Some m -> UserMethod (m, model)
         | None -> Arbitrary
 
-    let commandDef = CommandDef(id, info.Path, None, usage)
+    let returnType = 
+        match info.Method with 
+        | Some m -> Some (m.ReturnType.ToDisplayString())
+        | None -> None
+
+    let commandDef = CommandDef(id, info.Path, returnType, usage)
 
     let members = 
         match info.Method with
@@ -28,7 +33,7 @@ let CommandDefFromMethod model (info: AppModelCommandInfo) =
                      MemberDef(parameter.Name, commandDef, parameter.Type.ToDisplayString(), usage, true)]
              | None -> [] 
 
-    commandDef.InitializeMembers members
+    commandDef.Members <- members
     commandDef.AddToPocket "Method" info.Method 
     commandDef.AddToPocket "SemanticModel" model
     commandDef
@@ -40,7 +45,8 @@ let CommandDefsFrom<'T> semanticModel (appModel: AppModel<'T>) (items: 'T list) 
             [ for child in (appModel.Children item) do
                 yield depthFirstCreate child ]
         let info = appModel.Info semanticModel item
-        let commandDef = CommandDefFromMethod semanticModel info subCommands
+        let commandDef = CommandDefFromMethod semanticModel info
+        commandDef.SubCommands <- subCommands
         //RunTransformers commandDef appModel
         commandDef
 

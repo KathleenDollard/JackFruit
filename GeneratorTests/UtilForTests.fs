@@ -163,7 +163,7 @@ let ShouldEqual (expected: 'a) (actual: 'a) =
 let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) =
     // MemberDefUsage and CommandDefUsage are not tested because it contains data that we can't easily replicate in tests
     let CompareMember commandId (exp: MemberDef) (act: MemberDef) =
-        [ let id = commandId = if String.IsNullOrEmpty(exp.MemberId) then act.MemberId else exp.MemberId
+        [ let id = commandId + if String.IsNullOrEmpty(exp.MemberId) then act.MemberId else exp.MemberId
           if exp.MemberId <> act.MemberId then $"MemberId {exp.MemberId} does not match {act.MemberId}"
           if exp.TypeName <> act.TypeName then $"{id}: TypeName {exp.TypeName} does not match {act.TypeName}"
           if exp.GenerateSymbol <> act.GenerateSymbol then $"{id}: GenerateSymbol {exp.GenerateSymbol} does not match {act.GenerateSymbol}"
@@ -176,14 +176,14 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
 
     let rec CompareCommand parentId (exp: CommandDef) (act: CommandDef) =
         [ let id = parentId + if String.IsNullOrEmpty(exp.CommandId) then act.CommandId else exp.CommandId
-          if exp.CommandId <> act.CommandId then $"CommandId {exp.CommandId} does not match {act.CommandId}"
-          if exp.ReturnType <> act.ReturnType then $"{id}: GenerateSetHandler {exp.ReturnType} does not match {act.ReturnType}"
-          if exp.Path <> act.Path then $"{id}: Path {exp.Path} does not match {act.Path}"
-          if exp.Aliases <> act.Aliases then $"{id}: Aliases {exp.Aliases} does not match {act.Aliases}"
-          if exp.Description <> act.Description then $"{id}: Description {exp.Description} does not match {act.Description}" 
+          if exp.CommandId <> act.CommandId then $"{parentId}: CommandId {exp.CommandId} does not match {act.CommandId}"
+          if exp.ReturnType <> act.ReturnType then $"{parentId}: ReturnType {exp.ReturnType} does not match {act.ReturnType}"
+          if exp.Path <> act.Path then $"{parentId}: Path {exp.Path} does not match {act.Path}"
+          if exp.Aliases <> act.Aliases then $"{parentId}: Aliases {exp.Aliases} does not match {act.Aliases}"
+          if exp.Description <> act.Description then $"{parentId}: Description {exp.Description} does not match {act.Description}" 
           
-          if exp.Members.Length > act.Members.Length then 
-            $"{id}: Length of expected ({exp.Members.Length}) is different than the length of actual ({act.Members.Length})"
+          if exp.Members.Length <> act.Members.Length then 
+            $"{parentId}: Members length of expected ({exp.Members.Length}) is different than the length of actual ({act.Members.Length})"
           else
             let members = List.zip exp.Members act.Members
             for expMember, actMember in members do
@@ -191,8 +191,8 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
                 let issues = CompareMember id expMember actMember
                 for issue in issues do issue
 
-          if exp.SubCommands.Length > act.SubCommands.Length then 
-            $"{id}: Length of expected ({exp.SubCommands.Length}) is different than the length of actual ({act.SubCommands.Length})"
+          if exp.SubCommands.Length <> act.SubCommands.Length then 
+            $"{parentId}: SubCommands length of expected ({exp.SubCommands.Length}) is different than the length of actual ({act.SubCommands.Length})"
           else
             let subCommands = List.zip exp.SubCommands act.SubCommands
             for expSubCommand, actSubCommand in subCommands do
@@ -202,7 +202,7 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
 
 
     if expected.Length > actual.Length then 
-        Some [ $"Length of expected ({expected.Length}) is different than the length of actual ({actual.Length})"]
+        Some [ $"CommandDef length of expected ({expected.Length}) is different than the length of actual ({actual.Length})"]
     else 
         let data = List.zip expected actual
         let errors =
