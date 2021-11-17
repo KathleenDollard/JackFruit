@@ -47,7 +47,7 @@ type MapData =
         { MapInferredStatements =
             [ "builder.MapInferred(\"dotnet <PROJECT>\", DotnetHandlers.Dotnet);"
               "builder.MapInferred(\"dotnet add\", null);"
-              "builder.MapInferred(\"dotnet add package <PACKAGE_NAME>\", DotnetHandlers.AddPackage);" ]
+              "builder.MapInferred(\"dotnet add package <PACKAGE_NAME> --source|-s\", DotnetHandlers.AddPackage);" ]
           CommandNames = [ "dotnet"; "add"; "package" ]
 
           CommandDefs = [ dotnet ] }

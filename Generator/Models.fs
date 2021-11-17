@@ -4,6 +4,11 @@ open Microsoft.CodeAnalysis
 open System.CommandLine
 open System.Collections.Generic
 
+
+type ItemReturn<'T> =
+| NewValue of Value: 'T
+| UsePreviousValue
+
 /// MemberKind indicates the System.CommandLine symbol used
 /// for the member. They are treated the same during transformation
 /// so that a late transformer can determine which they are. 
@@ -29,8 +34,7 @@ type MemberDefUsage =
     /// The data entered or defaulted by parsing will be used 
     /// as an argument to the invocation method. 
     | UserParameter of Parameter: IParameterSymbol
-
-    | HandlerParameter of Parameter: IParameterSymbol
+    | HandlerParameter of Parameter: IParameterSymbol * Symbol: Symbol
 
     /// This is not yet supported
     | Property of Property: IPropertySymbol
