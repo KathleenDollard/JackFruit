@@ -5,6 +5,7 @@ open Microsoft.CodeAnalysis
 open System.Xml.Linq
 open System.Linq
 open System
+open XmlCommentPatterns
 
 module AppModelHelpers =
 
@@ -52,45 +53,26 @@ module AppModelHelpers =
         match XmlCommentFromPocketOrMethod commandDef with 
         | None -> UsePreviousValue
         | Some xml -> 
-            if xml.Root.HasElements then
-                let methodRoot = xml.Elements().First()
-                let summaries = 
-                    [ for node in methodRoot.Elements() do
-                        if node.Name = XName.Get("summary") then
-                            let textNode = node.FirstNode
-                            if textNode <> null then
-                                let desc = textNode.ToString().Trim()
-                                desc ]
-                match summaries with 
-                | [] -> UsePreviousValue
-                | head::_ -> if String.IsNullOrEmpty head then UsePreviousValue else NewValue (Some head)
-            else
-                UsePreviousValue
+            match xml with 
+            | XmlCommentSummary summary -> 
+                if String.IsNullOrWhiteSpace summary then 
+                    UsePreviousValue
+                else
+                    NewValue (Some summary)
+            | _ -> UsePreviousValue
 
 
     let MemberDescFromXmlComment (memberDef: MemberDef) =
-        let matchingElement (elements: XElement seq) name =
-            let matches =
-                [ for element in elements do
-                  let attributes = 
-                     element.Attributes("name")
-                     |> Seq.where (fun x -> x.Value = name)
-                  if Seq.isEmpty attributes then
-                     None
-                  else
-                     Some (element.ToString()) ]
-            match matches with 
-            | [] -> UsePreviousValue
-            | head::_ -> NewValue head
-
         match XmlCommentFromPocketOrMethod memberDef.CommandDef with 
         | None -> UsePreviousValue
         | Some xml -> 
-            if xml.Root.HasElements then
-                matchingElement (xml.Elements()) memberDef.MemberId
-            else
-                UsePreviousValue
-
+            match xml with 
+            | XmlCommentParamDesc memberDef.MemberId desc -> 
+                if String.IsNullOrWhiteSpace desc then 
+                    UsePreviousValue
+                else
+                    NewValue (Some desc)
+            | _ -> UsePreviousValue
 
          
     let DescFromAttribute (roslynSymbol: ISymbol) = 

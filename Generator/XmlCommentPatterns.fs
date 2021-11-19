@@ -2,17 +2,21 @@
 
 open System.Xml.Linq
 
-let private ItemElement (xDoc: XDocument) =
-    match xDoc.Root.FirstNode with 
-    | :? XElement as x -> Some x // Consider testing for one of hte prefixes, assume one
-    | _ -> None
+let private ItemRoot (xDoc: XDocument) =
+    match xDoc.Root with
+    | null -> None
+    | _ -> Some xDoc.Root
 
 
-let AttributesWithName (element: XElement) name =
-    element.Attributes(XName.Get(name))
-    |> List.ofSeq
-
-
+// This is private because the name is confusing. It isn't an attribute with the name, but 
+// an attribute with the matching value an an attribute named name. 
+let private AttributesWithName (element: XElement) name =
+    let xName = XName.Get(name)
+    let test = element.Attributes(XName.Get("name"))
+    let test2 = element.Attributes(name)
+    [ for attr in element.Attributes("name") do
+        if attr.Value = name then 
+            attr ]
 
 
 // This is private because there must be a better way, and naming is poor
@@ -26,10 +30,10 @@ let private ElementContents (element: XElement) =
 
 
 let (|XmlCommentSummary|_|) (xDoc: XDocument) =
-    match ItemElement xDoc with
+    match ItemRoot xDoc with
     | None -> None
-    | Some  item ->
-        let summaries = item.Elements("summary") 
+    | Some  root ->
+        let summaries = root.Elements("summary") 
         if Seq.isEmpty summaries then 
             None
         else
@@ -37,12 +41,13 @@ let (|XmlCommentSummary|_|) (xDoc: XDocument) =
             ElementContents summary
 
 
+// This is a separate method so that other AppModels can use this code
 let (|XmlCommentParamElemWithName|_|) name (xDoc: XDocument)  =
-    match ItemElement xDoc with
+    match ItemRoot xDoc with
     | None -> None
-    | Some  item ->
+    | Some  root ->
         let elements =
-            [ for element in item.Elements("param") do
+            [ for element in root.Elements("param") do
                 match AttributesWithName element name with 
                 | [] -> ()
                 | head::_ when name = head.Value -> element
@@ -52,7 +57,7 @@ let (|XmlCommentParamElemWithName|_|) name (xDoc: XDocument)  =
 
 let (|XmlCommentParamDesc|_|) name (xDoc: XDocument) =
     match xDoc with
-    | XmlCommentParamElemWithName name item -> Some (ElementContents item)
+    | XmlCommentParamElemWithName name item -> ElementContents item
     | _ -> None
 
         
