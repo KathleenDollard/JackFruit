@@ -15,8 +15,9 @@ type MapData =
           CommandDefs = [ ] }
 
     static member OneMapping =
-        let members = [ MemberDef("one", "string", ArbitraryMember, true) ]
-        let commandDef = CommandDef("A", [""], None, Arbitrary, members, [])
+        let commandDef = CommandDef("A", [""], (Some "void"), Arbitrary)
+        let members = [ MemberDef("one",commandDef, "string", ArbitraryMember, true) ]
+        commandDef.Members <- members
 
         { MapInferredStatements = [ "builder.MapInferred(\"\", Handlers.A);" ]
           CommandNames = [ "" ]
@@ -24,26 +25,29 @@ type MapData =
         
 
     static member ThreeMappings =
-        let packageMembers = 
-            [ MemberDef("packageName", "string", ArbitraryMember, true)
-              MemberDef("version", "string", ArbitraryMember, true)
-              MemberDef("framework", "string", ArbitraryMember, true)
-              MemberDef("noRestore", "bool", ArbitraryMember, true)
-              MemberDef("source", "string", ArbitraryMember, true)
-              MemberDef("packageDirectory", "string", ArbitraryMember, true)
-              MemberDef("interactive", "bool", ArbitraryMember, true)
-              MemberDef("prerelease", "bool", ArbitraryMember, true) ] 
-        let package = CommandDef("package", [ "dotnet"; "add"; "package" ], None, Arbitrary, packageMembers, [])
+        let package = CommandDef("package", [ "dotnet"; "add"; "package" ], Some "void", Arbitrary)
+        package.Members <-
+            [ MemberDef("packageName", package, "string", ArbitraryMember, true)
+              MemberDef("version", package, "string", ArbitraryMember, true)
+              MemberDef("framework",  package, "string", ArbitraryMember, true)
+              MemberDef("noRestore",  package, "bool", ArbitraryMember, true)
+              MemberDef("source",  package, "string", ArbitraryMember, true)
+              MemberDef("packageDirectory",  package, "string", ArbitraryMember, true)
+              MemberDef("interactive",  package, "bool", ArbitraryMember, true)
+              MemberDef("prerelease",  package, "bool", ArbitraryMember, true) ] 
    
-        let add = CommandDef("add", [ "dotnet"; "add" ], None, Arbitrary, [], [package])
+        let add = CommandDef("add", [ "dotnet"; "add" ], None, Arbitrary )
+        add.SubCommands <- [package]
 
-        let dotnetMembers = [ MemberDef("project", "string", ArbitraryMember, true) ]
-        let dotnet = CommandDef("dotnet", [ "dotnet" ], None, Arbitrary, dotnetMembers, [add])
+        let dotnet = CommandDef("dotnet", [ "dotnet" ], Some "void", Arbitrary)
+        dotnet.Members <-
+            [ MemberDef("project", dotnet, "string", ArbitraryMember, true) ]
+        dotnet.SubCommands <- [add]
 
         { MapInferredStatements =
             [ "builder.MapInferred(\"dotnet <PROJECT>\", DotnetHandlers.Dotnet);"
               "builder.MapInferred(\"dotnet add\", null);"
-              "builder.MapInferred(\"dotnet add package <PACKAGE_NAME>\", DotnetHandlers.AddPackage);" ]
+              "builder.MapInferred(\"dotnet add package <PACKAGE_NAME> --source|-s\", DotnetHandlers.AddPackage);" ]
           CommandNames = [ "dotnet"; "add"; "package" ]
 
           CommandDefs = [ dotnet ] }

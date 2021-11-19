@@ -5,10 +5,7 @@ open Microsoft.CodeAnalysis
 open System.Xml.Linq
 open System.Linq
 open System
-
-type ItemReturn<'T> =
-| NewValue of Value: 'T
-| UsePreviousValue
+open XmlCommentPatterns
 
 module AppModelHelpers =
 
@@ -22,91 +19,61 @@ module AppModelHelpers =
             | Some value -> NewValue (Some value)
             | None -> UsePreviousValue
 
-    let XmlCommentFromPocketOrMethod (commandDef: CommandDef) (method: IMethodSymbol) =
-        // The expensive part is the parsing, so we do not want to repeat it for every parameter
-        let cacheKey = "XmlComment"
-        let cached = commandDef.Pocket(cacheKey)
 
-        match cached with 
-        | Some xmlAsObject -> 
-            match xmlAsObject with 
-            | :? XDocument as xml -> Some xml
-            | _ -> None
-        | None -> 
-            let xmlString = method.GetDocumentationCommentXml()
-            if String.IsNullOrEmpty xmlString then
-                None
-            else
-                let newXml = XDocument.Parse(xmlString)
-                commandDef.AddToPocket cacheKey newXml
-                Some newXml
-        
-
-    let private DescFromXmlSummary commandDef (method: IMethodSymbol) =
-        match XmlCommentFromPocketOrMethod commandDef method with 
-        | None -> UsePreviousValue
-        | Some xml ->
-            if xml.Root.HasElements then
-                let methodRoot = xml.Elements().First()
-                let summaries = 
-                    [ for node in methodRoot.Elements() do
-                        if node.Name = XName.Get("summary") then
-                            let textNode = node.FirstNode
-                            if textNode <> null then
-                                let desc = textNode.ToString().Trim()
-                                desc ]
-                match summaries with 
-                | [] -> UsePreviousValue
-                | head::_ -> if String.IsNullOrEmpty head then UsePreviousValue else NewValue (Some head)
-            else
-                UsePreviousValue
-
-    
-    let private DescFromXmlParam memberDef (commandDef: CommandDef) (method: IMethodSymbol) =
-        match XmlCommentFromPocketOrMethod commandDef method with 
-        | None -> UsePreviousValue
-        | Some xml ->
-            if xml.Root.HasElements then
-                let methodRoot = xml.Elements().First()
-                let summaries = 
-                    [ for node in methodRoot.Elements() do
-                        if node.Name = XName.Get("summary") then
-                            let textNode = node.FirstNode
-                            if textNode <> null then
-                                let desc = textNode.ToString().Trim()
-                                desc ]
-                match summaries with 
-                | [] -> UsePreviousValue
-                | head::_ -> if String.IsNullOrEmpty head then UsePreviousValue else NewValue (Some head)
-            else
-                UsePreviousValue
-  
     let private MethodFromCommandDef (commandDef: CommandDef) =
         match commandDef.CommandDefUsage with
         | UserMethod (method, _) -> Some method
         | _ -> None
 
 
-    let CommandDescFromXmlComment commandDef =
+    let private XmlCommentFromPocketOrMethod (commandDef: CommandDef) =
         match MethodFromCommandDef commandDef with
-        | Some method -> DescFromXmlSummary commandDef method
+        | None -> None
+        | Some method -> 
+            // The expensive part is the parsing, so we do not want to repeat it for every parameter
+            let cacheKey = "XmlComment"
+            let cached = commandDef.Pocket(cacheKey)
+
+            match cached with 
+            | Some xmlAsObject -> 
+                match xmlAsObject with 
+                | :? XDocument as xml -> Some xml
+                | _ -> None
+            | None -> 
+                let xmlString = method.GetDocumentationCommentXml()
+                if String.IsNullOrEmpty xmlString then
+                    None
+                else
+                    let newXml = XDocument.Parse(xmlString)
+                    commandDef.AddToPocket cacheKey newXml
+                    Some newXml
+        
+   
+    let CommandDescFromXmlComment commandDef =
+        match XmlCommentFromPocketOrMethod commandDef with 
         | None -> UsePreviousValue
+        | Some xml -> 
+            match xml with 
+            | XmlCommentSummary summary -> 
+                if String.IsNullOrWhiteSpace summary then 
+                    UsePreviousValue
+                else
+                    NewValue (Some summary)
+            | _ -> UsePreviousValue
 
 
-    let MemberDescFromXmlComment memberDef =
-        // This currently fails because it doesn't have a CommandDef to pass. 
-        // We either redesign to pass CommandDef to all transforms or we 
-        let desc = DescFromXmlParam memberDef 
-        UsePreviousValue
-        //let GetDesc method = 
-        //    match memberDef.MemberDefUsage with
-        //    | UserParameter param -> DescFromXmlParam memberDef commandDef method
-        //    | _ -> UsePreviousValue
+    let MemberDescFromXmlComment (memberDef: MemberDef) =
+        match XmlCommentFromPocketOrMethod memberDef.CommandDef with 
+        | None -> UsePreviousValue
+        | Some xml -> 
+            match xml with 
+            | XmlCommentParamDesc memberDef.MemberId desc -> 
+                if String.IsNullOrWhiteSpace desc then 
+                    UsePreviousValue
+                else
+                    NewValue (Some desc)
+            | _ -> UsePreviousValue
 
-        //match commandDef.CommandDefUsage with
-        //| UserMethod (method, _) -> GetDesc method
-        //| _ -> UsePreviousValue
- 
          
     let DescFromAttribute (roslynSymbol: ISymbol) = 
         let attributes = 

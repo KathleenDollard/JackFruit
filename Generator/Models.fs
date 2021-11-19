@@ -4,6 +4,11 @@ open Microsoft.CodeAnalysis
 open System.CommandLine
 open System.Collections.Generic
 
+
+type ItemReturn<'T> =
+| NewValue of Value: 'T
+| UsePreviousValue
+
 /// MemberKind indicates the System.CommandLine symbol used
 /// for the member. They are treated the same during transformation
 /// so that a late transformer can determine which they are. 
@@ -29,8 +34,7 @@ type MemberDefUsage =
     /// The data entered or defaulted by parsing will be used 
     /// as an argument to the invocation method. 
     | UserParameter of Parameter: IParameterSymbol
-
-    | HandlerParameter of Parameter: IParameterSymbol
+    | HandlerParameter of Parameter: IParameterSymbol * Symbol: Symbol
 
     /// This is not yet supported
     | Property of Property: IPropertySymbol
@@ -52,7 +56,7 @@ type CommandDefUsage =
 /// The single structure is used so that late transformers can
 /// determine the member type (as opposed to requiring it during
 /// structure evaluation). 
-type MemberDef(memberId: string, typeName: string, memberDefUsage: MemberDefUsage, generateSymbol: bool) =
+type MemberDef(memberId: string, commandDef: CommandDef, typeName: string, memberDefUsage: MemberDefUsage, generateSymbol: bool) =
     let pocket = Dictionary<string, obj>()
 
     /// Indicates whether the member is an argument, option (also called
@@ -114,6 +118,8 @@ type MemberDef(memberId: string, typeName: string, memberDefUsage: MemberDefUsag
       ///
       /// Never changed by transformers.
     member _.MemberId = memberId
+
+    member _.CommandDef = commandDef
 
     /// The name of the type, as a string. We may need work here for 
       /// nullable, etc.
@@ -180,7 +186,7 @@ type MemberDef(memberId: string, typeName: string, memberDefUsage: MemberDefUsag
 
 
 /// The main structure for commands during transformations
-type CommandDef(memberId: string, path: string list, returnType: string option, commandDefUsage: CommandDefUsage, members: MemberDef list, subCommands: CommandDef list) =
+and CommandDef(commandId: string, path: string list, returnType: string option, commandDefUsage: CommandDefUsage) =
 
     let pocket = Dictionary<string, obj>()
 
@@ -197,6 +203,25 @@ type CommandDef(memberId: string, path: string list, returnType: string option, 
     /// set via transformers.
     member val Aliases: string list = []
          with get, set
+
+    /// Members include options, arguments, and services. Services is anything
+    /// not entered by the user, and is generally a well known service from 
+    /// System.CommandLine.  
+    ///
+    /// This always comes from the method during structure eval and can't be changed 
+    /// by transformers. 
+    member val Members: MemberDef list = []
+        with get, set
+
+    /// All commands need to be in either the flat list or in a tree based on 
+    /// subcommands. They should not be in both. AppModels, other than the 
+    /// core SetHandler/symbol generator will probably use a tree structure. 
+    /// If used, SubCommands are set during structure setup.
+    ///
+    /// This always comes from the AppModel during structural eval and cannot 
+    /// be changed by tranformers.
+    member val SubCommands: CommandDef list = []
+        with get, set
 
     /// Pocket is a property bag for the AppModel use. During structural 
       /// setup there is generally additional information discovered that 
@@ -232,7 +257,7 @@ type CommandDef(memberId: string, path: string list, returnType: string option, 
     ///
     /// This is set to the method name by the generator during structural eval. 
     /// It can be overridden by the AppModel. This cannot be changed by transformers.
-    member _.CommandId: string = memberId
+    member _.CommandId: string = commandId
 
 
     /// Path is used by transformers to find information in dictionaries. Paths 
@@ -257,23 +282,6 @@ type CommandDef(memberId: string, path: string list, returnType: string option, 
     /// This always comes from the AppModel during structural eval and cannot
     /// be changed by transformers.
     member _.CommandDefUsage: CommandDefUsage = commandDefUsage
-
-    /// Members include options, arguments, and services. Services is anything
-    /// not entered by the user, and is generally a well known service from 
-    /// System.CommandLine.  
-    ///
-    /// This always comes from the method during structure eval and can't be changed 
-    /// by transformers. 
-    member _.Members: MemberDef list = members
-
-    /// All commands need to be in either the flat list or in a tree based on 
-    /// subcommands. They should not be in both. AppModels, other than the 
-    /// core SetHandler/symbol generator will probably use a tree structure. 
-    /// If used, SubCommands are set during structure setup.
-    ///
-    /// This always comes from the AppModel during structural eval and cannot 
-    /// be changed by tranformers.
-    member _.SubCommands: CommandDef list = subCommands
 
 
     ///// Roots only differ by the empty Id. This clarifies that point. 
