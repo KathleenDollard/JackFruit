@@ -193,7 +193,7 @@ namespace ConsoleSupport
             static Argument ArgumentFromInfo(ArgInfo info)
             {
                 var arg = new Argument(info.Name);
-                arg.ArgumentType = info.Type;
+                //arg.ArgumentType = info.Type;
                 return arg;
             }
         }
