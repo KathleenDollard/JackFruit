@@ -22,6 +22,7 @@ namespace TestCode
         //    // Make sure there is not more than one instance, so make not-auto properties
         //    public Option<string> option_One => new Option<string>("one");
         //    public Option<int> option_Two => new Option<int>("two");
+
         //    public Command Command
         //    {
         //        get

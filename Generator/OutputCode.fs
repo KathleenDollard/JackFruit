@@ -15,6 +15,20 @@ let private OutputHeader (outputter: RoslynOut) =
     outputter.OutputPragma(Pragma "warning disable")
     ()
 
+let private SymbolProperties (commandDef: CommandDef) =
+    let optionProperty (mbr: MemberDef) =
+        { PropertyName = $"{mbr.Name}Option"
+          Type = 
+
+        }
+    let argumentProperty mbr =
+    [ for mbr in commandDef.Members do
+        let mbrKind = match mbr.MemberKind with | Some kind -> kind | None -> Option
+        match mbrKind with 
+        | Option -> optionProperty mbr
+        | Argument -> argumentProperty mbr
+        | Service -> () ]
+
 let private CommonMembers pos (commandDefs: CommandDef list) : Member list =
     let mutable i = pos
     // TODO: We need to get a distinct on the parameters as these are shared later
