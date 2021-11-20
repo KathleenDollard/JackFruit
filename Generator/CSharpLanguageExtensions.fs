@@ -2,6 +2,7 @@
 
 open Generator.Language
 open System
+open Common
 
 
 // KAD-Don: Can you override a method (ToString) outside the record definition (like you can with static methods)
@@ -24,16 +25,19 @@ type Operator with
         | GreaterThanOrEqualTo -> ">="
         | LessThanOrEqualTo -> "<="
 
-type GenericNamedItem with
+type NamedItem with
     member this.Output =
-        let generics = 
-            match this.GenericTypes with 
-            | [] -> ""
-            | _ -> 
-                let x = [ for t in this.GenericTypes do t.ToString() ]
-                let y = String.Join(", ", x)
-                $"<{y}>"
-        $"{this.Name}{generics}"
+        match this with 
+        | SimpleNamedItem name -> name
+        | GenericNamedItem (name, genericTypes) ->
+            let generics = 
+                match genericTypes with 
+                | [] -> ""
+                | _ -> 
+                    let x = [ for t in genericTypes do t.ToString() ]
+                    let y = String.Join(", ", x)
+                    $"<{y}>"
+            $"{name}{generics}"
 
 
 type Invocation with 

@@ -159,9 +159,9 @@ namespace ConsoleSupport
                     }
                     else // infer as option
                     {
-                        var cliName = name.ToKebabCase();
-                        var symbolInfo = GetOptionInfo(cliName, type);
-                        leafCommand.Add(symbolInfo);
+                        //var cliName = name.ToKebabCase();
+                        //var symbolInfo = GetOptionInfo(cliName, type);
+                        //leafCommand.Add(symbolInfo);
                     }
                 }
                 return leafCommand;

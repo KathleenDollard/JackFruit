@@ -220,7 +220,7 @@ namespace ConsoleSupport
                 // If the message returns successfully, name and type are set
                 var arg = new Argument(name!)
                 {
-                    ArgumentType = type!
+                    //ArgumentType = type!
                 };
 
                 return (slice[1..], arg, Status.Ok, null);

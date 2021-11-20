@@ -3,6 +3,7 @@
 module Generator.Tests.TestData
 
 open Generator.Language
+open Common
 
 type TestData<'T> = { Data: 'T; CSharp: string list } // Add VB later
 
@@ -13,18 +14,16 @@ type TestDataBlock<'T> =
       CSharpClose: string list }
 
 // Where a class may be used, use NamedType, even if it will generally be an instance
-type GenericNamedItem with
+type NamedItem with
     static member ForTesting =
-        let data =
-            { Name = "RonWeasley"
-              GenericTypes = [] }    
+        let data = NamedItem.Create "RonWeasley"  []
         { Data = data
           CSharp = [ "RonWeasley(JackRussell)" ] }
 
 type Invocation with
     static member ForTesting =
         let data =
-            { Instance = GenericNamedItem.ForTesting.Data
+            { Instance = NamedItem.ForTesting.Data
               MethodName = "JackRussell"
               Arguments = [] }
 
@@ -34,7 +33,7 @@ type Invocation with
 type Instantiation with
     static member ForTesting =
         let data =
-            { TypeName = GenericNamedItem.ForTesting.Data
+            { TypeName = NamedItem.ForTesting.Data
               Arguments = [] }
 
         { Data = data
@@ -104,7 +103,7 @@ type Parameter with
     static member ForTesting =
         let data =
             { ParameterName = "param1"
-              Type = { Name = "string"; GenericTypes = [] }
+              Type = NamedItem.Create "string"  []
               Default = None
               IsParams = false }
 
@@ -113,7 +112,7 @@ type Parameter with
 
 type Method with
     static member ForTesting =
-        let data = Method.Create "MyMethod" (Some { Name = "string"; GenericTypes = [] })
+        let data = Method.Create "MyMethod" (Some (NamedItem.Create "string"  []))
 
         { Data = data
           CSharpOpen = [ "public string MyMethod()"; "{" ]
@@ -124,9 +123,7 @@ type Property with
     static member ForTesting =
         let data =
             { PropertyName = "MyProperty"
-              Type =
-                { Name = "MyReturnType"
-                  GenericTypes = [] }
+              Type = NamedItem.Create "MyReturnType"  []
               IsStatic = false
               Scope = Public
               GetStatements = []
@@ -140,7 +137,7 @@ type Property with
 type Class with
     static member ForTesting =
         let data =
-            { ClassName = GenericNamedItem.ForTesting.Data
+            { ClassName = NamedItem.ForTesting.Data
               IsStatic = false
               Scope = Public
               Members = [] }
