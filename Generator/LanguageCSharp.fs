@@ -7,11 +7,10 @@ open Generator.CSharpLanguageExtensions
 
 type LanguageCSharp() =
 
-    let staticOutput isStatic = 
-        if isStatic then
-            " static"
-        else
-            ""
+    let staticOutput staticOrInstance = 
+        match staticOrInstance with 
+        | Instance -> ""
+        | Static -> " static"
 
 
     interface ILanguage with 
@@ -34,7 +33,7 @@ type LanguageCSharp() =
             ["}"]
 
         member _.ClassOpen cls =
-            [$"{cls.Scope.Output}{staticOutput cls.IsStatic} class {cls.ClassName.Output}"; "{"]
+            [$"{cls.Scope.Output}{staticOutput cls.StaticOrInstance} class {cls.ClassName.Output}"; "{"]
         member _.ClassClose _ =
             ["}"]
 
@@ -43,14 +42,14 @@ type LanguageCSharp() =
                 match method.ReturnType with 
                 | Some t -> t.Output
                 | None -> ""
-            [$"{method.Scope.Output}{staticOutput method.IsStatic} {returnType} {method.MethodName.Output}({OutputParameters method.Parameters})"; "{"]
+            [$"{method.Scope.Output}{staticOutput method.StaticOrInstance} {returnType} {method.MethodName.Output}({OutputParameters method.Parameters})"; "{"]
         member _.MethodClose _ =
             ["}"]
 
         member _.AutoProperty(property: Property) =
-            [$"{property.Scope.Output}{staticOutput property.IsStatic} {property.Type.Output} {property.PropertyName} {{get; set;}}"]
+            [$"{property.Scope.Output}{staticOutput property.StaticOrInstance} {property.Type.Output} {property.PropertyName} {{get; set;}}"]
         member _.PropertyOpen(property: Property) =
-            [$"{property.Scope.Output}{staticOutput property.IsStatic} {property.Type.Output} {property.PropertyName}"; "{"]
+            [$"{property.Scope.Output}{staticOutput property.StaticOrInstance} {property.Type.Output} {property.PropertyName}"; "{"]
         member _.PropertyClose _ =
             ["}"]
         member _.GetOpen _ =

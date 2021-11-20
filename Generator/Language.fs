@@ -53,6 +53,10 @@ type Scope =
     | Private
     | Internal
 
+type StaticOrInstance =
+    | Static
+    | Instance
+
 // Where a class may be used, use NamedType, even if it will generally be an instance
 // KAD: Consider if all these overloads are needed
 type GenericNamedItem = 
@@ -184,7 +188,7 @@ type Method =
     static member Create name returnType =
         { MethodName = NamedItem.Create name []
           ReturnType = returnType
-          IsStatic = false
+          StaticOrInstance = Instance
           IsExtension = false
           Scope = Public
           Parameters = []
@@ -198,9 +202,19 @@ type Property =
       GetStatements: Statement list
       SetStatements: Statement list}
 
+    type Field =
+        { FieldName: string
+          Type: NamedItem
+          StaticOrInstance: StaticOrInstance
+          Scope: Scope
+          GetStatements: Statement list
+          SetStatements: Statement list}
+      
+
 type Member =
     | Method of Method
     | Property of Property
+    | Field of Field
     | Class of Class
 
 type Class = 

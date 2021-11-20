@@ -18,13 +18,20 @@ let private OutputHeader (outputter: RoslynOut) =
 
 let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
     
+    let membersForCommandDef = 
+        [
+            
+        ]
+
     let classForCommandDef commandDef =
-        { ClassName = $"{commandDef.Name}Command"
-          
+        { ClassName = SimpleNamedItem $"{commandDef.Name}CommandWrapper"
+          StaticOrInstance = Instance
+          Scope = Public
+          Members = membersForCommandDef }
 
     let classes = 
         [ for commandDef in commandDefs do
-            classForCommanDef commandDef
+            classForCommandDef commandDef
         ]
 
     // KAD: Figure out right namespace
@@ -71,7 +78,7 @@ let private CommonMembers pos (commandDefs: CommandDef list) : Member list =
           Method
               { MethodName = NamedItem.Create "SetHandler"  [ SimpleNamedItem "T1" ]
                 ReturnType = None
-                IsStatic = true
+                StaticOrInstance = true
                 IsExtension = true
                 Scope = Public
                 Parameters = parameters
@@ -79,7 +86,7 @@ let private CommonMembers pos (commandDefs: CommandDef list) : Member list =
 
           Class
               { ClassName = NamedItem.Create "GeneratedHandler"  []
-                IsStatic = false
+                StaticOrInstance = false
                 Scope = Private
                 Members = [] } ]
 

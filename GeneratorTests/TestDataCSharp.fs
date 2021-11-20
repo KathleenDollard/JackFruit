@@ -124,7 +124,7 @@ type Property with
         let data =
             { PropertyName = "MyProperty"
               Type = NamedItem.Create "MyReturnType"  []
-              IsStatic = false
+              StaticOrInstance = Instance
               Scope = Public
               GetStatements = []
               SetStatements = [] }
@@ -138,7 +138,7 @@ type Class with
     static member ForTesting =
         let data =
             { ClassName = NamedItem.ForTesting.Data
-              IsStatic = false
+              StaticOrInstance = Instance
               Scope = Public
               Members = [] }
 
