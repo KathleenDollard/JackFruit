@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="CodeDsl_2.fs" />
+    <Compile Include="CodeDsl_1.fs" />
     <Compile Include="Fluent.fs" />
     <Compile Include="FSharp6.fs" />
     <Compile Include="Program.fs" />
@@ -14,6 +16,10 @@
 
   <ItemGroup>
     <PackageReference Include="FSharp.Core.Fluent-4.0" Version="1.0.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Generator\Generator.fsproj" />
   </ItemGroup>
 
 </Project>

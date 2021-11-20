@@ -10,11 +10,10 @@ let private ScopeOutput scope =
     | Private -> "private"
     | Internal -> "internal"
 
-let private StaticOutput isStatic = 
-    if isStatic then
-        " static"
-    else
-        ""
+let private StaticOutput staticOrInstance = 
+    match staticOrInstance with 
+    | Static -> " static"
+    | _ -> ""
 
 let OutputStatement (sb: SpaceStringBuilder) (statement: Statement) =
     ()
@@ -22,7 +21,7 @@ let OutputStatement (sb: SpaceStringBuilder) (statement: Statement) =
 
 let OutputMethod (sb: SpaceStringBuilder) (mbr: Method) =
     // KAD-Don: It seems super ugly to need all these ignores. Is there a different design for SpaceStringBuilder?
-    let _ = sb.AppendLine $"{ScopeOutput mbr.Scope}{StaticOutput mbr.IsStatic} {mbr.ReturnType}"
+    let _ = sb.AppendLine $"{ScopeOutput mbr.Scope}{StaticOutput mbr.StaticOrInstance} {mbr.ReturnType}"
     let _ = sb.AppendLine "{"
     let _ = sb.IncreaseIndent
     for statement in mbr.Statements do
@@ -43,7 +42,7 @@ let OutputMember (sb: SpaceStringBuilder) mbr =
 
 
 let OutputClass (sb: SpaceStringBuilder) cls =
-    let _ = sb.AppendLine $"{ScopeOutput cls.Scope}{StaticOutput cls.IsStatic} class"
+    let _ = sb.AppendLine $"{ScopeOutput cls.Scope}{StaticOutput cls.StaticOrInstance} class"
     let _ = sb.AppendLine "{"
     let _ = sb.IncreaseIndent
     for mbr in cls.Members do

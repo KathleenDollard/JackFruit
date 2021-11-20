@@ -3,6 +3,7 @@
 open Microsoft.CodeAnalysis
 open System.CommandLine
 open System.Collections.Generic
+open Generator.GeneralUtils
 
 /// MemberKind indicates the System.CommandLine symbol used
 /// for the member. They are treated the same during transformation
@@ -243,6 +244,9 @@ type CommandDef(memberId: string, path: string list, returnType: string option, 
     /// when it is also the Name/main alias. This should be set by the end of 
     /// structural eval and cannot be changed by transformers
     member _.Path: string list = path
+
+    member _.PathAsString: string = 
+        ListToCamel path
 
     /// The return type of the invoked method. System.CommandLine encourages the use of
     /// the environment return, and thus this is often unit (null)

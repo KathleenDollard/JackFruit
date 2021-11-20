@@ -101,6 +101,22 @@ let ToSnake input =
 let ToKebab input =
     AddCharsAndLower "-" input
 
+let ListToCamel (input: string list) =
+    // KAD-Don: Is it really this hard to take a list of strings and make a Camel combination?
+    [ for s in input do 
+        match s with 
+        | null -> null
+        | "" -> ""
+        | _ ->
+            string 
+                [ for i in [0..s.Length - 1] do
+                    if i = 0 then 
+                        Char.ToUpper s[0]
+                    else 
+                        s[i] ] ]
+    |> String.concat ""
+
+
 type TreeNodeType<'T> = {
     Data: 'T
     Children: TreeNodeType<'T> list}

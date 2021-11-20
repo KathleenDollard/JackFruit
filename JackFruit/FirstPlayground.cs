@@ -1,4 +1,4 @@
-﻿
+﻿using ConsoleSupport;
 
 namespace Jackfruit
 {
@@ -19,11 +19,11 @@ namespace Jackfruit
             app.Map("hello", () => new { Hello = "World" });
             //app.Map("throw", () => app.Throw(new Exception("uh oh")));
             app.Map("error", () => "An error occurred. This should probably be formatted as Problem Details.");
-            app.Map("todos sample", () => new[] {
-                    new Todo { Id = 1, Title = "Do this" },
-                    new Todo { Id = 2, Title = "Do this too" }
-                });
-            app.Map("todos <id>", (int id, TodoDb db) => Todo.GetTodo(id, db));
+            //app.Map("todos sample", () => new[] {
+            //        new Todo { Id = 1, Title = "Do this" },
+            //        new Todo { Id = 2, Title = "Do this too" }
+            //    });
+            //app.Map("todos <id>", (int id, TodoDb db) => Todo.GetTodo(id, db));
 
 
 

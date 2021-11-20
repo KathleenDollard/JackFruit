@@ -15,9 +15,7 @@ type TestDataBlock<'T> =
 // Where a class may be used, use NamedType, even if it will generally be an instance
 type GenericNamedItem with
     static member ForTesting =
-        let data =
-            { Name = "RonWeasley"
-              GenericTypes = [] }    
+        let data = SimpleNamedItem "RonWeasley"
         { Data = data
           CSharp = [ "RonWeasley(JackRussell)" ] }
 
@@ -104,7 +102,7 @@ type Parameter with
     static member ForTesting =
         let data =
             { ParameterName = "param1"
-              Type = { Name = "string"; GenericTypes = [] }
+              Type = SimpleNamedItem "string"
               Default = None
               IsParams = false }
 
@@ -113,7 +111,7 @@ type Parameter with
 
 type Method with
     static member ForTesting =
-        let data = Method.Create "MyMethod" (Some { Name = "string"; GenericTypes = [] })
+        let data = Method.Create "MyMethod" (Type (GenericNamedItem ("string", [] ))) [] []
 
         { Data = data
           CSharpOpen = [ "public string MyMethod()"; "{" ]
@@ -124,10 +122,8 @@ type Property with
     static member ForTesting =
         let data =
             { PropertyName = "MyProperty"
-              Type =
-                { Name = "MyReturnType"
-                  GenericTypes = [] }
-              IsStatic = false
+              Type = SimpleNamedItem "MyReturnType"
+              StaticOrInstance = Instance
               Scope = Public
               GetStatements = []
               SetStatements = [] }
@@ -141,7 +137,7 @@ type Class with
     static member ForTesting =
         let data =
             { ClassName = GenericNamedItem.ForTesting.Data
-              IsStatic = false
+              StaticOrInstance = Instance
               Scope = Public
               Members = [] }
 

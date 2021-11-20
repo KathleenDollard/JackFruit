@@ -24,16 +24,19 @@ type Operator with
         | GreaterThanOrEqualTo -> ">="
         | LessThanOrEqualTo -> "<="
 
-type GenericNamedItem with
+type NamedItem with
     member this.Output =
-        let generics = 
-            match this.GenericTypes with 
-            | [] -> ""
-            | _ -> 
-                let x = [ for t in this.GenericTypes do t.ToString() ]
-                let y = String.Join(", ", x)
-                $"<{y}>"
-        $"{this.Name}{generics}"
+        match this with 
+        | SimpleNamedItem name -> name
+        | GenericNamedItem (name, generics) ->
+            let generics = 
+                match generics with 
+                | [] -> ""
+                | _ -> 
+                    let x = [ for t in generics do t.ToString() ]
+                    let y = String.Join(", ", x)
+                    $"<{y}>"
+            $"{name}{generics}"
 
 
 type Invocation with 

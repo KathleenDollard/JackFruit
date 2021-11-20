@@ -7,10 +7,11 @@
 
   <ItemGroup>
     <Compile Include="AppErrors.fs" />
+    <Compile Include="GeneralUtils.fs" />
     <Compile Include="Models.fs" />
     <Compile Include="IWriter.fs" />
-    <Compile Include="GeneralUtils.fs" />
     <Compile Include="Language.fs" />
+    <Compile Include="LenguageExpression.fs" />
     <Compile Include="ArrayWriter.fs" />
     <Compile Include="StringBuilderWriter.fs" />
     <Compile Include="CSharpLanguageExtensions.fs" />
@@ -33,7 +34,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.0-3.final" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.0.0-3.final" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21406.1" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21568.1" />
   </ItemGroup>
 
   <ItemGroup>

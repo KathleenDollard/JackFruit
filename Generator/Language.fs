@@ -45,20 +45,100 @@ type ILanguage =
     abstract member Comparison: Comparison -> string
 
     // Other
-    abstract member NamedItemOutput: GenericNamedItem -> string
+    abstract member NamedItemOutput: NamedItem -> string
 
 type Scope =
     | Public
     | Private
     | Internal
 
+    // TODO: Consider abstract
+    member private this.makeMethod staticOrInstance returnType name generics isExtension parameters statements =
+       Member.Method
+            { MethodName = NamedItem.Create name generics
+              Scope = this
+              StaticOrInstance = staticOrInstance
+              IsExtension = isExtension
+              ReturnType = returnType
+              Parameters = parameters
+              Statements = statements
+            }
+
+    member private this.makeClass staticOrInstance name generics members =
+       Member.Class
+            { ClassName = NamedItem.Create name generics
+              Scope = this
+              StaticOrInstance = staticOrInstance
+              Members = members
+            }
+
+    member private this.makeProperty staticOrInstance propertyType name generics getStatements setStatements =
+       Member.Property
+            { PropertyName =  name
+              Scope = this
+              StaticOrInstance = staticOrInstance
+              Type = propertyType
+              GetStatements = getStatements
+              SetStatements = setStatements
+            }
+
+    member this.MethodOf returnType name (genericsAsStrings: string list) parameters statements = 
+        let generics = NamedItem.GenericsFromStrings name genericsAsStrings
+        this.makeMethod Instance returnType name generics false parameters statements
+
+    member this.StaticMethodOf returnType name (genericsAsStrings: string list) parameters statements = 
+        let generics = NamedItem.GenericsFromStrings name genericsAsStrings
+        this.makeMethod Static returnType name generics false parameters statements
+
+    member this.Method returnType name parameters statements = 
+        this.makeMethod Instance returnType name [] false parameters statements
+
+    member this.StaticMethod returnType name parameters statements = 
+        this.makeMethod Static returnType name [] false parameters statements
+
+    member this.ExtensionMethodOf returnType name (genericsAsStrings: string list) parameters statements = 
+        let generics = NamedItem.GenericsFromStrings name genericsAsStrings
+        this.makeMethod Static returnType name generics true parameters statements
+
+    member this.ExtensionMethod returnType name parameters statements = 
+        this.makeMethod Static returnType name [] true parameters statements
+
+    member this.Property propertyType (name:string) getStatements setStatements = 
+        this.makeProperty Instance propertyType name getStatements setStatements
+
+
+    member this.ClassOf name (genericsAsStrings: string list) members = 
+        let generics = NamedItem.GenericsFromStrings name genericsAsStrings
+        this.makeClass Instance name generics members
+
+    member this.StaticClassOf name (genericsAsStrings: string list) members = 
+        let generics = NamedItem.GenericsFromStrings name genericsAsStrings
+        this.makeClass Static name generics members 
+
+    member this.Class name members = 
+        this.makeClass Instance name [] members
+
+    member this.StaticClass name members = 
+        this.makeClass Static name [] members
+
+
+type StaticOrInstance =
+    | Static
+    | Instance
+
+
 // Where a class may be used, use NamedType, even if it will generally be an instance
 type GenericNamedItem = 
     { Name: string 
       GenericTypes: GenericNamedItem list }
     static member Create name =
-        { Name = name 
+        { Name = name
           GenericTypes = [] }
+    static member CreateOf name  (generics: string list) =
+        let createGeneric name = { Name = name; GenericTypes = [] }
+        { Name = name
+          GenericTypes = [ for g in generics do createGeneric g ] }
+        
 let As name =
     { Name = name
       GenericTypes = []}
@@ -69,29 +149,43 @@ let AsGeneric name genericTypes =
 let OfGeneric = AsGeneric
 
 
+type NamedItem =
+    | GenericNamedItem of Name: string * GenericTypes: NamedItem list
+    | SimpleNamedItem of Name: string
+    static member GenericsFromStrings (name: string) genericsAsStrings =
+        genericsAsStrings |> List.map (fun x -> SimpleNamedItem x)
+    static member Create (name: string) generics =
+        match generics with 
+        | [] -> SimpleNamedItem name
+        | _ -> GenericNamedItem (name, generics)
+
+
+type Return =
+    | Void
+    | Type of t: NamedItem
+
+
 type Invocation =
-    { Instance: GenericNamedItem
+    { Instance: NamedItem
       MethodName: string
       Arguments: Expression list}
 let Invoke instanceName methodName arguments =
     Expression.Invocation
-        { Instance = { Name = instanceName; GenericTypes = [] }
+        { Instance = NamedItem.Create instanceName [] 
           MethodName = methodName
           Arguments = arguments }
 let With (arguments: Expression list) = arguments 
 
 type Instantiation =
-    { TypeName: GenericNamedItem
+    { TypeName: NamedItem
       Arguments: Expression list}
 let New typeName arguments = 
     Expression.Instantiation 
-        { TypeName = { Name = typeName; GenericTypes = []}
+        { TypeName = NamedItem.Create typeName []
           Arguments = arguments }
 let NewGeneric typeName genericName arguments =
     Expression.Instantiation
-        { TypeName = 
-            { Name = typeName
-              GenericTypes = [{ Name = genericName; GenericTypes = [] }]}
+        { TypeName = NamedItem.Create typeName [ NamedItem.Create genericName [] ]
           Arguments = arguments }
 
 type Operator =
@@ -146,7 +240,7 @@ let Assign item value =
 
 type AssignWithDeclare =
     { Variable: string
-      TypeName: GenericNamedItem option
+      TypeName: NamedItem option
       Value: Expression}
 let AssignVar variable value =
     Statement.AssignWithDeclare 
@@ -164,7 +258,7 @@ type Statement =
 
 type Parameter =
     { ParameterName: string
-      Type: GenericNamedItem
+      Type: NamedItem
       Default: Expression option
       IsParams: bool}
     static member Create name paramType =
@@ -174,26 +268,29 @@ type Parameter =
           IsParams = false }
 
 type Method =
-    { MethodName: GenericNamedItem
-      ReturnType: GenericNamedItem option
-      IsStatic: bool
+    { MethodName: NamedItem
+      ReturnType: Return
+      StaticOrInstance: StaticOrInstance
       IsExtension: bool
       Scope: Scope
       Parameters: Parameter list
       Statements: Statement list}
-    static member Create name returnType =
-        { MethodName = { Name = name; GenericTypes = [] }
+    static member CreateOfT name genericTypeNames returnType parameters statements=
+        let genericTypes = genericTypeNames |> List.map (fun x -> SimpleNamedItem x)
+        { MethodName = NamedItem.Create name genericTypes
           ReturnType = returnType
-          IsStatic = false
+          StaticOrInstance = Instance
           IsExtension = false
           Scope = Public
-          Parameters = []
-          Statements = [] }
+          Parameters = parameters
+          Statements = statements }
+    static member Create name returnType parameters statements=
+        Method.CreateOfT name [] returnType parameters statements
 
 type Property =
     { PropertyName: string
-      Type: GenericNamedItem
-      IsStatic: bool
+      Type: NamedItem
+      StaticOrInstance: StaticOrInstance
       Scope: Scope
       GetStatements: Statement list
       SetStatements: Statement list}
@@ -202,12 +299,16 @@ type Member =
     | Method of Method
     | Property of Property
     | Class of Class
+    static member publicMethod methodName returnType parameters statements =
+        Method (Method.Create methodName returnType parameters statements)
+    static member publicMethodOfT methodName genericTypeNames returnType parameters statements =
+        Method (Method.CreateOfT methodName genericTypeNames returnType parameters statements)
 
 type Class = 
-    { ClassName: GenericNamedItem
-      IsStatic: bool
+    { ClassName: NamedItem
+      StaticOrInstance: StaticOrInstance
       Scope: Scope
-      Members: Member list}
+      Members: Member list }
 
 type Using = 
     { Namespace: string

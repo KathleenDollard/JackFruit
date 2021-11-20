@@ -1,6 +1,7 @@
 ﻿module Generator.OutputCode
 
-open Language
+open Generator.Language
+open Generator.LanguageExpression
 open Models
 
 let private OutputHeader (outputter: RoslynOut) =
@@ -15,50 +16,75 @@ let private OutputHeader (outputter: RoslynOut) =
     outputter.OutputPragma(Pragma "warning disable")
     ()
 
+//let private CommonMembersForUserMethod pos commandDef method : Method =
+//    let mutable i = 0
+
+//    Public.StaticMethod 
+//    [ for mbr in commandDef.Members
+//        i <- i + 1
+
+//    ]
+
+
 let private CommonMembers pos (commandDefs: CommandDef list) : Member list =
     let mutable i = pos
     // TODO: We need to get a distinct on the parameters as these are shared later
     [ for commandDef in commandDefs do
-          let delegateParameter =
-              Parameter.Create "Temp" (GenericNamedItem.Create "Temp")
-
           let parameters =
-              [ Parameter.Create "command" (GenericNamedItem.Create "Command")
-                delegateParameter
+              [ Parameter.Create "command" (SimpleNamedItem "Command")
+                //Parameter.Create "method" NamedItem.Create commandDef.
            
-                //for opt in options do
-                    //Parameter.Create
-                    //    arg.Name
-                    //    { Name = "Argument"
-                    //      GenericTypes =
-                    //        [ { Name = arg.TypeName
-                    //            GenericTypes = [] } ] }
+                for mbr in commandDef.Members do 
+                    Parameter.Create mbr.Name (NamedItem.Create mbr.TypeName [])
+              ]
 
-                ]
-          // TODO: Figure out the scenario where there are multiple generic types
-          Method
-              { MethodName =
-                  { Name = "SetHandler"
-                    GenericTypes = [ GenericNamedItem.Create "T1" ] }
-                ReturnType = None
-                IsStatic = true
-                IsExtension = true
-                Scope = Public
-                Parameters = parameters
-                Statements = [] }
+          let statements = []
+   
+          // ***** SetHandler will go away :) *****
+          // Which of the following is nicest? (Combination suggestions are welcome)
+          let generics = [1..parameters.Length] |> List.map (fun x -> SimpleNamedItem $"T{x}") 
+          let setHandler = NamedItem.Create "SetHandler" generics
+          method Public Static Void setHandler parameters statements
 
-          Class
-              { ClassName =
-                  { Name = "GeneratedHandler"
-                    GenericTypes = [] }
-                IsStatic = false
-                Scope = Private
-                Members = [] } ]
+          //methodStatic Public Void setHandler parameters statements
 
+          //method Public Void setHandler parameters statements
+
+
+          let generics = [1..parameters.Length] |> List.map (fun x -> SimpleNamedItem $"T{x}") 
+          PublicStaticMethodOf Void "SetHandler" generics parameters statements
+
+          let generics = [1..parameters.Length] |> List.map (fun x -> $"T{x}") 
+          Public.StaticMethodOf Void "SetHandler" generics parameters statements
+
+          // Picking the last approach to play with for other items
+         // Private.Class GenerateHandler_{pos}
+
+
+    ]
+
+   
 let private TypeForSymbol symbolName typeName =
     { Name = symbolName 
       GenericTypes = [ { Name = typeName; GenericTypes = []} ]}
     
+
+//public static void SetHandler<{string.Join(", ", Enumerable.Range(1, invocation.NumberOfGenerericParameters).Select(x => $@"T{x}"))}>(
+//    this Command command,");
+//        builder.Append($@"
+//    {invocation.DelegateType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} method");
+
+//        if (methodParameters.Length > 0)
+//        {
+//            builder.Append(",");
+//            builder.AppendLine(string.Join(", ", methodParameters.Select(x => $@"
+//    {x.Type} {x.Name}")) + ")");
+//        }
+//        else
+//        {
+//            builder.Append(")");
+//        }
+
 
 
 //let private CommandCreateStatements (commandDef: CommandDef) : Statement list =
