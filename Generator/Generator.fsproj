@@ -16,6 +16,7 @@
     <Compile Include="ArrayWriter.fs" />
     <Compile Include="StringBuilderWriter.fs" />
     <Compile Include="CSharpLanguageExtensions.fs" />
+    <Compile Include="LanguageExpression.fs" />
     <Compile Include="LanguageCSharp.fs" />
     <Compile Include="CodeCSharp.fs" />
     <Compile Include="OutputMapping.fs" />

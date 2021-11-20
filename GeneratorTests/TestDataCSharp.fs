@@ -112,7 +112,7 @@ type Parameter with
 
 type Method with
     static member ForTesting =
-        let data = Method.Create "MyMethod" (Some (NamedItem.Create "string"  []))
+        let data = Method.Create "MyMethod" (Type (NamedItem.Create "string"  []))
 
         { Data = data
           CSharpOpen = [ "public string MyMethod()"; "{" ]

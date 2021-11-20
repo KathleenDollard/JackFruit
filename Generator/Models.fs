@@ -3,6 +3,7 @@
 open Microsoft.CodeAnalysis
 open System.CommandLine
 open System.Collections.Generic
+open Common
 
 
 type ItemReturn<'T> =
@@ -57,7 +58,7 @@ type CommandDefUsage =
 /// The single structure is used so that late transformers can
 /// determine the member type (as opposed to requiring it during
 /// structure evaluation). 
-type MemberDef(memberId: string, commandDef: CommandDef, typeName: string, memberDefUsage: MemberDefUsage, generateSymbol: bool) =
+type MemberDef(memberId: string, commandDef: CommandDef, typeName: NamedItem, memberDefUsage: MemberDefUsage, generateSymbol: bool) =
     let pocket = Dictionary<string, obj>()
 
     /// Indicates whether the member is an argument, option (also called
@@ -187,7 +188,7 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: string, membe
 
 
 /// The main structure for commands during transformations
-and CommandDef(commandId: string, path: string list, returnType: string option, commandDefUsage: CommandDefUsage) =
+and CommandDef(commandId: string, path: string list, returnType: Return, commandDefUsage: CommandDefUsage) =
 
     let pocket = Dictionary<string, obj>()
 
@@ -274,7 +275,7 @@ and CommandDef(commandId: string, path: string list, returnType: string option, 
     /// the environment return, and thus this is often unit (null)
     ///
     /// This always comes from the method and cannot be changed by transformers
-    member _.ReturnType: string option = returnType
+    member _.ReturnType: Return = returnType
 
     /// Used by the generator to determine whether to output SetHandler.
     /// When GenerateSetHandler is set to false, any tree structure is unused

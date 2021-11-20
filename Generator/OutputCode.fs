@@ -3,6 +3,9 @@
 open Language
 open Models
 open Common
+open LanguageExpression
+
+let private operationName = "operation"
 
 let private OutputHeader (outputter: RoslynOut) =
     outputter.OutputComment(Comment "Copyright (c) .NET Foundation and contributors. All rights reserved.")
@@ -18,16 +21,148 @@ let private OutputHeader (outputter: RoslynOut) =
 
 let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
     
-    let membersForCommandDef = 
-        [
-            
+    let methodSigFromCommandDef (commandDef: CommandDef) =
+        let isAction = 
+            match commandDef.ReturnType  with
+            | Void -> true
+            | _ -> false
+        let memberTypes = 
+            [ for mbr in commandDef.Members do 
+                mbr.TypeName
+              match commandDef.ReturnType with 
+                | Type t -> t
+                | Void -> () ]
+        let name = if isAction then "Action" else "Func"
+        GenericNamedItem (name, memberTypes)
+
+    let kind (mbr: MemberDef) =
+        match mbr.MemberKind with
+        | Some value -> value
+        | None -> Option   
+
+    let kindName (mbr: MemberDef)  =
+        let kind = 
+            match mbr.MemberKind with
+            | Some value -> value
+            | None -> Option   
+        match kind  with 
+        | Argument -> "Option" 
+        | Option -> "Argument" 
+        | Service -> ""        
+
+        
+    let fieldName (mbr: MemberDef) =
+        let kindName = kindName mbr
+        $"_{mbr.Name}{kindName}"  // KAD: Check casing
+
+    let propName (mbr: MemberDef) =
+        let kindName = kindName mbr
+        $"{mbr.Name}{kindName}"  // KAD: Check casing
+
+
+    let symbolType (mbr: MemberDef) =
+        let kindName = kindName mbr
+        GenericNamedItem (kindName, [ mbr.TypeName ])
+
+    let optionSpecificValues (mbr:MemberDef) = []
+
+    let argumentSpecificValues (mbr:MemberDef) = []
+
+    let propStatements (mbr:MemberDef) =
+
+        let symbolType =  symbolType mbr 
+        let fieldName =  fieldName mbr 
+        let expression =
+            Instantiation
+                { TypeName = symbolType
+                  Arguments = [ StringLiteral mbr.Name] }
+        [ Statement.Assign { Item = fieldName; Value = expression }
+          match mbr.Description with 
+          | Some desc ->
+                Statement.Assign { Item = $"{fieldName}.Description"; Value = StringLiteral desc }
+          | None -> ()
+
+          let specificStatements = 
+              match kind mbr with 
+              | Option -> optionSpecificValues mbr
+              | Argument -> argumentSpecificValues mbr
+              | Service -> []
+              // KAD: More here }
+          for statement in specificStatements do
+            statement
         ]
 
-    let classForCommandDef commandDef =
+          
+    let fieldFromMember (mbr: MemberDef) =
+        match kind  mbr with 
+        | Service -> None
+        | Argument | Option  -> 
+            Some (field (symbolType mbr ) (fieldName mbr ) Null)
+
+
+    let propFromMember (mbr: MemberDef) =
+        let symbolType =  symbolType mbr 
+        let fieldName =  fieldName mbr 
+        let propertyName = propName mbr 
+        let prop = 
+            prop Public symbolType propertyName
+                [ ifThen (Expression.Comparison {Left = Symbol fieldName; Right = Null; Operator = Operator.Equals})
+                    (propStatements mbr)
+                  Return (Symbol fieldName)
+                ] []
+        mbr.AddToPocket "PropertyName" propertyName
+           
+        match kind  mbr with 
+        | Argument | Option -> (Some (prop ))
+        | Service -> None        
+
+    let commandProp (commandDef: CommandDef) = 
+        // Check if it already exists 
+        // Add each member property
+        // Set commandHandler - be sure to include service properties here
+        // return command
+        let fieldName = "_command"
+        [ ifThen (Expression.Comparison {Left = Symbol fieldName; Right = Null; Operator = Operator.Equals})
+            [
+            // Instantiate
+            // Add each member property
+            // Set commandHandler - be sure to include service properties here
+            ]
+          Return (Symbol fieldName)
+        
+        ]
+        
+
+    let membersForCommandDef commandDef = 
+        let methodSig = methodSigFromCommandDef commandDef
+        [ readonlyField methodSig $"_{operationName}"
+          field (SimpleNamedItem "Command") "Command" Null
+          
+          for mbr in commandDef.Members do
+            match fieldFromMember mbr with
+            | None -> ()
+            | Some field -> field
+
+          ctor Public 
+            [ param operationName methodSig]
+            [ assign $"_{operationName}" (Symbol operationName)]
+
+          for mbr in commandDef.Members do
+            match propFromMember mbr with
+            | None -> ()
+            | Some prop -> prop
+
+          prop Public (SimpleNamedItem "Command") "Command"
+            (commandProp commandDef)
+            []
+
+        ]
+
+    let classForCommandDef (commandDef: CommandDef) =
         { ClassName = SimpleNamedItem $"{commandDef.Name}CommandWrapper"
           StaticOrInstance = Instance
           Scope = Public
-          Members = membersForCommandDef }
+          Members = membersForCommandDef commandDef }
 
     let classes = 
         [ for commandDef in commandDefs do
@@ -54,41 +189,41 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
 //        | Argument -> argumentProperty mbr
 //        | Service -> () ]
 
-let private CommonMembers pos (commandDefs: CommandDef list) : Member list =
-    let mutable i = pos
-    // TODO: We need to get a distinct on the parameters as these are shared later
-    [ for commandDef in commandDefs do
-          let delegateParameter =
-              Parameter.Create "Temp" (NamedItem.Create "Temp" [])
+//let private CommonMembers pos (commandDefs: CommandDef list) : Member list =
+//    let mutable i = pos
+//    // TODO: We need to get a distinct on the parameters as these are shared later
+//    [ for commandDef in commandDefs do
+//          let delegateParameter =
+//              Parameter.Create "Temp" (NamedItem.Create "Temp" [])
 
-          let parameters =
-              [ Parameter.Create "command" (NamedItem.Create "Command" [])
-                delegateParameter
+//          let parameters =
+//              [ Parameter.Create "command" (NamedItem.Create "Command" [])
+//                delegateParameter
            
-                //for opt in options do
-                    //Parameter.Create
-                    //    arg.Name
-                    //    { Name = "Argument"
-                    //      GenericTypes =
-                    //        [ { Name = arg.TypeName
-                    //            GenericTypes = [] } ] }
+//                //for opt in options do
+//                    //Parameter.Create
+//                    //    arg.Name
+//                    //    { Name = "Argument"
+//                    //      GenericTypes =
+//                    //        [ { Name = arg.TypeName
+//                    //            GenericTypes = [] } ] }
 
-                ]
-          // TODO: Figure out the scenario where there are multiple generic types
-          Method
-              { MethodName = NamedItem.Create "SetHandler"  [ SimpleNamedItem "T1" ]
-                ReturnType = None
-                StaticOrInstance = true
-                IsExtension = true
-                Scope = Public
-                Parameters = parameters
-                Statements = [] }
+//                ]
+//          // TODO: Figure out the scenario where there are multiple generic types
+//          Method
+//              { MethodName = NamedItem.Create "SetHandler"  [ SimpleNamedItem "T1" ]
+//                ReturnType = Void
+//                StaticOrInstance = Instance
+//                IsExtension = true
+//                Scope = Public
+//                Parameters = parameters
+//                Statements = [] }
 
-          Class
-              { ClassName = NamedItem.Create "GeneratedHandler"  []
-                StaticOrInstance = false
-                Scope = Private
-                Members = [] } ]
+//          Class
+//              { ClassName = NamedItem.Create "GeneratedHandler"  []
+//                StaticOrInstance = Instance
+//                Scope = Private
+//                Members = [] } ]
 
 
 

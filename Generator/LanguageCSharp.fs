@@ -3,7 +3,7 @@
 open System
 open Generator.Language
 open Generator.CSharpLanguageExtensions
-
+open Common
 
 type LanguageCSharp() =
 
@@ -40,8 +40,8 @@ type LanguageCSharp() =
         member _.MethodOpen(method: Method) =
             let returnType =
                 match method.ReturnType with 
-                | Some t -> t.Output
-                | None -> ""
+                | Type t -> t.Output
+                | Void -> "void"
             [$"{method.Scope.Output}{staticOutput method.StaticOrInstance} {returnType} {method.MethodName.Output}({OutputParameters method.Parameters})"; "{"]
         member _.MethodClose _ =
             ["}"]

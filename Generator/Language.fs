@@ -128,6 +128,7 @@ type Expression =
     | Symbol of string
     | Comment of string
     | Pragma of string
+    | Null
 
 type If =
     { Condition: Expression
@@ -179,7 +180,7 @@ type Parameter =
 
 type Method =
     { MethodName: NamedItem
-      ReturnType: NamedItem option
+      ReturnType: Return
       StaticOrInstance: StaticOrInstance
       IsExtension: bool
       Scope: Scope
@@ -194,6 +195,18 @@ type Method =
           Parameters = []
           Statements = [] }
 
+
+type Constructor =
+    { StaticOrInstance: StaticOrInstance
+      Scope: Scope
+      Parameters: Parameter list
+      Statements: Statement list}
+    static member Create() =
+        { StaticOrInstance = Instance
+          Scope = Public
+          Parameters = []
+          Statements = [] }
+
 type Property =
     { PropertyName: string
       Type: NamedItem
@@ -202,19 +215,20 @@ type Property =
       GetStatements: Statement list
       SetStatements: Statement list}
 
-    type Field =
-        { FieldName: string
-          Type: NamedItem
-          StaticOrInstance: StaticOrInstance
-          Scope: Scope
-          GetStatements: Statement list
-          SetStatements: Statement list}
+type Field =
+    { FieldName: string
+      FieldType: NamedItem
+      IsReadonly: bool
+      StaticOrInstance: StaticOrInstance
+      Scope: Scope
+      InitialValue: Expression option}
       
 
 type Member =
     | Method of Method
     | Property of Property
     | Field of Field
+    | Constructor of Constructor
     | Class of Class
 
 type Class = 
@@ -306,7 +320,7 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         writer.DecreaseIndent()
         writer.AddLines (language.MethodClose method)
 
-    member this.OutputProperty prop =
+    member this.OutputProperty (prop : Property) =
         let isAutoProp = 
             prop.SetStatements.IsEmpty && prop.GetStatements.IsEmpty
         if isAutoProp then
