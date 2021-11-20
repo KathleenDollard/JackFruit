@@ -176,7 +176,7 @@ type Parameter =
 type Method =
     { MethodName: NamedItem
       ReturnType: NamedItem option
-      IsStatic: bool
+      StaticOrInstance: StaticOrInstance
       IsExtension: bool
       Scope: Scope
       Parameters: Parameter list
@@ -193,7 +193,7 @@ type Method =
 type Property =
     { PropertyName: string
       Type: NamedItem
-      IsStatic: bool
+      StaticOrInstance: StaticOrInstance
       Scope: Scope
       GetStatements: Statement list
       SetStatements: Statement list}
@@ -205,7 +205,7 @@ type Member =
 
 type Class = 
     { ClassName: NamedItem
-      IsStatic: bool
+      StaticOrInstance: StaticOrInstance
       Scope: Scope
       Members: Member list}
 

@@ -16,6 +16,23 @@ let private OutputHeader (outputter: RoslynOut) =
     outputter.OutputPragma(Pragma "warning disable")
     ()
 
+let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
+    
+    let classForCommandDef commandDef =
+        { ClassName = $"{commandDef.Name}Command"
+          
+
+    let classes = 
+        [ for commandDef in commandDefs do
+            classForCommanDef commandDef
+        ]
+
+    // KAD: Figure out right namespace
+    { NamespaceName = "GeneratedHandlers"
+      Usings = [ Using.Create "System.CommandLine" ]
+      Classes = classes }
+
+
 //let private SymbolProperties (commandDef: CommandDef) =
 //    let optionProperty (mbr: MemberDef) =
 //        { PropertyName = $"{mbr.Name}Option"
