@@ -9,6 +9,7 @@ type ItemReturn<'T> =
 | NewValue of Value: 'T
 | UsePreviousValue
 
+
 /// MemberKind indicates the System.CommandLine symbol used
 /// for the member. They are treated the same during transformation
 /// so that a late transformer can determine which they are. 

@@ -2,6 +2,7 @@
 
 open Language
 open Models
+open Common
 
 let private OutputHeader (outputter: RoslynOut) =
     outputter.OutputComment(Comment "Copyright (c) .NET Foundation and contributors. All rights reserved.")
@@ -15,29 +16,29 @@ let private OutputHeader (outputter: RoslynOut) =
     outputter.OutputPragma(Pragma "warning disable")
     ()
 
-let private SymbolProperties (commandDef: CommandDef) =
-    let optionProperty (mbr: MemberDef) =
-        { PropertyName = $"{mbr.Name}Option"
-          Type = 
+//let private SymbolProperties (commandDef: CommandDef) =
+//    let optionProperty (mbr: MemberDef) =
+//        { PropertyName = $"{mbr.Name}Option"
+//          Type = 
 
-        }
-    let argumentProperty mbr =
-    [ for mbr in commandDef.Members do
-        let mbrKind = match mbr.MemberKind with | Some kind -> kind | None -> Option
-        match mbrKind with 
-        | Option -> optionProperty mbr
-        | Argument -> argumentProperty mbr
-        | Service -> () ]
+//        }
+//    let argumentProperty mbr =
+//    [ for mbr in commandDef.Members do
+//        let mbrKind = match mbr.MemberKind with | Some kind -> kind | None -> Option
+//        match mbrKind with 
+//        | Option -> optionProperty mbr
+//        | Argument -> argumentProperty mbr
+//        | Service -> () ]
 
 let private CommonMembers pos (commandDefs: CommandDef list) : Member list =
     let mutable i = pos
     // TODO: We need to get a distinct on the parameters as these are shared later
     [ for commandDef in commandDefs do
           let delegateParameter =
-              Parameter.Create "Temp" (GenericNamedItem.Create "Temp")
+              Parameter.Create "Temp" (NamedItem.Create "Temp" [])
 
           let parameters =
-              [ Parameter.Create "command" (GenericNamedItem.Create "Command")
+              [ Parameter.Create "command" (NamedItem.Create "Command" [])
                 delegateParameter
            
                 //for opt in options do
@@ -51,9 +52,7 @@ let private CommonMembers pos (commandDefs: CommandDef list) : Member list =
                 ]
           // TODO: Figure out the scenario where there are multiple generic types
           Method
-              { MethodName =
-                  { Name = "SetHandler"
-                    GenericTypes = [ GenericNamedItem.Create "T1" ] }
+              { MethodName = NamedItem.Create "SetHandler"  [ SimpleNamedItem "T1" ]
                 ReturnType = None
                 IsStatic = true
                 IsExtension = true
@@ -62,19 +61,20 @@ let private CommonMembers pos (commandDefs: CommandDef list) : Member list =
                 Statements = [] }
 
           Class
-              { ClassName =
-                  { Name = "GeneratedHandler"
-                    GenericTypes = [] }
+              { ClassName = NamedItem.Create "GeneratedHandler"  []
                 IsStatic = false
                 Scope = Private
                 Members = [] } ]
 
-let private TypeForSymbol symbolName typeName =
-    { Name = symbolName 
-      GenericTypes = [ { Name = typeName; GenericTypes = []} ]}
+
+
+
+
+
+//let private TypeForSymbol symbolName typeName =
+//    { Name = symbolName 
+//      GenericTypes = [ { Name = typeName; GenericTypes = []} ]}
     
-
-
 //let private CommandCreateStatements (commandDef: CommandDef) : Statement list =
 //    let Argument (arg: ArgDef) =
 //        let name = $"{arg.ArgId}Argument"

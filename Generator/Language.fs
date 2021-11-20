@@ -4,6 +4,7 @@ open System.Text
 open GeneralUtils
 open System
 open Generator
+open Common
 
 
 type ILanguage =
@@ -45,7 +46,7 @@ type ILanguage =
     abstract member Comparison: Comparison -> string
 
     // Other
-    abstract member NamedItemOutput: GenericNamedItem -> string
+    abstract member NamedItemOutput: NamedItem -> string
 
 type Scope =
     | Public
@@ -53,9 +54,10 @@ type Scope =
     | Internal
 
 // Where a class may be used, use NamedType, even if it will generally be an instance
+// KAD: Consider if all these overloads are needed
 type GenericNamedItem = 
     { Name: string 
-      GenericTypes: GenericNamedItem list }
+      GenericTypes: NamedItem list }
     static member Create name =
         { Name = name 
           GenericTypes = [] }
@@ -70,28 +72,26 @@ let OfGeneric = AsGeneric
 
 
 type Invocation =
-    { Instance: GenericNamedItem
+    { Instance: NamedItem
       MethodName: string
       Arguments: Expression list}
 let Invoke instanceName methodName arguments =
     Expression.Invocation
-        { Instance = { Name = instanceName; GenericTypes = [] }
+        { Instance = NamedItem.Create instanceName [] 
           MethodName = methodName
           Arguments = arguments }
 let With (arguments: Expression list) = arguments 
 
 type Instantiation =
-    { TypeName: GenericNamedItem
+    { TypeName: NamedItem
       Arguments: Expression list}
 let New typeName arguments = 
     Expression.Instantiation 
-        { TypeName = { Name = typeName; GenericTypes = []}
+        { TypeName = NamedItem.Create typeName []
           Arguments = arguments }
 let NewGeneric typeName genericName arguments =
     Expression.Instantiation
-        { TypeName = 
-            { Name = typeName
-              GenericTypes = [{ Name = genericName; GenericTypes = [] }]}
+        { TypeName = NamedItem.Create typeName [ NamedItem.Create genericName [] ]
           Arguments = arguments }
 
 type Operator =
@@ -146,7 +146,7 @@ let Assign item value =
 
 type AssignWithDeclare =
     { Variable: string
-      TypeName: GenericNamedItem option
+      TypeName: NamedItem option
       Value: Expression}
 let AssignVar variable value =
     Statement.AssignWithDeclare 
@@ -164,7 +164,7 @@ type Statement =
 
 type Parameter =
     { ParameterName: string
-      Type: GenericNamedItem
+      Type: NamedItem
       Default: Expression option
       IsParams: bool}
     static member Create name paramType =
@@ -174,15 +174,15 @@ type Parameter =
           IsParams = false }
 
 type Method =
-    { MethodName: GenericNamedItem
-      ReturnType: GenericNamedItem option
+    { MethodName: NamedItem
+      ReturnType: NamedItem option
       IsStatic: bool
       IsExtension: bool
       Scope: Scope
       Parameters: Parameter list
       Statements: Statement list}
     static member Create name returnType =
-        { MethodName = { Name = name; GenericTypes = [] }
+        { MethodName = NamedItem.Create name []
           ReturnType = returnType
           IsStatic = false
           IsExtension = false
@@ -192,7 +192,7 @@ type Method =
 
 type Property =
     { PropertyName: string
-      Type: GenericNamedItem
+      Type: NamedItem
       IsStatic: bool
       Scope: Scope
       GetStatements: Statement list
@@ -204,7 +204,7 @@ type Member =
     | Class of Class
 
 type Class = 
-    { ClassName: GenericNamedItem
+    { ClassName: NamedItem
       IsStatic: bool
       Scope: Scope
       Members: Member list}
@@ -227,8 +227,6 @@ type CodeBlock =
     | FunctionBlock
     | IfBlock
     | ForBlock
-
-
 
 
 type RoslynOut(language: ILanguage, writer: IWriter) =
