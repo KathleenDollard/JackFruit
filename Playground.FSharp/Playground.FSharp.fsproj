@@ -10,6 +10,7 @@
     <Compile Include="Fluent.fs" />
     <Compile Include="FSharp6.fs" />
     <Compile Include="Program.fs" />
+    <Compile Include="Temp.fs" />
   </ItemGroup>
 
   <ItemGroup>
