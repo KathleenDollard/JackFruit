@@ -13,11 +13,12 @@ namespace TestCode
 
         public class WrappThingee_A
         {
-            private readonly Action<string, int> method;
+            private readonly Action<string, int> _method;
+            private Command _command = null;
 
             public WrappThingee_A(Action<string, int> method)
             {
-                this.method = method;
+                _method = method;
             }
             // Make sure there is not more than one instance, so make not-auto properties
             public Option<string> option_One => new Option<string>("one");
@@ -27,45 +28,40 @@ namespace TestCode
             {
                 get
                 {
-                    var command =
-                        new Command("A")
-                        {
-                            option_One,
-                            option_Two
-                        };
-                    var command2 = new Command("A");
-                    command2.Add(option_One);
-                    command2.Add(option_Two);
-                    command.Handler = new GeneratedHandler_1(method, option_One, option_Two);
-                    return command;
+                    if (_command == null)
+                    {
+                         _command = new Command("A");
+                        _command.Add(option_One);
+                        _command.Add(option_Two);
+                        _command.Handler = new GeneratedHandler_1(_method, option_One, option_Two);
+                    }
+                    return _command;
                 }
             }
         }
 
-        //private class GeneratedHandler_1 : System.CommandLine.Invocation.ICommandHandler
-        //{
-        //    public GeneratedHandler_1(
-        //        System.Action<string, int> method,
-        //        global::System.CommandLine.Option<string> param1,
-        //        global::System.CommandLine.Option<int> param2)
-        //    {
-        //        Method = method;
-        //        Param1 = param1;
-        //        Param2 = param2;
-        //    }
+        private class GeneratedHandler_1 : ICommandHandler
+        {
+            public GeneratedHandler_1(
+                System.Action<string, int> method,
+                Option<string> param1,
+                Option<int> param2)
+            {
+                Method = method;
+                Param1 = param1;
+                Param2 = param2;
+            }
 
-        //    public System.Action<string, System.CommandLine.IConsole, int> Method { get; }
+            public Action<string, int> Method { get; }
 
-        //    private global::System.CommandLine.Argument<string> Param1 { get; }
-        //    private global::System.CommandLine.Option<int> Param2 { get; }
-        //    public async Task<int> InvokeAsync(InvocationContext context)
-        //    {
-
-        //        Method.Invoke(context.ParseResult.GetValueForArgument(Param1), context.Console, context.ParseResult.GetValueForOption(Param2));
-
-        //        return await Task.FromResult(context.ExitCode);
-        //    }
-        //}
+            private Option Param1 { get; }
+            private Option Param2 { get; }
+            public async Task<int> InvokeAsync(InvocationContext context)
+            {
+                Method.Invoke(context.ParseResult.GetValueForOption<string>(Param1), context.ParseResult.GetValueForOption<int>(Param2));
+                return await Task.FromResult(context.ExitCode);
+            }
+        }
     }
 }
 

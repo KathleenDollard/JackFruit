@@ -1,4 +1,5 @@
 ﻿// Learn more about F# at http://docs.microsoft.com/dotnet/fsharp
+module program
 
 open System
 
@@ -203,6 +204,3 @@ let main argv =
     printfn $"{(makeSounds fish)}"
     printfn $"{(makeSounds cat)}"
     0 // return an integer exit code
-
-
- 

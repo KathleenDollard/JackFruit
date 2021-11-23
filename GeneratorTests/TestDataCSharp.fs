@@ -24,7 +24,7 @@ type Invocation with
     static member ForTesting =
         let data =
             { Instance = NamedItem.ForTesting.Data
-              MethodName = "JackRussell"
+              MethodName = SimpleNamedItem "JackRussell"
               Arguments = [] }
 
         { Data = data

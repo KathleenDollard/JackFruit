@@ -76,8 +76,8 @@ let OfGeneric = AsGeneric
 
 
 type Invocation =
-    { Instance: NamedItem
-      MethodName: string
+    { Instance: NamedItem // Named item for invoking static methods on generic types
+      MethodName: NamedItem // For generic methods
       Arguments: Expression list}
 let Invoke instanceName methodName arguments =
     Expression.Invocation
@@ -110,14 +110,14 @@ type Comparison =
     { Left: Expression
       Right: Expression
       Operator: Operator}
-let Equals left right =
-    { Left = left
-      Right = right
-      Operator = Operator.Equals }
-let NotEquals left right =
-    { Left = left
-      Right = right
-      Operator = Operator.NotEquals }    
+    //static member Equals left right =
+    //    { Left = left
+    //      Right = right
+    //      Operator = Operator.Equals }
+    //static member NotEquals left right =
+    //    { Left = left
+    //      Right = right
+    //      Operator = Operator.NotEquals }  
 
 type Expression =
     | Invocation of Invocation
@@ -129,6 +129,15 @@ type Expression =
     | Comment of string
     | Pragma of string
     | Null
+    static member Compare left operator right =
+        Comparison
+            { Left = left
+              Right = right
+              Operator = operator }
+    static member NotEquals left right =
+        { Left = left
+          Right = right
+          Operator = Operator.NotEquals }  
 
 type If =
     { Condition: Expression
@@ -166,6 +175,12 @@ type Statement =
     | ForEach of ForEach
     | Return of Expression
     | SimpleCall of Expression
+    static member Invoke instanceName methodName arguments =
+        SimpleCall 
+            ( Invocation
+                { Instance = SimpleNamedItem instanceName
+                  MethodName = methodName
+                  Arguments = arguments } )
 
 type Parameter =
     { ParameterName: string

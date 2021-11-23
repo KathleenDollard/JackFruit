@@ -6,6 +6,7 @@ open Common
 open LanguageExpression
 
 let private operationName = "operation"
+let private operationFieldName = "_operation"
 
 let private OutputHeader (outputter: RoslynOut) =
     outputter.OutputComment(Comment "Copyright (c) .NET Foundation and contributors. All rights reserved.")
@@ -51,13 +52,23 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
         | Service -> ""        
 
         
-    let fieldName (mbr: MemberDef) =
-        let kindName = kindName mbr
-        $"_{mbr.Name}{kindName}"  // KAD: Check casing
+    let memberFieldName (mbr: MemberDef) =
+        $"_{mbr.Name}{kindName mbr}"  // KAD: Check casing
 
-    let propName (mbr: MemberDef) =
-        let kindName = kindName mbr
-        $"{mbr.Name}{kindName}"  // KAD: Check casing
+    let memberPropName (mbr: MemberDef) =
+        $"{mbr.Name}{kindName mbr}"  // KAD: Check casing
+
+    let memberParamName (mbr: MemberDef) =
+        $"{mbr.Name}{kindName mbr}"  // KAD: Check casing
+
+    let commandFieldName (_: CommandDef) =
+        "_command"  
+  
+    let commandPropName (_: CommandDef)  =
+        "Command" 
+
+    let generatedCommandHandlerName (_: CommandDef)  =
+        "GeneratedHandler"
 
 
     let symbolType (mbr: MemberDef) =
@@ -71,7 +82,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
     let propStatements (mbr:MemberDef) =
 
         let symbolType =  symbolType mbr 
-        let fieldName =  fieldName mbr 
+        let fieldName =  memberFieldName mbr 
         let expression =
             Instantiation
                 { TypeName = symbolType
@@ -97,13 +108,13 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
         match kind  mbr with 
         | Service -> None
         | Argument | Option  -> 
-            Some (field (symbolType mbr ) (fieldName mbr ) Null)
+            Some (field (symbolType mbr ) (memberFieldName mbr ) Null)
 
 
     let propFromMember (mbr: MemberDef) =
         let symbolType =  symbolType mbr 
-        let fieldName =  fieldName mbr 
-        let propertyName = propName mbr 
+        let fieldName =  memberFieldName mbr 
+        let propertyName = memberPropName mbr 
         let prop = 
             prop Public symbolType propertyName
                 [ ifThen (Expression.Comparison {Left = Symbol fieldName; Right = Null; Operator = Operator.Equals})
@@ -121,22 +132,66 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
         // Add each member property
         // Set commandHandler - be sure to include service properties here
         // return command
-        let fieldName = "_command"
-        [ ifThen (Expression.Comparison {Left = Symbol fieldName; Right = Null; Operator = Operator.Equals})
+        let fieldName = commandFieldName commandDef
+        let fieldNameSymbol = Symbol fieldName
+        let commandHandler = $"{fieldName}.Handler"
+        let handlerClass = generatedCommandHandlerName commandDef
+        let memberFieldSymbol memberDef = Symbol (memberFieldName memberDef)
+
+        [ ifThen (Expression.Compare fieldNameSymbol Equals Null)
             [
-            // Instantiate
-            // Add each member property
-            // Set commandHandler - be sure to include service properties here
+                // Should the following be name or first alias?
+                Assign fieldName (New "Command" [ StringLiteral commandDef.Name ])
+
+                for memberDef in commandDef.Members do
+                    Statement.Invoke fieldName (SimpleNamedItem "Add") [ memberFieldSymbol memberDef ]
+ 
+                Assign commandHandler 
+                    (New handlerClass 
+                        [Symbol "_method"
+                         for memberDef in commandDef.Members do 
+                            Symbol (memberPropName memberDef)])
             ]
-          Return (Symbol fieldName)
+          Return fieldNameSymbol
         
         ]
-        
 
-    let membersForCommandDef commandDef = 
+    let generatedHandler (commandDef: CommandDef) = 
+        let methodSig = methodSigFromCommandDef commandDef
+        let invokeMethodName = SimpleNamedItem "Invoke"
+        let getValueForMember (memberDef: MemberDef) =
+            Invoke 
+                "context.ParseResult" 
+                (GenericNamedItem ("GetValueForOption", [memberDef.TypeName]))
+                [Symbol (memberFieldName memberDef)]
+            
+        [
+          ctor Public 
+            [ param operationName methodSig
+              for memberDef in commandDef.Members do
+                match kind memberDef with 
+                | Option | Argument -> param (memberParamName memberDef) (symbolType memberDef)
+                | Service -> () ]
+            [ assign $"{operationFieldName}" (Symbol operationName)
+              for memberDef in commandDef.Members do 
+                assign (memberFieldName memberDef) (Symbol (memberParamName memberDef)) ]
+
+          readonlyField methodSig operationFieldName
+          for memberDef in commandDef.Members do
+            readonlyField (symbolType memberDef) (memberFieldName memberDef)
+
+          method Public commandDef.ReturnType invokeMethodName 
+            [ param "context" (SimpleNamedItem "InvocationContext")]
+            [ Return (Invoke operationName (SimpleNamedItem "Invoke") 
+              [ for memberDef in commandDef.Members do 
+                  getValueForMember memberDef] ) ]
+
+        ]
+
+    let commandDefClass commandDef = 
         let methodSig = methodSigFromCommandDef commandDef
         [ readonlyField methodSig $"_{operationName}"
-          field (SimpleNamedItem "Command") "Command" Null
+          field (SimpleNamedItem "Command") (commandFieldName commandDef) Null
           
           for mbr in commandDef.Members do
             match fieldFromMember mbr with
@@ -152,17 +207,25 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
             | None -> ()
             | Some prop -> prop
 
-          prop Public (SimpleNamedItem "Command") "Command"
+          prop Public (SimpleNamedItem "Command") (commandPropName commandDef)
             (commandProp commandDef)
             []
 
+          // Nested generated handler class
+          Member.Class
+            
+              { ClassName = SimpleNamedItem (generatedCommandHandlerName commandDef)
+                StaticOrInstance = Instance
+                Scope = Private
+                Members = generatedHandler commandDef }
+            
         ]
 
     let classForCommandDef (commandDef: CommandDef) =
         { ClassName = SimpleNamedItem $"{commandDef.Name}CommandWrapper"
           StaticOrInstance = Instance
           Scope = Public
-          Members = membersForCommandDef commandDef }
+          Members = commandDefClass commandDef }
 
     let classes = 
         [ for commandDef in commandDefs do

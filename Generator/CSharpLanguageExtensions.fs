@@ -42,7 +42,7 @@ type NamedItem with
 
 type Invocation with 
     member this.Output = 
-        $"{this.Instance.Output}.{this.MethodName}()" // TODO: Arguments
+        $"{this.Instance.Output}.{this.MethodName.Output}()" // TODO: Arguments
 
 type Comparison with 
     member this.Output = 
