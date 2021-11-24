@@ -12,7 +12,6 @@ type LanguageCSharp() =
         | Instance -> ""
         | Static -> " static"
 
-
     interface ILanguage with 
 
         member _.PrivateKeyword = "private"
@@ -46,6 +45,11 @@ type LanguageCSharp() =
         member _.MethodClose _ =
             ["}"]
 
+        member _.ConstructorOpen(ctor: Constructor) =
+            [$"{ctor.Scope.Output}{staticOutput ctor.StaticOrInstance} {ctor.ClassName.Output}({OutputParameters ctor.Parameters})"; "{"]
+        member _.ConstructorClose _ =
+            ["}"]
+
         member _.AutoProperty(property: Property) =
             [$"{property.Scope.Output}{staticOutput property.StaticOrInstance} {property.Type.Output} {property.PropertyName} {{get; set;}}"]
         member _.PropertyOpen(property: Property) =
@@ -60,6 +64,9 @@ type LanguageCSharp() =
             [$"set"; "{"]
         member _.SetClose _ =
             ["}"]
+
+        member _.Field (field: Field) =
+            [$"{field.Scope.Output}{staticOutput field.StaticOrInstance} {field.FieldType.Output} {field.FieldName} {{get; set;}}"]
 
         member _.IfOpen ifInfo =
             [$"if ({ifInfo.Condition.Output})"; "{"]

@@ -34,7 +34,7 @@ type NamedItem with
                 match genericTypes with 
                 | [] -> ""
                 | _ -> 
-                    let x = [ for t in genericTypes do t.ToString() ]
+                    let x = [ for t in genericTypes do t.Output ]
                     let y = String.Join(", ", x)
                     $"<{y}>"
             $"{name}{generics}"
@@ -42,7 +42,7 @@ type NamedItem with
 
 type Invocation with 
     member this.Output = 
-        $"{this.Instance.Output}.{this.MethodName.Output}()" // TODO: Arguments
+        $"{this.Instance.Output}.{this.MethodName.Output}({OutputArguments this.Arguments})" 
 
 type Comparison with 
     member this.Output = 
@@ -50,7 +50,7 @@ type Comparison with
 
 type Instantiation with 
     member this.Output = 
-        $"new {this.TypeName.Output}()"  // TODO: Arguments
+        $"new {this.TypeName.Output}({OutputArguments this.Arguments})"  // TODO: Arguments
 
 type Expression with 
     member this.Output =
@@ -63,6 +63,7 @@ type Expression with
         | Symbol x -> x
         | Comment x -> $"// {x}"
         | Pragma x -> $"# {x}"
+        | Null _ -> "null"
 
 type Assignment with 
      member this.Output =
@@ -76,13 +77,13 @@ let OutputParameters (parameters: Parameter list) =
             | Some def -> " " + def.Output
     
     let s = [ for param in parameters do
-                $"{param.Type} {param.ParameterName}{getDefault param}"]
-    String.Join("", s)
+                $"{param.Type.Output} {param.ParameterName}{getDefault param}"]
+    String.Join(", ", s)
     
 let OutputArguments (arguments: Expression list) = 
     let s = [ for arg in arguments do
                 $"{arg.Output}"]
-    String.Join("", s)
+    String.Join(", ", s)
 
 
 

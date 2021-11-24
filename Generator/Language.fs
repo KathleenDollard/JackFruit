@@ -19,11 +19,14 @@ type ILanguage =
     abstract member NamespaceClose: Namespace -> string list
     abstract member ClassOpen: Class -> string list
     abstract member ClassClose: Class -> string list
+    abstract member ConstructorOpen: Constructor -> string list
+    abstract member ConstructorClose: Constructor -> string list
     abstract member MethodOpen: Method -> string list
     abstract member MethodClose: Method -> string list
     abstract member AutoProperty: Property -> string list
     abstract member PropertyOpen: Property -> string list
     abstract member PropertyClose: Property -> string list
+    abstract member Field: Field -> string list
     abstract member GetOpen: Property-> string list
     abstract member GetClose: Property -> string list
     abstract member SetOpen: Property -> string list
@@ -81,9 +84,9 @@ type Invocation =
       Arguments: Expression list}
 let Invoke instanceName methodName arguments =
     Expression.Invocation
-        { Instance = NamedItem.Create instanceName [] 
+        { Instance = SimpleNamedItem instanceName
           MethodName = methodName
-          Arguments = arguments }
+          Arguments = arguments } 
 let With (arguments: Expression list) = arguments 
 
 type Instantiation =
@@ -152,11 +155,6 @@ type ForEach =
 type Assignment = 
     { Item: string
       Value: Expression}
-let Assign item value =
-    Statement.Assign 
-        { Item = item 
-          Value = value}
-
 
 type AssignWithDeclare =
     { Variable: string
@@ -212,12 +210,14 @@ type Method =
 
 
 type Constructor =
-    { StaticOrInstance: StaticOrInstance
+    { ClassName: NamedItem
+      StaticOrInstance: StaticOrInstance
       Scope: Scope
       Parameters: Parameter list
       Statements: Statement list}
-    static member Create() =
-        { StaticOrInstance = Instance
+    static member Create className =
+        { ClassName = SimpleNamedItem className
+          StaticOrInstance = Instance
           Scope = Public
           Parameters = []
           Statements = [] }
@@ -335,6 +335,13 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         writer.DecreaseIndent()
         writer.AddLines (language.MethodClose method)
 
+    member this.OutputConstructor (ctor: Constructor) =
+       writer.AddLines (language.ConstructorOpen ctor) 
+       writer.IncreaseIndent()
+       this.OutputStatements ctor.Statements
+       writer.DecreaseIndent()
+       writer.AddLines (language.ConstructorClose ctor)
+
     member this.OutputProperty (prop : Property) =
         let isAutoProp = 
             prop.SetStatements.IsEmpty && prop.GetStatements.IsEmpty
@@ -356,11 +363,16 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
             writer.DecreaseIndent()
             writer.AddLines (language.PropertyClose prop)
 
-    member this.OutputMember mbr =
+    member this.OutputField (field: Field) =
+        writer.AddLines (language.Field field)
+
+     member this.OutputMember mbr =
         match mbr with 
         | Method m -> this.OutputMethod m
         | Property p -> this.OutputProperty p
         | Class c -> this.OutputClass c
+        | Field f -> this.OutputField f
+        | Constructor c -> this.OutputConstructor c
 
     member this.OutputMembers (members: Member list) =
         for mbr in members do 
@@ -382,12 +394,12 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
             writer.AddLines (language.Using using)
 
     member this.Output (nspace: Namespace) = 
-        writer.AddLines (language.NamespaceOpen nspace)
         this.OutputUsings nspace.Usings
+        writer.AddLines (language.NamespaceOpen nspace)
         writer.IncreaseIndent()
         this.OutputClasses nspace.Classes
         writer.DecreaseIndent()
         writer.AddLines (language.NamespaceClose nspace)
-
+        writer
 
 

@@ -30,7 +30,7 @@
     <Compile Include="NewMapping.fs" />
     <Compile Include="CommandOutput.fs" />
     <Compile Include="CommonOutput.fs" />
-    <Compile Include="OutputCode.fs" />
+    <Compile Include="BuildCodePattern.fs" />
   </ItemGroup>
 
   <ItemGroup>

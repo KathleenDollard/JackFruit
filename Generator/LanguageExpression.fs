@@ -38,25 +38,29 @@ let staticMethod
 
 let ctor 
     (scope: Scope)
+    (className: string)
     (parameters: Parameter list)
     (statements: Statement list) =
     Member.Constructor
-        { Scope = scope
+        { ClassName = SimpleNamedItem className
+          Scope = scope
           StaticOrInstance = Instance 
           Parameters = parameters
           Statements = statements
         }
 
 let staticCtor
-     (scope: Scope)
-     (parameters: Parameter list)
-     (statements: Statement list) =
-     Member.Constructor
-         { Scope = scope
-           StaticOrInstance = Static 
-           Parameters = parameters
-           Statements = statements
-         }
+    (scope: Scope)
+    (className: string)
+    (parameters: Parameter list)
+    (statements: Statement list) =
+    Member.Constructor
+        { ClassName = SimpleNamedItem className
+          Scope = scope
+          StaticOrInstance = Static 
+          Parameters = parameters
+          Statements = statements
+        }
          
 let field
     (fieldType: NamedItem)
@@ -149,7 +153,7 @@ let prop
           StaticOrInstance = Instance
           Scope = scope
           GetStatements = getStatements
-          SetStatements = getStatements }
+          SetStatements = setStatements }
 
 let ifThen 
     (condition: Expression)

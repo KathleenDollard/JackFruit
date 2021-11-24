@@ -69,6 +69,17 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: NamedItem, me
     /// This is always sets by transformers. 
     member val MemberKind: MemberKind option = None
         with get, set
+    member this.Kind =
+        match this.MemberKind with
+        | Some value -> value
+        | None -> Option   
+    member this.KindName  =
+        match this.Kind  with 
+        | Argument -> "Option" 
+        | Option -> "Argument" 
+        | Service -> ""        
+
+
 
     /// ArgDisplayName manages the case where the argument of an option
     /// has a different name than the option itself. If both the ArgDisplayName
@@ -211,9 +222,16 @@ and CommandDef(commandId: string, path: string list, returnType: Return, command
     /// System.CommandLine.  
     ///
     /// This always comes from the method during structure eval and can't be changed 
-    /// by transformers. 
+    /// by transformers.
     member val Members: MemberDef list = []
         with get, set
+        // TODO: Remove the ability to set this and SubCommands at any time.
+    member this.OptionsAndArgs =
+        [ for memberDef in this.Members do
+            match memberDef.Kind with 
+            | Option | Argument -> memberDef
+            | _ -> () ]
+
 
     /// All commands need to be in either the flat list or in a tree based on 
     /// subcommands. They should not be in both. AppModels, other than the 
