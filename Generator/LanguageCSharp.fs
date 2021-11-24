@@ -32,7 +32,24 @@ type LanguageCSharp() =
             ["}"]
 
         member _.ClassOpen cls =
-            [$"{cls.Scope.Output}{staticOutput cls.StaticOrInstance} class {cls.ClassName.Output}"; "{"]
+            let addColonIfNeeded list =
+                match list with 
+                | [] -> []
+                | head::tail -> List.insertAt 0 $" : {head}" tail
+
+            let baseAndInterfaces = 
+                [ match cls.InheritedFrom with 
+                  | Some t -> t.Output
+                  | None -> () 
+                  
+                  for i in cls.ImplementedInterfaces do
+                    i.Output ]
+                |> addColonIfNeeded
+                |> String.concat ", "
+
+            [ $"{cls.Scope.Output}{staticOutput cls.StaticOrInstance} class {cls.ClassName.Output}{baseAndInterfaces}"; 
+               
+              "{"]
         member _.ClassClose _ =
             ["}"]
 

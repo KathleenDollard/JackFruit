@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.CommandLine;
-
+using System.CommandLine.Invocation;
 namespace GeneratedHandlers
 {
     public class ACommandWrapper
     {
-        private Func<string, void> _operation { get; set; }
+        private Action<string> _operation { get; set; }
         private Command _command { get; set; }
         private Argument<string> _oneArgument { get; set; }
-        public ACommandWrapper(Func<string, void> operation)
+        public ACommandWrapper(Action<string> operation)
         {
             _operation = operation;
         }
@@ -38,7 +34,7 @@ namespace GeneratedHandlers
                 {
                     _command = new Command("A");
                     _command.Add(_oneArgument);
-                    _command.Handler = new GeneratedHandler(_method, OneArgument);
+                    _command.Handler = new GeneratedHandler(_operation, OneArgument);
                 }
                 return _command;
             }
@@ -46,20 +42,19 @@ namespace GeneratedHandlers
             {
             }
         }
-        private class GeneratedHandler
+        private class GeneratedHandler : ICommandHandler
         {
-            public GeneratedHandler(Func<string, void> operation, Argument<string> oneArgument)
+            public GeneratedHandler(Action<string> operation, Argument<string> oneArgument)
             {
                 _operation = operation;
                 _oneArgument = oneArgument;
             }
-            private Func<string, void> _operation { get; set; }
+            private Action<string> _operation { get; set; }
             private Argument<string> _oneArgument { get; set; }
             public void Invoke(InvocationContext context)
             {
-                return operation.Invoke(context.ParseResult.GetValueForOption<string>(_oneArgument));
+                return _operation.Invoke(context.ParseResult.GetValueForOption<string>(_oneArgument));
             }
         }
     }
 }
-

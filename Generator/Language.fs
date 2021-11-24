@@ -250,7 +250,16 @@ type Class =
     { ClassName: NamedItem
       StaticOrInstance: StaticOrInstance
       Scope: Scope
+      InheritedFrom: NamedItem option
+      ImplementedInterfaces: NamedItem list
       Members: Member list}
+    static member Create(className: NamedItem, scope: Scope, members: Member list) =
+        { ClassName = className
+          StaticOrInstance = Instance
+          Scope = scope
+          InheritedFrom = None
+          ImplementedInterfaces = []
+          Members = members }
 
 type Using = 
     { Namespace: string

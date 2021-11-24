@@ -112,6 +112,37 @@ let cls
         { ClassName = SimpleNamedItem name
           Scope = scope
           StaticOrInstance = Instance 
+          InheritedFrom = None
+          ImplementedInterfaces = []
+          Members = members
+        }
+
+let clsWithBase
+    (scope: Scope) 
+    (name: string) 
+    (inheritedFrom: NamedItem)
+    (members: Member list) =
+    Member.Class
+        { ClassName = SimpleNamedItem name
+          Scope = scope
+          StaticOrInstance = Instance 
+          InheritedFrom = Some inheritedFrom
+          ImplementedInterfaces = []
+          Members = members
+        }
+
+
+let clsWithInterfaces
+    (scope: Scope) 
+    (name: string) 
+    (interfaces: NamedItem list)
+    (members: Member list) =
+    Member.Class
+        { ClassName = SimpleNamedItem name
+          Scope = scope
+          StaticOrInstance = Instance 
+          InheritedFrom = None
+          ImplementedInterfaces = interfaces
           Members = members
         }
 
@@ -123,6 +154,8 @@ let genericCls
         { ClassName = name
           Scope = scope
           StaticOrInstance = Instance 
+          InheritedFrom = None
+          ImplementedInterfaces = []
           Members = members
         }    
 

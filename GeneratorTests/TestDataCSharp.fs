@@ -140,6 +140,8 @@ type Class with
             { ClassName = NamedItem.ForTesting.Data
               StaticOrInstance = Instance
               Scope = Public
+              InheritedFrom = None
+              ImplementedInterfaces = []
               Members = [] }
 
         { Data = data

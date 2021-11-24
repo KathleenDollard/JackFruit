@@ -123,7 +123,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
  
                 assign commandHandlerName 
                     (New handlerClass 
-                        [Symbol "_method"
+                        [Symbol operationFieldName
                          for memberDef in commandDef.Members do 
                             Symbol (memberPropName memberDef)])
             ]
@@ -134,6 +134,10 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
     let generatedHandler (commandDef: CommandDef) = 
         let methodSig = methodSigFromCommandDef commandDef
         let invokeMethodName = SimpleNamedItem "Invoke"
+        let invokeReturnType = 
+            match commandDef.ReturnType with 
+            | Type t -> GenericNamedItem ("Task", [t] )
+            | Void -> SimpleNamedItem "Task"
         let getValueForMember (memberDef: MemberDef) =
             Invoke 
                 "context.ParseResult" 
@@ -155,9 +159,9 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
           for memberDef in commandDef.Members do
             readonlyField (memberSymbolType memberDef) (memberFieldName memberDef)
 
-          method Public commandDef.ReturnType invokeMethodName 
+          method Public (Type invokeReturnType) invokeMethodName 
             [ param "context" (SimpleNamedItem "InvocationContext")]
-            [ Return (Invoke operationName (SimpleNamedItem "Invoke") 
+            [ Return (Invoke operationFieldName (SimpleNamedItem "Invoke") 
               [ for memberDef in commandDef.Members do 
                   getValueForMember memberDef] ) ]
 
@@ -165,7 +169,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
 
     let commandDefClass (commandDef: CommandDef) = 
         let methodSig = methodSigFromCommandDef commandDef
-        [ readonlyField methodSig $"_{operationName}"
+        [ readonlyField methodSig operationFieldName
           field (SimpleNamedItem "Command") (commandFieldName commandDef) Null
           
           for mbr in commandDef.OptionsAndArgs do
@@ -186,21 +190,18 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
             (commandProp commandDef)
             []
 
-          // Nested generated handler class
-          Member.Class
-            
-              { ClassName = SimpleNamedItem (generatedCommandHandlerName commandDef)
-                StaticOrInstance = Instance
-                Scope = Private
-                Members = generatedHandler commandDef }
+          let handlerClassName = generatedCommandHandlerName commandDef
+          let commandHandlerInterface = SimpleNamedItem "ICommandHandler"
+          clsWithInterfaces Private handlerClassName [commandHandlerInterface] (generatedHandler commandDef)
+    
             
         ]
 
     let classForCommandDef (commandDef: CommandDef) =
-        { ClassName = SimpleNamedItem (commandClassName commandDef)
-          StaticOrInstance = Instance
-          Scope = Public
-          Members = commandDefClass commandDef }
+        Class.Create 
+            ( SimpleNamedItem (commandClassName commandDef),
+              Public,
+              commandDefClass commandDef)
 
     let classes = 
         [ for commandDef in commandDefs do
@@ -209,6 +210,9 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
 
     // KAD: Figure out right namespace
     { NamespaceName = "GeneratedHandlers"
-      Usings = [ Using.Create "System.CommandLine" ]
+      Usings = 
+        [ Using.Create "System" 
+          Using.Create "System.CommandLine"
+          Using.Create "System.CommandLine.Invocation"]
       Classes = classes }
 
