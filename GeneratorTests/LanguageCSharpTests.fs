@@ -275,7 +275,12 @@ type ``When outputting code`` () =
             { Method.ForTesting.Data with 
                 Statements = 
                     [ AssignWithDeclare { Variable = "x"; TypeName = None; Value = (NonStringLiteral "42")}
-                      SimpleCall (Invocation { Instance = (NamedItem.Create "Console" []); MethodName = SimpleNamedItem "WriteLine"; Arguments = [] }) ] }
+                      SimpleCall 
+                        ( Invocation 
+                            { Instance = (NamedItem.Create "Console" [])
+                              MethodName = SimpleNamedItem "WriteLine"
+                              ShouldAwait = false
+                              Arguments = [] }) ] }
 
         outPutter.OutputMethod data
         let actual = writer.LinePairs()

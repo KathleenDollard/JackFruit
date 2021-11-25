@@ -51,7 +51,7 @@ let private RemoveCharsAndUpper (remove: char list) (input:string) =
                     lastIsSpecial <- false
                     System.Char.ToUpper c
                 else
-                    c |]
+                    System.Char.ToLower c |]
 
 /// Adds character between words. Sequential upper case is treated as a word. 
 /// where 'HTTPResult' would be 'http_result'

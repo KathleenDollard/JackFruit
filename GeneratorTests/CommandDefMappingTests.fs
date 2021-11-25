@@ -60,17 +60,29 @@ type ``When outputting code``() =
     let cSharp = LanguageCSharp() :> ILanguage
     let outputter = RoslynOut (cSharp, ArrayWriter(3))
 
-
     let OutputCodeFromCommandDef map =
         let commandDefs = map.CommandDef
         let codeModel = OutputCommandWrapper commandDefs
         outputter.Output codeModel
 
     [<Fact>]
-    member _.``One simple comand built``() =
+    member _.``Code outputs for one simple command``() =
         let writer = OutputCodeFromCommandDef MapData.OneSimpleMapping
         let actual = writer.Output
         Assert.Equal ("", actual)
+
+    [<Fact>]
+    member _.``Code outputs for three simple commands``() =
+        let writer = OutputCodeFromCommandDef MapData.OneSimpleMapping
+        let actual = writer.Output
+        Assert.Equal ("", actual)
+
+    [<Fact>]
+    member _.``No command does noto throw``() =
+        let writer = OutputCodeFromCommandDef MapData.OneSimpleMapping
+        let actual = writer.Output
+        Assert.Equal ("", actual)
+
 
                 
 type ``Transforms for descriptions``() =

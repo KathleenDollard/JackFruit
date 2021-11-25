@@ -81,11 +81,13 @@ let OfGeneric = AsGeneric
 type Invocation =
     { Instance: NamedItem // Named item for invoking static methods on generic types
       MethodName: NamedItem // For generic methods
+      ShouldAwait: bool
       Arguments: Expression list}
 let Invoke instanceName methodName arguments =
     Expression.Invocation
         { Instance = SimpleNamedItem instanceName
           MethodName = methodName
+          ShouldAwait = false
           Arguments = arguments } 
 let With (arguments: Expression list) = arguments 
 
@@ -178,6 +180,7 @@ type Statement =
             ( Invocation
                 { Instance = SimpleNamedItem instanceName
                   MethodName = methodName
+                  ShouldAwait = false
                   Arguments = arguments } )
 
 type Parameter =
@@ -196,6 +199,7 @@ type Method =
       ReturnType: Return
       StaticOrInstance: StaticOrInstance
       IsExtension: bool
+      IsAsync: bool
       Scope: Scope
       Parameters: Parameter list
       Statements: Statement list}
@@ -204,6 +208,7 @@ type Method =
           ReturnType = returnType
           StaticOrInstance = Instance
           IsExtension = false
+          IsAsync = false
           Scope = Public
           Parameters = []
           Statements = [] }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Threading.Tasks;
 namespace GeneratedHandlers
 {
     public class ACommandWrapper
@@ -51,9 +52,10 @@ namespace GeneratedHandlers
             }
             private Action<string> _operation { get; set; }
             private Argument<string> _oneArgument { get; set; }
-            public void Invoke(InvocationContext context)
+            public Task<int> InvokeAsync(InvocationContext context)
             {
-                return _operation.Invoke(context.ParseResult.GetValueForOption<string>(_oneArgument));
+                _operation.Invoke(context.ParseResult.GetValueForArgument<string>(_oneArgument));
+                return Task.FromResult(context.ExitCode);
             }
         }
     }

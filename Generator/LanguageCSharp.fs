@@ -12,6 +12,12 @@ type LanguageCSharp() =
         | Instance -> ""
         | Static -> " static"
 
+    let asyncOutput isAsync =
+        if isAsync then 
+            " async"
+        else
+            ""
+
     interface ILanguage with 
 
         member _.PrivateKeyword = "private"
@@ -58,7 +64,7 @@ type LanguageCSharp() =
                 match method.ReturnType with 
                 | Type t -> t.Output
                 | Void -> "void"
-            [$"{method.Scope.Output}{staticOutput method.StaticOrInstance} {returnType} {method.MethodName.Output}({OutputParameters method.Parameters})"; "{"]
+            [$"{method.Scope.Output}{staticOutput method.StaticOrInstance}{asyncOutput method.IsAsync} {returnType} {method.MethodName.Output}({OutputParameters method.Parameters})"; "{"]
         member _.MethodClose _ =
             ["}"]
 
@@ -114,7 +120,13 @@ type LanguageCSharp() =
 
 
         member _.Invocation invocation =
-            $"{invocation.Instance}.{invocation.MethodName}({OutputArguments invocation.Arguments})"
+            let awaitIfNeeded = 
+                if invocation.ShouldAwait then
+                    "await "
+                else
+                    ""
+
+            $"{awaitIfNeeded}{invocation.Instance}.{invocation.MethodName}({OutputArguments invocation.Arguments})"
         member _.Comparison comparison =
             $"{comparison.Left.Output}.{comparison.Operator.Output} {comparison.Right.Output}"
 

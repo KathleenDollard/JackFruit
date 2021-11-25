@@ -25,6 +25,7 @@ type Invocation with
         let data =
             { Instance = NamedItem.ForTesting.Data
               MethodName = SimpleNamedItem "JackRussell"
+              ShouldAwait = false
               Arguments = [] }
 
         { Data = data

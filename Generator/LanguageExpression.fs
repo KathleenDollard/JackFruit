@@ -14,6 +14,25 @@ let method
           Scope = scope
           StaticOrInstance = Instance 
           IsExtension = false
+          IsAsync = false
+          ReturnType = returnType
+          Parameters = parameters
+          Statements = statements
+        }
+
+
+let asyncMethod 
+    (scope: Scope)
+    (returnType: Return)
+    (name: NamedItem) 
+    (parameters: Parameter list)
+    (statements: Statement list) =
+    Member.Method
+        { MethodName = name
+          Scope = scope
+          StaticOrInstance = Instance 
+          IsExtension = false
+          IsAsync = true
           ReturnType = returnType
           Parameters = parameters
           Statements = statements
@@ -31,6 +50,7 @@ let staticMethod
           Scope = scope
           StaticOrInstance = Static 
           IsExtension = false
+          IsAsync = false
           ReturnType = returnType
           Parameters = parameters
           Statements = statements
@@ -99,6 +119,7 @@ let extensionMethod
           Scope = scope
           StaticOrInstance = Static
           IsExtension = true
+          IsAsync = false
           ReturnType = returnType
           Parameters = parameters
           Statements = statements
@@ -195,3 +216,26 @@ let ifThen
         { Condition = condition
           Statements = ifStatements
           Elses = []}
+
+let invoke 
+     ( instance: string)
+     ( methodName: string)
+     ( arguments: Expression list) =
+     Expression.Invocation 
+        { Instance = SimpleNamedItem instance 
+          MethodName = SimpleNamedItem methodName
+          ShouldAwait = false
+          Arguments = arguments }
+
+let invokeAwait
+    ( instance: string)
+    ( methodName: string)
+    ( arguments: Expression list) =
+    Expression.Invocation 
+       { Instance = SimpleNamedItem instance 
+         MethodName = SimpleNamedItem methodName
+         ShouldAwait = true
+         Arguments = arguments }
+
+    
+    

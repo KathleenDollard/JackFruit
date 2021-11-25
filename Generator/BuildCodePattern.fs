@@ -133,15 +133,12 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
 
     let generatedHandler (commandDef: CommandDef) = 
         let methodSig = methodSigFromCommandDef commandDef
-        let invokeMethodName = SimpleNamedItem "Invoke"
-        let invokeReturnType = 
-            match commandDef.ReturnType with 
-            | Type t -> GenericNamedItem ("Task", [t] )
-            | Void -> SimpleNamedItem "Task"
+        let invokeMethodName = SimpleNamedItem "InvokeAsync"
+        let invokeReturnType = GenericNamedItem ("Task", [SimpleNamedItem "int"] )
         let getValueForMember (memberDef: MemberDef) =
             Invoke 
                 "context.ParseResult" 
-                (GenericNamedItem ("GetValueForOption", [memberDef.TypeName]))
+                (GenericNamedItem ($"GetValueFor{memberDef.KindName}", [memberDef.TypeName]))
                 [Symbol (memberFieldName memberDef)]
             
         [
@@ -161,10 +158,10 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
 
           method Public (Type invokeReturnType) invokeMethodName 
             [ param "context" (SimpleNamedItem "InvocationContext")]
-            [ Return (Invoke operationFieldName (SimpleNamedItem "Invoke") 
-              [ for memberDef in commandDef.Members do 
-                  getValueForMember memberDef] ) ]
-
+            [ Statement.Invoke operationFieldName (SimpleNamedItem "Invoke") 
+                [ for memberDef in commandDef.Members do 
+                    getValueForMember memberDef]
+              Return (invokeAwait "Task" "FromResult" [Symbol "context.ExitCode"]) ]
         ]
 
     let commandDefClass (commandDef: CommandDef) = 
@@ -213,6 +210,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Namespace =
       Usings = 
         [ Using.Create "System" 
           Using.Create "System.CommandLine"
-          Using.Create "System.CommandLine.Invocation"]
+          Using.Create "System.CommandLine.Invocation"
+          Using.Create "System.Threading.Tasks"]
       Classes = classes }
 

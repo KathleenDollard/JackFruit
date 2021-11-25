@@ -75,8 +75,8 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: NamedItem, me
         | None -> Option   
     member this.KindName  =
         match this.Kind  with 
-        | Argument -> "Option" 
-        | Option -> "Argument" 
+        | Argument -> "Argument" 
+        | Option -> "Option" 
         | Service -> ""        
 
 
