@@ -3,16 +3,20 @@
 open System
 open Generator.Language
 open Generator.CSharpLanguageExtensions
-
+open Common
 
 type LanguageCSharp() =
 
-    let staticOutput isStatic = 
-        if isStatic then
-            " static"
+    let staticOutput staticOrInstance = 
+        match staticOrInstance with 
+        | Instance -> ""
+        | Static -> " static"
+
+    let asyncOutput isAsync =
+        if isAsync then 
+            " async"
         else
             ""
-
 
     interface ILanguage with 
 
@@ -34,23 +38,45 @@ type LanguageCSharp() =
             ["}"]
 
         member _.ClassOpen cls =
-            [$"{cls.Scope.Output}{staticOutput cls.IsStatic} class {cls.ClassName.Output}"; "{"]
+            let addColonIfNeeded list =
+                match list with 
+                | [] -> []
+                | head::tail -> List.insertAt 0 $" : {head}" tail
+
+            let baseAndInterfaces = 
+                [ match cls.InheritedFrom with 
+                  | Some t -> t.Output
+                  | None -> () 
+                  
+                  for i in cls.ImplementedInterfaces do
+                    i.Output ]
+                |> addColonIfNeeded
+                |> String.concat ", "
+
+            [ $"{cls.Scope.Output}{staticOutput cls.StaticOrInstance} class {cls.ClassName.Output}{baseAndInterfaces}"; 
+               
+              "{"]
         member _.ClassClose _ =
             ["}"]
 
         member _.MethodOpen(method: Method) =
             let returnType =
                 match method.ReturnType with 
-                | Some t -> t.Output
-                | None -> ""
-            [$"{method.Scope.Output}{staticOutput method.IsStatic} {returnType} {method.MethodName.Output}({OutputParameters method.Parameters})"; "{"]
+                | Type t -> t.Output
+                | Void -> "void"
+            [$"{method.Scope.Output}{staticOutput method.StaticOrInstance}{asyncOutput method.IsAsync} {returnType} {method.MethodName.Output}({OutputParameters method.Parameters})"; "{"]
         member _.MethodClose _ =
             ["}"]
 
+        member _.ConstructorOpen(ctor: Constructor) =
+            [$"{ctor.Scope.Output}{staticOutput ctor.StaticOrInstance} {ctor.ClassName.Output}({OutputParameters ctor.Parameters})"; "{"]
+        member _.ConstructorClose _ =
+            ["}"]
+
         member _.AutoProperty(property: Property) =
-            [$"{property.Scope.Output}{staticOutput property.IsStatic} {property.Type.Output} {property.PropertyName} {{get; set;}}"]
+            [$"{property.Scope.Output}{staticOutput property.StaticOrInstance} {property.Type.Output} {property.PropertyName} {{get; set;}}"]
         member _.PropertyOpen(property: Property) =
-            [$"{property.Scope.Output}{staticOutput property.IsStatic} {property.Type.Output} {property.PropertyName}"; "{"]
+            [$"{property.Scope.Output}{staticOutput property.StaticOrInstance} {property.Type.Output} {property.PropertyName}"; "{"]
         member _.PropertyClose _ =
             ["}"]
         member _.GetOpen _ =
@@ -61,6 +87,9 @@ type LanguageCSharp() =
             [$"set"; "{"]
         member _.SetClose _ =
             ["}"]
+
+        member _.Field (field: Field) =
+            [$"{field.Scope.Output}{staticOutput field.StaticOrInstance} {field.FieldType.Output} {field.FieldName} {{get; set;}}"]
 
         member _.IfOpen ifInfo =
             [$"if ({ifInfo.Condition.Output})"; "{"]
@@ -91,7 +120,13 @@ type LanguageCSharp() =
 
 
         member _.Invocation invocation =
-            $"{invocation.Instance}.{invocation.MethodName}({OutputArguments invocation.Arguments})"
+            let awaitIfNeeded = 
+                if invocation.ShouldAwait then
+                    "await "
+                else
+                    ""
+
+            $"{awaitIfNeeded}{invocation.Instance}.{invocation.MethodName}({OutputArguments invocation.Arguments})"
         member _.Comparison comparison =
             $"{comparison.Left.Output}.{comparison.Operator.Output} {comparison.Right.Output}"
 

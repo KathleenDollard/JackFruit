@@ -11,7 +11,8 @@ open Microsoft.CodeAnalysis
 open Generator.Tests
 open Generator.NewMapping
 open Generator
-
+open BuildCodePattern
+open Generator.Language
 
 // I'm not sure what we should be testing first
 //  * Creating CommandDef from random method (per most APpModels) : ``When building CommandDefs``
@@ -53,6 +54,35 @@ type ``When building CommandDefs``() =
     [<Fact>]
     member _.``No command does noto throw``() =
         TestCommandDefFromSource MapData.NoMapping
+
+
+type ``When outputting code``() =
+    let cSharp = LanguageCSharp() :> ILanguage
+    let outputter = RoslynOut (cSharp, ArrayWriter(3))
+
+    let OutputCodeFromCommandDef map =
+        let commandDefs = map.CommandDef
+        let codeModel = OutputCommandWrapper commandDefs
+        outputter.Output codeModel
+
+    [<Fact>]
+    member _.``Code outputs for one simple command``() =
+        let writer = OutputCodeFromCommandDef MapData.OneSimpleMapping
+        let actual = writer.Output
+        Assert.Equal ("", actual)
+
+    [<Fact>]
+    member _.``Code outputs for three simple commands``() =
+        let writer = OutputCodeFromCommandDef MapData.OneSimpleMapping
+        let actual = writer.Output
+        Assert.Equal ("", actual)
+
+    [<Fact>]
+    member _.``No command does noto throw``() =
+        let writer = OutputCodeFromCommandDef MapData.OneSimpleMapping
+        let actual = writer.Output
+        Assert.Equal ("", actual)
+
 
                 
 type ``Transforms for descriptions``() =

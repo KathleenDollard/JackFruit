@@ -1,14 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <WarnOn>3390;$(WarnOn)</WarnOn>
+	  <OutputType>Exe</OutputType>
+	  <TargetFramework>net6.0</TargetFramework>
+	  <DisableFSharpCorePreviewCheck>true</DisableFSharpCorePreviewCheck>
+	  <_NETCoreSdkIsPreview>true</_NETCoreSdkIsPreview>
+
+	  <WarnOn>3390;$(WarnOn)</WarnOn>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="Fluent.fs" />
     <Compile Include="FSharp6.fs" />
+    <Compile Include="Temp.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

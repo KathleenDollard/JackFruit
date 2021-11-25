@@ -3,6 +3,7 @@
 open Microsoft.CodeAnalysis
 open System.CommandLine
 open System.Collections.Generic
+open Common
 
 
 type ItemReturn<'T> =
@@ -57,7 +58,7 @@ type CommandDefUsage =
 /// The single structure is used so that late transformers can
 /// determine the member type (as opposed to requiring it during
 /// structure evaluation). 
-type MemberDef(memberId: string, commandDef: CommandDef, typeName: string, memberDefUsage: MemberDefUsage, generateSymbol: bool) =
+type MemberDef(memberId: string, commandDef: CommandDef, typeName: NamedItem, memberDefUsage: MemberDefUsage, generateSymbol: bool) =
     let pocket = Dictionary<string, obj>()
 
     /// Indicates whether the member is an argument, option (also called
@@ -68,6 +69,17 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: string, membe
     /// This is always sets by transformers. 
     member val MemberKind: MemberKind option = None
         with get, set
+    member this.Kind =
+        match this.MemberKind with
+        | Some value -> value
+        | None -> Option   
+    member this.KindName  =
+        match this.Kind  with 
+        | Argument -> "Argument" 
+        | Option -> "Option" 
+        | Service -> ""        
+
+
 
     /// ArgDisplayName manages the case where the argument of an option
     /// has a different name than the option itself. If both the ArgDisplayName
@@ -187,7 +199,7 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: string, membe
 
 
 /// The main structure for commands during transformations
-and CommandDef(commandId: string, path: string list, returnType: string option, commandDefUsage: CommandDefUsage) =
+and CommandDef(commandId: string, path: string list, returnType: Return, commandDefUsage: CommandDefUsage) =
 
     let pocket = Dictionary<string, obj>()
 
@@ -210,9 +222,16 @@ and CommandDef(commandId: string, path: string list, returnType: string option, 
     /// System.CommandLine.  
     ///
     /// This always comes from the method during structure eval and can't be changed 
-    /// by transformers. 
+    /// by transformers.
     member val Members: MemberDef list = []
         with get, set
+        // TODO: Remove the ability to set this and SubCommands at any time.
+    member this.OptionsAndArgs =
+        [ for memberDef in this.Members do
+            match memberDef.Kind with 
+            | Option | Argument -> memberDef
+            | _ -> () ]
+
 
     /// All commands need to be in either the flat list or in a tree based on 
     /// subcommands. They should not be in both. AppModels, other than the 
@@ -274,7 +293,7 @@ and CommandDef(commandId: string, path: string list, returnType: string option, 
     /// the environment return, and thus this is often unit (null)
     ///
     /// This always comes from the method and cannot be changed by transformers
-    member _.ReturnType: string option = returnType
+    member _.ReturnType: Return = returnType
 
     /// Used by the generator to determine whether to output SetHandler.
     /// When GenerateSetHandler is set to false, any tree structure is unused

@@ -16,6 +16,7 @@
     <Compile Include="ArrayWriter.fs" />
     <Compile Include="StringBuilderWriter.fs" />
     <Compile Include="CSharpLanguageExtensions.fs" />
+    <Compile Include="LanguageExpression.fs" />
     <Compile Include="LanguageCSharp.fs" />
     <Compile Include="CodeCSharp.fs" />
     <Compile Include="OutputMapping.fs" />
@@ -29,7 +30,7 @@
     <Compile Include="NewMapping.fs" />
     <Compile Include="CommandOutput.fs" />
     <Compile Include="CommonOutput.fs" />
-    <Compile Include="OutputCode.fs" />
+    <Compile Include="BuildCodePattern.fs" />
   </ItemGroup>
 
   <ItemGroup>

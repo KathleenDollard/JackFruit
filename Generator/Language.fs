@@ -19,11 +19,14 @@ type ILanguage =
     abstract member NamespaceClose: Namespace -> string list
     abstract member ClassOpen: Class -> string list
     abstract member ClassClose: Class -> string list
+    abstract member ConstructorOpen: Constructor -> string list
+    abstract member ConstructorClose: Constructor -> string list
     abstract member MethodOpen: Method -> string list
     abstract member MethodClose: Method -> string list
     abstract member AutoProperty: Property -> string list
     abstract member PropertyOpen: Property -> string list
     abstract member PropertyClose: Property -> string list
+    abstract member Field: Field -> string list
     abstract member GetOpen: Property-> string list
     abstract member GetClose: Property -> string list
     abstract member SetOpen: Property -> string list
@@ -53,6 +56,10 @@ type Scope =
     | Private
     | Internal
 
+type StaticOrInstance =
+    | Static
+    | Instance
+
 // Where a class may be used, use NamedType, even if it will generally be an instance
 // KAD: Consider if all these overloads are needed
 type GenericNamedItem = 
@@ -72,14 +79,16 @@ let OfGeneric = AsGeneric
 
 
 type Invocation =
-    { Instance: NamedItem
-      MethodName: string
+    { Instance: NamedItem // Named item for invoking static methods on generic types
+      MethodName: NamedItem // For generic methods
+      ShouldAwait: bool
       Arguments: Expression list}
 let Invoke instanceName methodName arguments =
     Expression.Invocation
-        { Instance = NamedItem.Create instanceName [] 
+        { Instance = SimpleNamedItem instanceName
           MethodName = methodName
-          Arguments = arguments }
+          ShouldAwait = false
+          Arguments = arguments } 
 let With (arguments: Expression list) = arguments 
 
 type Instantiation =
@@ -106,14 +115,14 @@ type Comparison =
     { Left: Expression
       Right: Expression
       Operator: Operator}
-let Equals left right =
-    { Left = left
-      Right = right
-      Operator = Operator.Equals }
-let NotEquals left right =
-    { Left = left
-      Right = right
-      Operator = Operator.NotEquals }    
+    //static member Equals left right =
+    //    { Left = left
+    //      Right = right
+    //      Operator = Operator.Equals }
+    //static member NotEquals left right =
+    //    { Left = left
+    //      Right = right
+    //      Operator = Operator.NotEquals }  
 
 type Expression =
     | Invocation of Invocation
@@ -124,6 +133,16 @@ type Expression =
     | Symbol of string
     | Comment of string
     | Pragma of string
+    | Null
+    static member Compare left operator right =
+        Comparison
+            { Left = left
+              Right = right
+              Operator = operator }
+    static member NotEquals left right =
+        { Left = left
+          Right = right
+          Operator = Operator.NotEquals }  
 
 type If =
     { Condition: Expression
@@ -138,11 +157,6 @@ type ForEach =
 type Assignment = 
     { Item: string
       Value: Expression}
-let Assign item value =
-    Statement.Assign 
-        { Item = item 
-          Value = value}
-
 
 type AssignWithDeclare =
     { Variable: string
@@ -161,6 +175,13 @@ type Statement =
     | ForEach of ForEach
     | Return of Expression
     | SimpleCall of Expression
+    static member Invoke instanceName methodName arguments =
+        SimpleCall 
+            ( Invocation
+                { Instance = SimpleNamedItem instanceName
+                  MethodName = methodName
+                  ShouldAwait = false
+                  Arguments = arguments } )
 
 type Parameter =
     { ParameterName: string
@@ -175,17 +196,33 @@ type Parameter =
 
 type Method =
     { MethodName: NamedItem
-      ReturnType: NamedItem option
-      IsStatic: bool
+      ReturnType: Return
+      StaticOrInstance: StaticOrInstance
       IsExtension: bool
+      IsAsync: bool
       Scope: Scope
       Parameters: Parameter list
       Statements: Statement list}
     static member Create name returnType =
         { MethodName = NamedItem.Create name []
           ReturnType = returnType
-          IsStatic = false
+          StaticOrInstance = Instance
           IsExtension = false
+          IsAsync = false
+          Scope = Public
+          Parameters = []
+          Statements = [] }
+
+
+type Constructor =
+    { ClassName: NamedItem
+      StaticOrInstance: StaticOrInstance
+      Scope: Scope
+      Parameters: Parameter list
+      Statements: Statement list}
+    static member Create className =
+        { ClassName = SimpleNamedItem className
+          StaticOrInstance = Instance
           Scope = Public
           Parameters = []
           Statements = [] }
@@ -193,21 +230,41 @@ type Method =
 type Property =
     { PropertyName: string
       Type: NamedItem
-      IsStatic: bool
+      StaticOrInstance: StaticOrInstance
       Scope: Scope
       GetStatements: Statement list
       SetStatements: Statement list}
 
+type Field =
+    { FieldName: string
+      FieldType: NamedItem
+      IsReadonly: bool
+      StaticOrInstance: StaticOrInstance
+      Scope: Scope
+      InitialValue: Expression option}
+      
+
 type Member =
     | Method of Method
     | Property of Property
+    | Field of Field
+    | Constructor of Constructor
     | Class of Class
 
 type Class = 
     { ClassName: NamedItem
-      IsStatic: bool
+      StaticOrInstance: StaticOrInstance
       Scope: Scope
+      InheritedFrom: NamedItem option
+      ImplementedInterfaces: NamedItem list
       Members: Member list}
+    static member Create(className: NamedItem, scope: Scope, members: Member list) =
+        { ClassName = className
+          StaticOrInstance = Instance
+          Scope = scope
+          InheritedFrom = None
+          ImplementedInterfaces = []
+          Members = members }
 
 type Using = 
     { Namespace: string
@@ -292,7 +349,14 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         writer.DecreaseIndent()
         writer.AddLines (language.MethodClose method)
 
-    member this.OutputProperty prop =
+    member this.OutputConstructor (ctor: Constructor) =
+       writer.AddLines (language.ConstructorOpen ctor) 
+       writer.IncreaseIndent()
+       this.OutputStatements ctor.Statements
+       writer.DecreaseIndent()
+       writer.AddLines (language.ConstructorClose ctor)
+
+    member this.OutputProperty (prop : Property) =
         let isAutoProp = 
             prop.SetStatements.IsEmpty && prop.GetStatements.IsEmpty
         if isAutoProp then
@@ -313,11 +377,16 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
             writer.DecreaseIndent()
             writer.AddLines (language.PropertyClose prop)
 
-    member this.OutputMember mbr =
+    member this.OutputField (field: Field) =
+        writer.AddLines (language.Field field)
+
+     member this.OutputMember mbr =
         match mbr with 
         | Method m -> this.OutputMethod m
         | Property p -> this.OutputProperty p
         | Class c -> this.OutputClass c
+        | Field f -> this.OutputField f
+        | Constructor c -> this.OutputConstructor c
 
     member this.OutputMembers (members: Member list) =
         for mbr in members do 
@@ -339,12 +408,12 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
             writer.AddLines (language.Using using)
 
     member this.Output (nspace: Namespace) = 
-        writer.AddLines (language.NamespaceOpen nspace)
         this.OutputUsings nspace.Usings
+        writer.AddLines (language.NamespaceOpen nspace)
         writer.IncreaseIndent()
         this.OutputClasses nspace.Classes
         writer.DecreaseIndent()
         writer.AddLines (language.NamespaceClose nspace)
-
+        writer
 
 

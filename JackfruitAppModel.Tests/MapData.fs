@@ -3,6 +3,7 @@
 namespace Jackfruit.Tests
 
 open Generator.Models
+open Common
 
 type MapData =
     { MapInferredStatements: string list
@@ -15,8 +16,8 @@ type MapData =
           CommandDefs = [ ] }
 
     static member OneMapping =
-        let commandDef = CommandDef("A", [""], (Some "void"), Arbitrary)
-        let members = [ MemberDef("one",commandDef, "string", ArbitraryMember, true) ]
+        let commandDef = CommandDef("A", [""], Void, Arbitrary)
+        let members = [ MemberDef("one",commandDef, (SimpleNamedItem "string"), ArbitraryMember, true) ]
         commandDef.Members <- members
 
         { MapInferredStatements = [ "builder.MapInferred(\"\", Handlers.A);" ]
@@ -25,23 +26,23 @@ type MapData =
         
 
     static member ThreeMappings =
-        let package = CommandDef("package", [ "dotnet"; "add"; "package" ], Some "void", Arbitrary)
+        let package = CommandDef("package", [ "dotnet"; "add"; "package" ], Void, Arbitrary)
         package.Members <-
-            [ MemberDef("packageName", package, "string", ArbitraryMember, true)
-              MemberDef("version", package, "string", ArbitraryMember, true)
-              MemberDef("framework",  package, "string", ArbitraryMember, true)
-              MemberDef("noRestore",  package, "bool", ArbitraryMember, true)
-              MemberDef("source",  package, "string", ArbitraryMember, true)
-              MemberDef("packageDirectory",  package, "string", ArbitraryMember, true)
-              MemberDef("interactive",  package, "bool", ArbitraryMember, true)
-              MemberDef("prerelease",  package, "bool", ArbitraryMember, true) ] 
+            [ MemberDef("packageName", package, (SimpleNamedItem "string"), ArbitraryMember, true)
+              MemberDef("version", package, (SimpleNamedItem "string"), ArbitraryMember, true)
+              MemberDef("framework",  package, (SimpleNamedItem "string"), ArbitraryMember, true)
+              MemberDef("noRestore",  package, (SimpleNamedItem "bool"), ArbitraryMember, true)
+              MemberDef("source",  package, (SimpleNamedItem "string"), ArbitraryMember, true)
+              MemberDef("packageDirectory",  package, (SimpleNamedItem "string"), ArbitraryMember, true)
+              MemberDef("interactive",  package, (SimpleNamedItem "bool"), ArbitraryMember, true)
+              MemberDef("prerelease",  package, (SimpleNamedItem "bool"), ArbitraryMember, true) ] 
    
-        let add = CommandDef("add", [ "dotnet"; "add" ], None, Arbitrary )
+        let add = CommandDef("add", [ "dotnet"; "add" ], Void, Arbitrary )
         add.SubCommands <- [package]
 
-        let dotnet = CommandDef("dotnet", [ "dotnet" ], Some "void", Arbitrary)
+        let dotnet = CommandDef("dotnet", [ "dotnet" ], Void, Arbitrary)
         dotnet.Members <-
-            [ MemberDef("project", dotnet, "string", ArbitraryMember, true) ]
+            [ MemberDef("project", dotnet, (SimpleNamedItem "string"), ArbitraryMember, true) ]
         dotnet.SubCommands <- [add]
 
         { MapInferredStatements =

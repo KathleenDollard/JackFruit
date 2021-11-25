@@ -2,6 +2,7 @@
 
 open Microsoft.CodeAnalysis
 open Generator.Models
+open Common
 
 let CommandDefFromMethod model (info: AppModelCommandInfo) =
 
@@ -20,18 +21,20 @@ let CommandDefFromMethod model (info: AppModelCommandInfo) =
 
     let returnType = 
         match info.Method with 
-        | Some m -> Some (m.ReturnType.ToDisplayString())
-        | None -> None
+        // KAD-Don: Why do we need the parens here? The error is "successive args..." when there is only one arg
+        | Some m -> Return.Create (m.ReturnType.ToDisplayString())
+        | None -> Void
 
     let commandDef = CommandDef(id, info.Path, returnType, usage)
 
     let members = 
         match info.Method with
-             | Some method -> 
-                 [ for parameter in method.Parameters do
-                     let usage = UserParameter parameter
-                     MemberDef(parameter.Name, commandDef, parameter.Type.ToDisplayString(), usage, true)]
-             | None -> [] 
+            | Some method -> 
+                [ for parameter in method.Parameters do
+                    let memberType = NamedItem.Create (parameter.Type.ToDisplayString()) []
+                    let usage = UserParameter parameter
+                    MemberDef(parameter.Name, commandDef, memberType, usage, true)]
+            | None -> [] 
 
     commandDef.Members <- members
     commandDef.AddToPocket "Method" info.Method 
