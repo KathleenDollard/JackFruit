@@ -34,6 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Generator.CommonCodeEval\Generator.CommonCodeEval.fsproj" />
+    <ProjectReference Include="..\Generator.CommonCodeOut\Generator.CommonCodeOut.fsproj" />
     <ProjectReference Include="..\Generator\Generator.fsproj" />
     <ProjectReference Include="..\Jackfruit\Jackfruit.csproj" />
   </ItemGroup>

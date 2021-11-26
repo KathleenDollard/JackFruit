@@ -6,19 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Common.fs" />
     <Compile Include="AppErrors.fs" />
     <Compile Include="Models.fs" />
-    <Compile Include="XmlCommentPatterns.fs" />
-    <Compile Include="IWriter.fs" />
     <Compile Include="GeneralUtils.fs" />
     <Compile Include="Language.fs" />
-    <Compile Include="ArrayWriter.fs" />
-    <Compile Include="StringBuilderWriter.fs" />
     <Compile Include="CSharpLanguageExtensions.fs" />
     <Compile Include="LanguageExpression.fs" />
     <Compile Include="LanguageCSharp.fs" />
-    <Compile Include="CodeCSharp.fs" />
     <Compile Include="OutputMapping.fs" />
     <Compile Include="RoslynVBUtils.fs" />
     <Compile Include="RoslynCSharpUtils.fs" />
@@ -41,6 +35,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Generator.CommonCodeEval\Generator.CommonCodeEval.fsproj" />
+    <ProjectReference Include="..\Generator.CommonCodeOut\Generator.CommonCodeOut.fsproj" />
   </ItemGroup>
 
 
