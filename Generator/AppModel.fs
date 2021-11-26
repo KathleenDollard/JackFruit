@@ -91,7 +91,8 @@ type Transformer() =
                 memberDef
 
     member this.Apply commandDef =
-        // KAD-Don: When uncommented each line of the following said that commandDef was not used
+        // KAD-Don: When uncommented each line of the following said that commandDef was not used. I thought
+        // this would pipe the result of each into the next. I know pipelining is better, but this surprised me
         //let commandDef = Apply model.NewAliases commandDef
         //let commandDef = Apply model.NewDescription commandDef
         //let commandDef = Apply model.NewPocket commandDef
