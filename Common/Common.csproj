@@ -4,15 +4,5 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <DisableFSharpCorePreviewCheck>DisableFSharpCorePreviewCheck</DisableFSharpCorePreviewCheck>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.jsonRestoreAdditionalProjectSources </RestoreAdditionalProjectSources>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="6.0.2-beta.*" />
-  </ItemGroup>
-
 </Project>
