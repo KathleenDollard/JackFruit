@@ -1,8 +1,5 @@
 ﻿module rec Generator.Language
 
-open System.Text
-open GeneralUtils
-open System
 open Generator
 open Common
 

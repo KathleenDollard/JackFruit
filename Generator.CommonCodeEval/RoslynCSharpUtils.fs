@@ -3,8 +3,6 @@
 open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp
 open Microsoft.CodeAnalysis.CSharp.Syntax
-open Generator.Models
-open Generator
 
 
 let (|StringLiteralExpression|_|) (n: CSharpSyntaxNode) =

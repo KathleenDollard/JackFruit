@@ -1,9 +1,7 @@
 ﻿module RoslynVBUtils
 
-open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.VisualBasic
 open Microsoft.CodeAnalysis.VisualBasic.Syntax
-open Generator.Models
 open Generator
 
 
