@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <Project>
+  <PropertyGroup>
+    <DisableFSharpCorePreviewCheck>DisableFSharpCorePreviewCheck</DisableFSharpCorePreviewCheck>
+  </PropertyGroup>
 
+  <PropertyGroup>
+    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json</RestoreAdditionalProjectSources>
+  </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="6.0.2-beta.*" />
+  </ItemGroup>
 </Project>

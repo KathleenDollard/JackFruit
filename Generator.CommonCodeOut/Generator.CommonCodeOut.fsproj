@@ -6,19 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Common.fs" />
+    <Compile Include="IWriter.fs" />
+    <Compile Include="Language.fs" />
+    <Compile Include="CSharpLanguageExtensions.fs" />
+    <Compile Include="LanguageCSharp.fs" />
+    <Compile Include="LanguageExpression.fs" />
     <Compile Include="StringBuilderWriter.fs" />
     <Compile Include="SpaceStringBuilder.fs" />
-    <Compile Include="IWriter.fs" />
     <Compile Include="ArrayWriter.fs" />
-    <Compile Include="Common.fs" />
   </ItemGroup>
 
-	<PropertyGroup>
-<!--    <DisableFSharpCorePreviewCheck>true</DisableFSharpCorePreviewCheck> -->
-    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.jsonRestoreAdditionalProjectSources </RestoreAdditionalProjectSources>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="6.0.2-beta.*" />
-  </ItemGroup>
 </Project>

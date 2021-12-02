@@ -9,18 +9,4 @@
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21568.1" />
   </ItemGroup>
 
-  <!--<PropertyGroup>
-    <DisableFSharpCorePreviewCheck>DisableFSharpCorePreviewCheck</DisableFSharpCorePreviewCheck>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.jsonRestoreAdditionalProjectSources </RestoreAdditionalProjectSources>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="6.0.2-beta.*" />
-  </ItemGroup>-->
-
-
-
 </Project>

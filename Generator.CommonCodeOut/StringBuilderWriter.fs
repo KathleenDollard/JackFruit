@@ -1,6 +1,7 @@
 ﻿namespace Generator
 
 open System.Text
+open Generator
 
 type StringBuilderWriter(indentSize: int) =
 

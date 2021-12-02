@@ -6,18 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="AppErrors.fs" />
-    <Compile Include="Models.fs" />
     <Compile Include="GeneralUtils.fs" />
-    <Compile Include="Language.fs" />
-    <Compile Include="CSharpLanguageExtensions.fs" />
-    <Compile Include="LanguageExpression.fs" />
-    <Compile Include="LanguageCSharp.fs" />
+    <Compile Include="Models.fs" />
     <Compile Include="OutputMapping.fs" />
-    <Compile Include="RoslynVBUtils.fs" />
-    <Compile Include="RoslynCSharpUtils.fs" />
-    <Compile Include="RoslynUtils.fs" />
-    <Compile Include="RoslynPatterns.fs" />
     <Compile Include="AppModelHelpers.fs" />
     <Compile Include="AppModel.fs" />
 
@@ -28,8 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.1.0-1.final" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21568.1" />
   </ItemGroup>
 

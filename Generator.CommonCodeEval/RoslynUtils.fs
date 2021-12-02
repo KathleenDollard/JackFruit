@@ -1,9 +1,6 @@
 ﻿module Generator.RoslynUtils
 
 open Microsoft.CodeAnalysis
-//open Microsoft.CodeAnalysis.CSharp
-//open Microsoft.CodeAnalysis.VisualBasic
-open Generator.Models
 open Generator
 
 
