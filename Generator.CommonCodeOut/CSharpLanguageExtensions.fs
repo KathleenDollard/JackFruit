@@ -3,10 +3,19 @@
 open Generator.Language
 open System
 open Common
+open System.Runtime.CompilerServices
 
 
-// KAD-Don: Can you override a method (ToString) outside the record definition (like you can with static methods)
-// KAD-Don: Can you supply any methods on a Union?
+// KAD: Without the parens, the constructor below is private. Also, this is a C# extension method. Also, int requires parens the dot is currently interpretted as a float.
+[<Extension>]
+type StringExtensions = 
+    [<Extension>]
+    static member A(t: int) =
+        0
+
+type String with
+    member this.ToString() =
+        "Does this work"
 
 type Scope with 
     member this.Output =

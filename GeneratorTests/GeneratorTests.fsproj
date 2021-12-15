@@ -9,17 +9,19 @@
     <Compile Include="TestDataCSharp.fs" />
     <Compile Include="MapData.fs" />
     <Compile Include="UtilForTests.fs" />
+    <Compile Include="GeneralUtilsTests.fs" />
     
     <Compile Include="LanguageCSharpTests.fs" />
     <Compile Include="OutputMapingTests.fs" />
-    <Compile Include="GeneralUtilsTests.fs" />
     <Compile Include="CommandDefMappingTests.fs" />
+    <Compile Include="SourceGeneratorTests.fs" />
     <Compile Include="RoslynUtilsTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ApprovalTests" Version="5.7.1" />
     <PackageReference Include="FsUnit.xUnit" Version="4.1.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0-preview-20211109-03" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0-preview-20211130-02" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21568.1" />
     <PackageReference Include="xunit" Version="2.4.2-pre.12" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">

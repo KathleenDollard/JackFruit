@@ -164,7 +164,6 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: NamedItem, me
         | Some k -> k
         | None -> MemberKind.Option
 
-    // KAD-Don: Remind me the downside of using "this"
     /// The calculated name of the member in the style (usually Pascal
     /// or Camel) set. Use utility methods for snake and kebab case.
     member this.Name =
