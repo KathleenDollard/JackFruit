@@ -1,9 +1,7 @@
 ﻿namespace Generator
 
 open Generator.Models
-open System
 open Generator.AppModelHelpers
-open AppModelHelpers
 open Microsoft.CodeAnalysis
 
 type Transformer() =
@@ -91,11 +89,6 @@ type Transformer() =
                 memberDef
 
     member this.Apply commandDef =
-        // KAD-Don: When uncommented each line of the following said that commandDef was not used. I thought
-        // this would pipe the result of each into the next. I know pipelining is better, but this surprised me
-        //let commandDef = Apply model.NewAliases commandDef
-        //let commandDef = Apply model.NewDescription commandDef
-        //let commandDef = Apply model.NewPocket commandDef
 
         let rec ApplyToCommandDef commandDef : CommandDef =
             let newCommandDef = 
@@ -134,10 +127,11 @@ type AppModelCommandInfo =
       ForPocket: (string * obj) list }
 
 /// AppModels are distinguished by how they do structural
-/// evaluation (Info and Childre) and transforms defined 
+/// evaluation (Info and Children) and transforms defined 
 /// as a set of ICommandDefTransformers and IMemberDefTransformers.
 [<AbstractClass>]
 type AppModel<'T>() =
+    //abstract member Initialize: SemanticModel -> Result<'T list, AppErrors>
     abstract member Children: 'T -> 'T list
     abstract member Info: SemanticModel -> 'T -> AppModelCommandInfo
     abstract member Transformers: Transformer list

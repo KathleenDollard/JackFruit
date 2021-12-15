@@ -1,0 +1,62 @@
+﻿using System;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.Threading.Tasks;
+namespace GeneratedHandlers
+{
+   public class ACommandWrapper
+   {
+      private Action<string> _operation {get; set;}
+      private Command _command {get; set;}
+      private Option<string> _oneoption {get; set;}
+      public ACommandWrapper(Action<string> operation)
+      {
+         _operation = operation;
+      }
+      public Option<string> Oneoption
+      {
+         get
+         {
+            if (_oneoption == null)
+            {
+               _oneoption = new Option<string>("one");
+            }
+            return _oneoption;
+         }
+         set
+         {
+         }
+      }
+      public Command Command
+      {
+         get
+         {
+            if (_command == null)
+            {
+               _command = new Command("A");
+               _command.Add(_oneoption);
+               _command.Handler = new GeneratedHandler(_operation, Oneoption);
+            }
+            return _command;
+         }
+         set
+         {
+         }
+      }
+      private class GeneratedHandler : ICommandHandler
+      {
+         public GeneratedHandler(Action<string> operation, Option<string> oneoption)
+         {
+            _operation = operation;
+            _oneoption = oneoption;
+         }
+         private Action<string> _operation {get; set;}
+         private Option<string> _oneoption {get; set;}
+         public Task<int> InvokeAsync(InvocationContext context)
+         {
+            _operation.Invoke(context.ParseResult.GetValueForOption<string>(_oneoption));
+            return Task.FromResult(context.ExitCode);
+         }
+      }
+   }
+}

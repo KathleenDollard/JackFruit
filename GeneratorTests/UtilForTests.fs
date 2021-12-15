@@ -7,8 +7,8 @@ open System
 open Generator.RoslynUtils
 open Generator.Models
 open Xunit
+open Generator.NewMapping
 open Generator
-open FsUnit.Xunit
 
 let testNamespace = "TestCode"
 let private seperator = "\r\n"
@@ -60,21 +60,24 @@ let AddMethodsToClass (methods:string list) =
 let AddStatementsToMethod (statements:string list) =
     AddMethodsToClass [ CreateMethod "MethodA" statements ]
 
+let GetCSharpCompilation trees =
+    let core = typeof<obj>.Assembly.Location
+    let runtime = 
+        let dir = IO.Path.GetDirectoryName(core)
+        IO.Path.Combine(dir, "System.Runtime.dll")
+
+    CSharpCompilation.Create(
+        "test", 
+        syntaxTrees = trees,
+        references = [
+                MetadataReference.CreateFromFile(core)
+                MetadataReference.CreateFromFile(runtime)
+                MetadataReference.CreateFromFile(@"ConsoleSupport.dll")],
+        options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
 
 let GetSemanticModelFromFirstTree trees =
     let compilation = 
-        let core = typeof<obj>.Assembly.Location
-        let runtime = 
-            let dir = IO.Path.GetDirectoryName(core)
-            IO.Path.Combine(dir, "System.Runtime.dll")
-        CSharpCompilation.Create(
-            "test", 
-            syntaxTrees = trees,
-            references = [
-                    MetadataReference.CreateFromFile(core)
-                    MetadataReference.CreateFromFile(runtime)
-                    MetadataReference.CreateFromFile(@"ConsoleSupport.dll")],
-            options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+        GetCSharpCompilation trees
 
     let errors = 
         [ for diag in compilation.GetDiagnostics() do
@@ -117,6 +120,7 @@ let ModelFrom(sources: Source list) =
         match SyntaxTreeResult sources.Head with 
         | Ok tree -> Ok [tree]
         | Error err -> Error err
+
     for source in sources.Tail do
         let newResult = 
             match result with 
@@ -147,6 +151,12 @@ let MethodSymbolsFromSource source =
             | Some method -> method 
             | None -> invalidOp "Test failed during Method symbol lookup" ]
     model, methods
+
+let CommandDefFromHandlerSource source =
+    let model, methods = MethodSymbolsFromSource source
+
+    [ for method in methods do
+        CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} ]
 
 
 let ShouldEqual (expected: 'a) (actual: 'a) =     

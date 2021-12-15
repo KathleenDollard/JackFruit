@@ -2,17 +2,15 @@
 
 open Xunit
 open FsUnit.Xunit
-open FsUnit.CustomMatchers
-open Generator.RoslynUtils
-open Generator.GeneralUtils
-open Generator.Models
 open Generator.Tests.UtilsForTests
-open Microsoft.CodeAnalysis
 open Generator.Tests
 open Generator.NewMapping
 open Generator
 open BuildCodePattern
 open Generator.Language
+open ApprovalTests
+open ApprovalTests.Reporters
+open UtilsForTests
 
 // I'm not sure what we should be testing first
 //  * Creating CommandDef from random method (per most APpModels) : ``When building CommandDefs``
@@ -24,12 +22,9 @@ open Generator.Language
 type ``When building CommandDefs``() =
 
     let TestCommandDefFromSource map =
-        let model, methods = MethodSymbolsFromSource map.HandlerCode
         let expected = map.CommandDef
-
-        let actual = 
-            [ for method in methods do
-                CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} ]
+        let actual = CommandDefFromHandlerSource map.HandlerCode
+    
         let differences = (CommandDefDifferences expected actual)
 
         match differences with 
@@ -56,32 +51,65 @@ type ``When building CommandDefs``() =
         TestCommandDefFromSource MapData.NoMapping
 
 
-type ``When outputting code``() =
+type ``When outputting code from CommandDef``() =
     let cSharp = LanguageCSharp() :> ILanguage
     let outputter = RoslynOut (cSharp, ArrayWriter(3))
 
-    let OutputCodeFromCommandDef map =
-        let commandDefs = map.CommandDef
+    let OutputCodeFromCommandDef mapData =
+        let commandDefs = mapData.CommandDef
         let codeModel = OutputCommandWrapper commandDefs
         outputter.Output codeModel
 
     [<Fact>]
+    [<UseReporter(typeof<DiffReporter>)>]
     member _.``Code outputs for one simple command``() =
         let writer = OutputCodeFromCommandDef MapData.OneSimpleMapping
         let actual = writer.Output
-        Assert.Equal ("", actual)
+        Approvals.Verify(actual)
 
     [<Fact>]
+    [<UseReporter(typeof<DiffReporter>)>]
     member _.``Code outputs for three simple commands``() =
         let writer = OutputCodeFromCommandDef MapData.OneSimpleMapping
         let actual = writer.Output
-        Assert.Equal ("", actual)
+        Approvals.Verify(actual)
 
     [<Fact>]
+    [<UseReporter(typeof<DiffReporter>)>]
     member _.``No command does noto throw``() =
         let writer = OutputCodeFromCommandDef MapData.OneSimpleMapping
         let actual = writer.Output
-        Assert.Equal ("", actual)
+        Approvals.Verify(actual)
+
+type ``When outputting code from handler code``() =
+    let cSharp = LanguageCSharp() :> ILanguage
+    let outputter = RoslynOut (cSharp, ArrayWriter(3))
+
+    let OutputCodeFromCode mapData =
+        let commandDefs = CommandDefFromHandlerSource mapData.HandlerCode
+        let codeModel = OutputCommandWrapper commandDefs
+        outputter.Output codeModel
+
+    [<Fact>]
+    [<UseReporter(typeof<DiffReporter>)>]
+    member _.``Code outputs for one simple command``() =
+        let writer = OutputCodeFromCode MapData.OneSimpleMapping
+        let actual = writer.Output
+        Approvals.Verify(actual)
+
+    [<Fact>]
+    [<UseReporter(typeof<DiffReporter>)>]
+    member _.``Code outputs for three simple commands``() =
+        let writer = OutputCodeFromCode MapData.OneSimpleMapping
+        let actual = writer.Output
+        Approvals.Verify(actual)
+
+    [<Fact>]
+    [<UseReporter(typeof<DiffReporter>)>]
+    member _.``No command does noto throw``() =
+        let writer = OutputCodeFromCode MapData.OneSimpleMapping
+        let actual = writer.Output
+        Approvals.Verify(actual)
 
 
                 
