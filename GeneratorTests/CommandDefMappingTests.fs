@@ -10,6 +10,7 @@ open BuildCodePattern
 open Generator.Language
 open ApprovalTests
 open ApprovalTests.Reporters
+open Generator.Transform
 open UtilsForTests
 
 // I'm not sure what we should be testing first
@@ -123,7 +124,7 @@ type ``Transforms for descriptions``() =
         [ for commandDef in commandDefs do 
             let mutable newCommandDef = commandDef
             for transform in transforms do
-                newCommandDef <- transform.Apply newCommandDef
+                newCommandDef <- ApplyTransform transform newCommandDef
             newCommandDef ]
 
     let commandDesc = "Command Description"

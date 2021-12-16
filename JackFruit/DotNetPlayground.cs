@@ -44,7 +44,8 @@ namespace Jackfruit
                .AddCommonAlias("v", "verbosity")
                .AddCommonAlias("n", "no-restore")
                .AddCommonAlias("c", "configuration")
-               .AddCommonAlias("r", "runtime");
+               .AddCommonAlias("r", "runtime")
+               .AddCommonAlias("i", "interactive");
 
             app.MapInferred("", Dotnet.RunRoot);
             app.MapInferred("add <PROJECT>", null); // null means command won't be run alone. If you need types, use a dummy delegate
@@ -74,6 +75,7 @@ namespace Jackfruit
                ["--runtimeconfig"] = "Path to <application>.runtimeconfig.json file.",
                ["add"] = "Add a package or reference to a.NET project.",
                ["build"] = "Build a.NET project.",
+               ["build --runtime"] = "Special run description.",
                ["build-server"] = "Interact with servers started by a build.",
                ["clean"] = "Clean build outputs of a .NET project.",
                ["help"] = "Show command line help.",

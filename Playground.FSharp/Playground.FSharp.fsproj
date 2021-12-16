@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="ClassDU.fs" />
     <Compile Include="Fluent.fs" />
     <Compile Include="FSharp6.fs" />
     <Compile Include="Temp.fs" />
