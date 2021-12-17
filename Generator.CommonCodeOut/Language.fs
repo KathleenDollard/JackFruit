@@ -5,10 +5,6 @@ open Common
 
 
 type ILanguage =
-    abstract member PublicKeyword: string with get
-    abstract member PrivateKeyword: string with get
-    abstract member InternalKeyword: string with get
-    abstract member StaticKeyword: string with get
 
     // Language structure
     abstract member Using: Using -> string list
@@ -52,6 +48,7 @@ type Scope =
     | Public
     | Private
     | Internal
+    | Protected
 
 type StaticOrInstance =
     | Static

@@ -1,8 +1,6 @@
 ﻿module Generator.Transform
 
 open Generator.Models
-open Generator.AppModelHelpers
-open Microsoft.CodeAnalysis
 open Generator
 
 

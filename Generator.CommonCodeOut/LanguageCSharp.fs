@@ -2,133 +2,95 @@
 
 open System
 open Generator.Language
-open Generator.CSharpLanguageExtensions
 open Common
+open Utilities
 
 type LanguageCSharp() =
+    inherit LanguageBase()
 
-    let staticOutput staticOrInstance = 
-        match staticOrInstance with 
-        | Instance -> ""
-        | Static -> " static"
+    override _.PrivateKeyword = "private"
+    override _.PublicKeyword = "public"
+    override _.InternalKeyword = "internal"
+    override _.ProtectedKeyword = "protected"
+    override _.StaticKeyword = "static"
+    override _.AsyncKeyword = "async"
+    override _.UsingKeyword = "using"
+    override _.NamespaceKeyword = "namespace"
+    override _.ClassKeyword = "class"
+    override _.GetKeyword = "get"
+    override _.SetKeyword = "set"
+    override _.IfKeyword = "if"
+    override _.ReturnKeyword = "return"
+    override _.AwaitKeyword = "await"
+    override _.NewKeyword = "new"
+    override _.NullKeyword = "null"
 
-    let asyncOutput isAsync =
-        if isAsync then 
-            " async"
-        else
-            ""
+    override _.EqualsOperator = "=="
+    override _.NotEqualsOperator = "!="
+    override _.BlockOpen = "{"
+    override _.EndOfStatement = ";"
+    override _.CommentPrefix = "//"
 
-    interface ILanguage with 
+    override this.TypeAndName typeName name = $"{this.OutputNamedItem typeName} {name}"
+    override _.BlockClose _ = "}"
+    override _.ConstructorName cls  = cls.ClassName.SimpleName()
 
-        member _.PrivateKeyword = "private"
-        member _.PublicKeyword = "public"
-        member _.InternalKeyword = "private"
-        member _.StaticKeyword = "public"
+    override this.Generic typeNames  = 
+        match typeNames with 
+        | [] -> ""
+        | _ -> 
+            let generics = 
+                [ for t in typeNames do this.OutputNamedItem t ]
+                |> StringJoin ", "
+            $"<{generics}>"
 
-        member _.Using using =
-            let alias = 
-                match using.Alias with 
-                | Some a -> $"{a} = "
-                | None -> ""
-            [ $"using {alias}{using.Namespace};" ]
+    override this.ClassOpen cls  =     
+        let addColonIfNeeded list =
+                  match list with 
+                  | [] -> []
+                  | head::tail -> List.insertAt 0 $" : {head}" tail
 
-        member _.NamespaceOpen nspace = 
-            [$"namespace {nspace.NamespaceName}"; "{"]
-        member _.NamespaceClose _ = 
-            ["}"]
+        let baseAndInterfaces = 
+            [ match cls.InheritedFrom with 
+              | Some t -> this.OutputNamedItem t
+              | None -> () 
+                    
+              for i in cls.ImplementedInterfaces do
+                    this.OutputNamedItem i ]
+              |> addColonIfNeeded
+              |> String.concat ", " 
 
-        member _.ClassOpen cls =
-            let addColonIfNeeded list =
-                match list with 
-                | [] -> []
-                | head::tail -> List.insertAt 0 $" : {head}" tail
+        [ $"{this.ScopeOutput cls.Scope}{this.StaticOutput cls.StaticOrInstance} class {this.OutputNamedItem cls.ClassName}{baseAndInterfaces}"; 
+          "{"]
 
-            let baseAndInterfaces = 
-                [ match cls.InheritedFrom with 
-                  | Some t -> t.Output
-                  | None -> () 
-                  
-                  for i in cls.ImplementedInterfaces do
-                    i.Output ]
-                |> addColonIfNeeded
-                |> String.concat ", "
+    override this.MethodOpen method  = 
+       let returnType =
+            match method.ReturnType with 
+            | Type t -> this.OutputNamedItem t
+            | Void -> "void"
+       [$"{this.ScopeOutput method.Scope}{this.StaticOutput method.StaticOrInstance}{this.AsyncOutput method.IsAsync} {returnType} {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters})"; "{"]
+    override _.MethodClose _ = [ "}" ]
 
-            [ $"{cls.Scope.Output}{staticOutput cls.StaticOrInstance} class {cls.ClassName.Output}{baseAndInterfaces}"; 
-               
-              "{"]
-        member _.ClassClose _ =
-            ["}"]
+    override this.AutoProperty property  = 
+        [$"{this.ScopeOutput property.Scope}{this.StaticOutput property.StaticOrInstance} {this.OutputNamedItem property.Type} {property.PropertyName} {{get; set;}}"]
 
-        member _.MethodOpen(method: Method) =
-            let returnType =
-                match method.ReturnType with 
-                | Type t -> t.Output
-                | Void -> "void"
-            [$"{method.Scope.Output}{staticOutput method.StaticOrInstance}{asyncOutput method.IsAsync} {returnType} {method.MethodName.Output}({OutputParameters method.Parameters})"; "{"]
-        member _.MethodClose _ =
-            ["}"]
+    override this.PropertyOpen property  = 
+        [$"{this.ScopeOutput property.Scope}{this.StaticOutput property.StaticOrInstance} {this.OutputNamedItem property.Type} {property.PropertyName}"; "{"]
 
-        member _.ConstructorOpen(ctor: Constructor) =
-            [$"{ctor.Scope.Output}{staticOutput ctor.StaticOrInstance} {ctor.ClassName.Output}({OutputParameters ctor.Parameters})"; "{"]
-        member _.ConstructorClose _ =
-            ["}"]
+    override this.Field field  = 
+        [$"{this.ScopeOutput field.Scope}{this.StaticOutput field.StaticOrInstance} {this.OutputNamedItem field.FieldType} {field.FieldName}"]
 
-        member _.AutoProperty(property: Property) =
-            [$"{property.Scope.Output}{staticOutput property.StaticOrInstance} {property.Type.Output} {property.PropertyName} {{get; set;}}"]
-        member _.PropertyOpen(property: Property) =
-            [$"{property.Scope.Output}{staticOutput property.StaticOrInstance} {property.Type.Output} {property.PropertyName}"; "{"]
-        member _.PropertyClose _ =
-            ["}"]
-        member _.GetOpen _ =
-            [$"get"; "{"]
-        member _.GetClose _ =
-            ["}"]
-        member _.SetOpen _ =
-            [$"set"; "{"]
-        member _.SetClose _ =
-            ["}"]
+    override this.IfOpen ifInfo  = 
+        [$"if ({this.OutputExpression ifInfo.Condition})"; "{"]
 
-        member _.Field (field: Field) =
-            [$"{field.Scope.Output}{staticOutput field.StaticOrInstance} {field.FieldType.Output} {field.FieldName} {{get; set;}}"]
+    override _.ForEachOpen forEach  = 
+        [$"foreach (var {forEach.LoopVar} in {forEach.LoopOver})"; "{"]
+    override _.ForEachClose _ = ["}"]
 
-        member _.IfOpen ifInfo =
-            [$"if ({ifInfo.Condition.Output})"; "{"]
-        member _.IfClose _ =
-            ["}"]
+    override this.AssignWithDeclare assign  = 
+        let t = 
+            match assign.TypeName with 
+            | Some n -> this.OutputNamedItem n
+            | None -> "var"
+        [$"{t} {assign.Variable} = {this.OutputExpression assign.Value};"]
 
-        member _.ForEachOpen forEach =
-            [$"foreach (var {forEach.LoopVar} in {forEach.LoopOver})"; "{"]
-        member _.ForEachClose _ =
-            ["}"]
-
-        member _.Assignment assignment =
-            [$"{assignment.Item} = {assignment.Value.Output};"]
-        member _.AssignWithDeclare assign =
-            let t = 
-                match assign.TypeName with 
-                | Some n -> n.Output
-                | None -> "var"
-            [$"{t} {assign.Variable} = {assign.Value.Output};"]
-        member _.Return ret =
-            [$"return {ret.Output};"]
-        member _.SimpleCall simple =
-            [$"{simple.Output};"]
-        member _.Comment comment =
-            [$"{comment.Output}"]
-        member _.Pragma pragma =
-            [$"{pragma.Output}"]
-
-
-        member _.Invocation invocation =
-            let awaitIfNeeded = 
-                if invocation.ShouldAwait then
-                    "await "
-                else
-                    ""
-
-            $"{awaitIfNeeded}{invocation.Instance}.{invocation.MethodName}({OutputArguments invocation.Arguments})"
-        member _.Comparison comparison =
-            $"{comparison.Left.Output}.{comparison.Operator.Output} {comparison.Right.Output}"
-
-        member _.NamedItemOutput namedItem =
-            $"{namedItem.Output}"

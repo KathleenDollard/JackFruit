@@ -6,10 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Utilities.fs" />
     <Compile Include="Common.fs" />
     <Compile Include="IWriter.fs" />
     <Compile Include="Language.fs" />
     <Compile Include="CSharpLanguageExtensions.fs" />
+    <Compile Include="LanguageBase.fs" />
+    <Compile Include="LanguageVisualBasic.fs" />
     <Compile Include="LanguageCSharp.fs" />
     <Compile Include="LanguageExpression.fs" />
     <Compile Include="StringBuilderWriter.fs" />

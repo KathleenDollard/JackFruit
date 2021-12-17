@@ -47,7 +47,6 @@ let private ParseArechetypePart (part: string) =
         | Some name -> name
         | None -> id
     let aliases = [
-        // KAD-Don: Is there a difference between do and ->
         for word in words do
             if word.Length > 0 && word[0] <> '[' && word <> name then
                 word ]

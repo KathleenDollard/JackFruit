@@ -1,6 +1,4 @@
-﻿// KAD-Don: What is the difference between a type being in a namespace and in a module?
-
-namespace Jackfruit.Tests
+﻿namespace Jackfruit.Tests
 
 open Generator.Models
 open Common

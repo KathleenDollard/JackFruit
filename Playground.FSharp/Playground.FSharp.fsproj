@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Notes.fs" />
     <Compile Include="ClassDU.fs" />
     <Compile Include="Fluent.fs" />
     <Compile Include="FSharp6.fs" />

@@ -12,7 +12,13 @@
     <Compile Include="MapData.fs" />
     <Compile Include="ArchetypeMappingTests.fs" />
     <Compile Include="AppModelTests.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="Program.fs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestHandlers.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,10 +45,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- KAD-Don: Is there any mechanism to copy a file to the output directory. This didn't work. -->
-    <Compile Update="TestHandlers.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
+    <Content Update="TestHandlers.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

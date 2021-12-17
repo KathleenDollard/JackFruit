@@ -40,7 +40,7 @@ let StringFrom (node: SyntaxNode) =
 let ExpressionFrom (node: SyntaxNode)  =
     match node with 
     | :? CSharp.CSharpSyntaxNode as cSharpNode-> RoslynCSharpUtils.ExpressionFrom cSharpNode
-    | :?  VisualBasic.VisualBasicSyntaxNode as vbNode -> RoslynVBUtils.ExpressionFrom vbNode
+    | :? VisualBasic.VisualBasicSyntaxNode as vbNode -> RoslynVBUtils.ExpressionFrom vbNode
     | _ -> invalidOp "Invalid node type"
 
 
