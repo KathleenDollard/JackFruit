@@ -5,6 +5,10 @@ type NamedItem =
     | SimpleNamedItem of Name: string
     static member GenericsFromStrings (name: string) genericsAsStrings =
         genericsAsStrings |> List.map (fun x -> SimpleNamedItem x)
+    member this.SimpleName() =
+        match this with 
+        | SimpleNamedItem name -> name
+        | GenericNamedItem (name, t) -> name
     static member Create (name: string) generics =
         match generics with 
         | [] -> SimpleNamedItem name

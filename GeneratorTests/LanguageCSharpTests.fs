@@ -112,8 +112,6 @@ type ``When outputting code`` () =
               (0, "}")]
         let data = { If.ForTesting.Data with Statements = [ Statement.Assign Assignment.ForTesting.Data] }
 
-        // KAD-Don: Ick, where did my design go wrong that I have things like Assignment Assignment
-        // KAD-Don: Why isn't there a warning when I assign unit? I know it is legal, but is it ever sensible?
         outPutter.OutputIf data
         let actual = writer.LinePairs()
 

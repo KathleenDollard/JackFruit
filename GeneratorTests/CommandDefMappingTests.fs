@@ -10,6 +10,7 @@ open BuildCodePattern
 open Generator.Language
 open ApprovalTests
 open ApprovalTests.Reporters
+open Generator.Transform
 open UtilsForTests
 
 // I'm not sure what we should be testing first
@@ -30,8 +31,7 @@ type ``When building CommandDefs``() =
         match differences with 
         | None -> () // All is great!
         | Some issues -> 
-            // KAD-Don: Why the second (from left) set of parens?
-            raise (MatchException (expected.ToString(), actual.ToString(), (String.concat "\r\n" issues)))
+            raise (MatchException (expected.ToString(), actual.ToString(), String.concat "\r\n" issues))
 
 
     [<Fact>]
@@ -70,14 +70,14 @@ type ``When outputting code from CommandDef``() =
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``Code outputs for three simple commands``() =
-        let writer = OutputCodeFromCommandDef MapData.OneSimpleMapping
+        let writer = OutputCodeFromCommandDef MapData.ThreeMappings
         let actual = writer.Output
         Approvals.Verify(actual)
 
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
-    member _.``No command does noto throw``() =
-        let writer = OutputCodeFromCommandDef MapData.OneSimpleMapping
+    member _.``No command does not throw``() =
+        let writer = OutputCodeFromCommandDef MapData.NoMapping
         let actual = writer.Output
         Approvals.Verify(actual)
 
@@ -100,14 +100,14 @@ type ``When outputting code from handler code``() =
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``Code outputs for three simple commands``() =
-        let writer = OutputCodeFromCode MapData.OneSimpleMapping
+        let writer = OutputCodeFromCode MapData.ThreeMappings
         let actual = writer.Output
         Approvals.Verify(actual)
 
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
-    member _.``No command does noto throw``() =
-        let writer = OutputCodeFromCode MapData.OneSimpleMapping
+    member _.``No command does not throw``() =
+        let writer = OutputCodeFromCode MapData.NoMapping
         let actual = writer.Output
         Approvals.Verify(actual)
 
@@ -123,7 +123,7 @@ type ``Transforms for descriptions``() =
         [ for commandDef in commandDefs do 
             let mutable newCommandDef = commandDef
             for transform in transforms do
-                newCommandDef <- transform.Apply newCommandDef
+                newCommandDef <- ApplyTransform transform newCommandDef
             newCommandDef ]
 
     let commandDesc = "Command Description"

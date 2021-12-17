@@ -34,9 +34,9 @@ namespace Jackfruit
         }
 
         /// <summary>
-        /// 
+        /// "Build a.NET project."
         /// </summary>
-        /// <param name="project"></param>
+        /// <param name="project">The project to build</param>
         /// <param name="packageName"></param>
         /// <param name="version"></param>
         /// <param name="framework"></param>

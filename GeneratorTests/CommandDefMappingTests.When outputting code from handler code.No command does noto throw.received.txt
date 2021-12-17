@@ -9,15 +9,14 @@ namespace GeneratedHandlers
       private Action<string> _operation
       private Command _command
       private Option<string> _oneoption
-      public ACommandWrapper(Action<string> operation)
-      {
+      public <StartupCode$Generator-CommonCodeOut>.$LanguageBase+Generator-Language-ILanguage-ConstructorOpen@70(Action<string> operation = )
          _operation = operation;
       }
       public Option<string> Oneoption
       {
          get
          {
-            if (_oneoption == null)
+            if (_oneoption == Nothing)
             {
                _oneoption = new Option<string>("one");
             }
@@ -31,7 +30,7 @@ namespace GeneratedHandlers
       {
          get
          {
-            if (_command == null)
+            if (_command == Nothing)
             {
                _command = new Command("A");
                _command.Add(_oneoption);
@@ -45,14 +44,13 @@ namespace GeneratedHandlers
       }
       private class GeneratedHandler : ICommandHandler
       {
-         public GeneratedHandler(Action<string> operation, Option<string> oneoption)
-         {
+         public <StartupCode$Generator-CommonCodeOut>.$LanguageBase+Generator-Language-ILanguage-ConstructorOpen@70(Action<string> operation = , Option<string> oneoption = )
             _operation = operation;
             _oneoption = oneoption;
          }
          private Action<string> _operation
          private Option<string> _oneoption
-         public Task<int> InvokeAsync(InvocationContext context)
+         public Task<int> InvokeAsync(InvocationContext context = )
          {
             _operation.Invoke(context.ParseResult.GetValueForOption<string>(_oneoption));
             return Task.FromResult(context.ExitCode);

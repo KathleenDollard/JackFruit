@@ -9,8 +9,7 @@ namespace GeneratedHandlers
       private Action<string> _operation
       private Command _command
       private Option<string> _oneoption
-      public ACommandWrapper(Action<string> operation)
-      {
+      public ACommandWrapper(Action<string> operation = )
          _operation = operation;
       }
       public Option<string> Oneoption
@@ -45,14 +44,13 @@ namespace GeneratedHandlers
       }
       private class GeneratedHandler : ICommandHandler
       {
-         public GeneratedHandler(Action<string> operation, Option<string> oneoption)
-         {
+         public GeneratedHandler(Action<string> operation = , Option<string> oneoption = )
             _operation = operation;
             _oneoption = oneoption;
          }
          private Action<string> _operation
          private Option<string> _oneoption
-         public Task<int> InvokeAsync(InvocationContext context)
+         public Task<int> InvokeAsync(InvocationContext context = )
          {
             _operation.Invoke(context.ParseResult.GetValueForOption<string>(_oneoption));
             return Task.FromResult(context.ExitCode);

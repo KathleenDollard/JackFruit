@@ -6,18 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="CliSourceGenerator.fs" />
     <Compile Include="GeneralUtils.fs" />
     <Compile Include="Models.fs" />
-    <Compile Include="OutputMapping.fs" />
     <Compile Include="AppModelHelpers.fs" />
     <Compile Include="AppModel.fs" />
+    <Compile Include="Transform.fs" />
 
     <Compile Include="NewMapping.fs" />
-    <Compile Include="CommandOutput.fs" />
-    <Compile Include="CommonOutput.fs" />
     <Compile Include="BuildCodePattern.fs" />
     <Compile Include="GenerateFromAppModel.fs" />
+    <Compile Include="CliSourceGenerator.fs" />
   </ItemGroup>
 
   <ItemGroup>

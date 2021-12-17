@@ -6,26 +6,11 @@ namespace GeneratedHandlers
 {
    public class ACommandWrapper
    {
-      private Action<string> _operation {get; set;}
-      private Command _command {get; set;}
-      private Option<string> _oneoption {get; set;}
-      public ACommandWrapper(Action<string> operation)
+      private Action _operation
+      private Command _command
+      public ACommandWrapper(Action operation)
       {
          _operation = operation;
-      }
-      public Option<string> Oneoption
-      {
-         get
-         {
-            if (_oneoption == null)
-            {
-               _oneoption = new Option<string>("one");
-            }
-            return _oneoption;
-         }
-         set
-         {
-         }
       }
       public Command Command
       {
@@ -34,8 +19,7 @@ namespace GeneratedHandlers
             if (_command == null)
             {
                _command = new Command("A");
-               _command.Add(_oneoption);
-               _command.Handler = new GeneratedHandler(_operation, Oneoption);
+               _command.Handler = new GeneratedHandler(_operation);
             }
             return _command;
          }
@@ -45,16 +29,88 @@ namespace GeneratedHandlers
       }
       private class GeneratedHandler : ICommandHandler
       {
-         public GeneratedHandler(Action<string> operation, Option<string> oneoption)
+         public GeneratedHandler(Action operation)
          {
             _operation = operation;
-            _oneoption = oneoption;
          }
-         private Action<string> _operation {get; set;}
-         private Option<string> _oneoption {get; set;}
+         private Action _operation
          public Task<int> InvokeAsync(InvocationContext context)
          {
-            _operation.Invoke(context.ParseResult.GetValueForOption<string>(_oneoption));
+            _operation.Invoke();
+            return Task.FromResult(context.ExitCode);
+         }
+      }
+   }
+   public class BCommandWrapper
+   {
+      private Action _operation
+      private Command _command
+      public BCommandWrapper(Action operation)
+      {
+         _operation = operation;
+      }
+      public Command Command
+      {
+         get
+         {
+            if (_command == null)
+            {
+               _command = new Command("B");
+               _command.Handler = new GeneratedHandler(_operation);
+            }
+            return _command;
+         }
+         set
+         {
+         }
+      }
+      private class GeneratedHandler : ICommandHandler
+      {
+         public GeneratedHandler(Action operation)
+         {
+            _operation = operation;
+         }
+         private Action _operation
+         public Task<int> InvokeAsync(InvocationContext context)
+         {
+            _operation.Invoke();
+            return Task.FromResult(context.ExitCode);
+         }
+      }
+   }
+   public class CCommandWrapper
+   {
+      private Action _operation
+      private Command _command
+      public CCommandWrapper(Action operation)
+      {
+         _operation = operation;
+      }
+      public Command Command
+      {
+         get
+         {
+            if (_command == null)
+            {
+               _command = new Command("C");
+               _command.Handler = new GeneratedHandler(_operation);
+            }
+            return _command;
+         }
+         set
+         {
+         }
+      }
+      private class GeneratedHandler : ICommandHandler
+      {
+         public GeneratedHandler(Action operation)
+         {
+            _operation = operation;
+         }
+         private Action _operation
+         public Task<int> InvokeAsync(InvocationContext context)
+         {
+            _operation.Invoke();
             return Task.FromResult(context.ExitCode);
          }
       }

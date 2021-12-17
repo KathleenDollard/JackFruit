@@ -166,8 +166,6 @@ let ShouldEqual (expected: 'a) (actual: 'a) =
         | _ -> printf "Expected: %A\nActual: %A" expected actual 
 
 
-// KAD-Don Any shortcuts in this? I need a diff, not just that they do not match
-
 /// This custom comparer accomplishes two things: it ignores the Pocket and 
 /// it gives the object on which an issue occurs. 
 let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) =
@@ -197,9 +195,8 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
           else
             let members = List.zip exp.Members act.Members
             for expMember, actMember in members do
-                // KAD-Don: Is there an easier way to flatten into this list comprehension?
-                let issues = CompareMember id expMember actMember
-                for issue in issues do issue
+                // KAD: Easier way to flatten into this list comprehension? Can be an interaction with implicit yields. May need to yield everything
+                yield! CompareMember id expMember actMember
 
           if exp.SubCommands.Length <> act.SubCommands.Length then 
             $"{parentId}: SubCommands length of expected ({exp.SubCommands.Length}) is different than the length of actual ({act.SubCommands.Length})"

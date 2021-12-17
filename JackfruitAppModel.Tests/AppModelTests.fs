@@ -100,7 +100,6 @@ type ``Can build CommandDef from archetype``() =
         match differences with 
         | None -> () // All is great!
         | Some issues -> 
-            // KAD-Don: Why the second (from left) set of parens?
             raise (MatchException (expectedCommandDefs.ToString(), commandDefs.ToString(), (String.concat "" [ for issue in issues do "\r\n" + issue])))
        
   

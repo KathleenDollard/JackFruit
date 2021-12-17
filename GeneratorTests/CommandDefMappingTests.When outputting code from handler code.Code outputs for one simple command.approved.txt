@@ -6,9 +6,9 @@ namespace GeneratedHandlers
 {
    public class ACommandWrapper
    {
-      private Action<string> _operation {get; set;}
-      private Command _command {get; set;}
-      private Option<string> _oneoption {get; set;}
+      private Action<string> _operation
+      private Command _command
+      private Option<string> _oneoption
       public ACommandWrapper(Action<string> operation)
       {
          _operation = operation;
@@ -50,8 +50,8 @@ namespace GeneratedHandlers
             _operation = operation;
             _oneoption = oneoption;
          }
-         private Action<string> _operation {get; set;}
-         private Option<string> _oneoption {get; set;}
+         private Action<string> _operation
+         private Option<string> _oneoption
          public Task<int> InvokeAsync(InvocationContext context)
          {
             _operation.Invoke(context.ParseResult.GetValueForOption<string>(_oneoption));
