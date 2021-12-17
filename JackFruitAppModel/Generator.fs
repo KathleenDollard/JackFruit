@@ -1,5 +1,4 @@
-﻿
-module JackFruitAppModel.Generate
+﻿module JackFruitAppModel.Generate
 
     open Generator.RoslynUtils
     open Microsoft.CodeAnalysis
@@ -15,7 +14,7 @@ module JackFruitAppModel.Generate
 
         InvocationsFromModel mapMethodName model
         |> Result.bind ArchetypeInfoListFrom
-        |> Result.map ArchetypeInfoTreeFrom
+        |> Result.bind ArchetypeInfoTreeFrom
         |> Result.map (CommandDefsFrom model appModel)
         // Find Archetypes and build tree
         // Use Generator to find CommandDef info for handlers

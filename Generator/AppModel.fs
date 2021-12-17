@@ -38,7 +38,7 @@ type DescriptionsFromAttributesTransformer() =
         override _.NewCommandDescription commandDef = CommandDescFromAttribute commandDef
         override _.NewMemberDescription memberDef = MemberDescFromAttribute memberDef
 
-type DescriptionsFromXmlCommentsTransforer() =
+type DescriptionsFromXmlCommentsTransformer() =
     inherit Transformer()
         override _.NewCommandDescription commandDef = CommandDescFromXmlComment commandDef
         override _.NewMemberDescription memberDef = MemberDescFromXmlComment memberDef
@@ -55,12 +55,19 @@ type AppModelCommandInfo =
 /// as a set of ICommandDefTransformers and IMemberDefTransformers.
 [<AbstractClass>]
 type AppModel<'T>() =
-    //abstract member Initialize: SemanticModel -> Result<'T list, AppErrors>
+    abstract member Initialize: SemanticModel -> Result<'T list, AppErrors>
     abstract member Children: 'T -> 'T list
     abstract member Info: SemanticModel -> 'T -> AppModelCommandInfo
     abstract member Transformers: Transformer list
+
+    //member this.ApplyTransforms commandDefs =
+    //    let applyToCommandDef commandDef =
+    //        List.fold Transformer.ApplyTransform commandDef this.Transformers
+
+    //    0
+
     default _.Transformers = 
-        [ DescriptionsFromXmlCommentsTransforer() 
+        [ DescriptionsFromXmlCommentsTransformer() 
           DescriptionsFromAttributesTransformer()
               // longish list expected here
         ]

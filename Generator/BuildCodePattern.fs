@@ -1,9 +1,9 @@
 ﻿module Generator.BuildCodePattern
 
-open Language
-open Models
+open Generator.Language
+open Generator.Models
 open Common
-open LanguageExpression
+open Generator.LanguageExpression
 open Generator.GeneralUtils
 
 let private operationName = "operation"

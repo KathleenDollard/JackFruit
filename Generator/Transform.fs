@@ -1,4 +1,4 @@
-﻿module Generator.Transform
+﻿module Generator.Transforms
 
 open Generator.Models
 open Generator

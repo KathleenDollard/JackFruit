@@ -81,7 +81,7 @@ type ``Can build CommandDef from archetype``() =
         let archListResult = 
             InvocationsFromModel "MapInferred" model
             |> Result.bind ArchetypeInfoListFrom
-            |> Result.map ArchetypeInfoTreeFrom
+            |> Result.bind ArchetypeInfoTreeFrom
 
         match archListResult with 
         | Ok list -> list, model
@@ -92,9 +92,9 @@ type ``Can build CommandDef from archetype``() =
         let (archetypeTreeList, model) = ArchetypeTree code
         let appModel = Jackfruit.AppModel() :> Generator.AppModel<TreeNodeType<ArchetypeInfo>>
         let commandDefs =
-            [ for node in archetypeTreeList do
-                let nodeDefs = CommandDefsFrom model appModel archetypeTreeList
-                for def in nodeDefs do def ]
+            [ match CommandDefsFrom model appModel archetypeTreeList with
+                | Ok nodeDefs -> for def in nodeDefs do def 
+                | Error e -> invalidOp "Error when building CommandDef"]
         let differences = (CommandDefDifferences expectedCommandDefs commandDefs)
 
         match differences with 
