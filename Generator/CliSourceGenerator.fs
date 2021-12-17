@@ -1,16 +1,16 @@
-﻿module Generator
+﻿module Generator.SourceGenerator
 
-//open Microsoft.CodeAnalysis
-//open Microsoft.CodeAnalysis.CSharp
-//open Microsoft.CodeAnalysis.VisualBasic
-//open Generator
-//open Generator.NewMapping
-//open Generator.BuildCodePattern
-//open Generator.Transforms
+open Microsoft.CodeAnalysis
+open Microsoft.CodeAnalysis.CSharp
+open Microsoft.CodeAnalysis.VisualBasic
+open Generator
+open Generator.NewMapping
+open Generator.BuildCodePattern
+open Generator.Transforms
 
-//let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel =
-//    appModel.Initialize(semanticModel)                     //Passes 'T
-//    |> Result.bind (CommandDefsFrom semanticModel appModel) // Passes CommandDefs shape
+let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel =
+    appModel.Initialize(semanticModel)                     //Passes 'T
+    |> Result.bind (CommandDefsFrom semanticModel appModel) // Passes CommandDefs shape
     //|> Result.bind ApplyTransforms                 // Passes transformed CommandDefs
     //|> Result.map OutputCommandWrapper                     // Passes CodeModel
 
