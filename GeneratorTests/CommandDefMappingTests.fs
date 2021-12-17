@@ -123,7 +123,7 @@ type ``Transforms for descriptions``() =
         [ for commandDef in commandDefs do 
             let mutable newCommandDef = commandDef
             for transform in transforms do
-                newCommandDef <- ApplyTransform transform newCommandDef
+                newCommandDef <- ApplyTransform newCommandDef transform
             newCommandDef ]
 
     let commandDesc = "Command Description"

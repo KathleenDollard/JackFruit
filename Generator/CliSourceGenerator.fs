@@ -9,10 +9,10 @@ open Generator.BuildCodePattern
 open Generator.Transforms
 
 let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel =
-    appModel.Initialize(semanticModel)                     //Passes 'T
-    |> Result.bind (CommandDefsFrom semanticModel appModel) // Passes CommandDefs shape
-    //|> Result.bind ApplyTransforms                 // Passes transformed CommandDefs
-    //|> Result.map OutputCommandWrapper                     // Passes CodeModel
+    appModel.Initialize(semanticModel)                          //Passes 'T
+    |> Result.bind (CommandDefsFrom semanticModel appModel)     // Passes CommandDefs shape
+    |> Result.bind (ApplyTransformsToMany appModel.Transformers) // Passes transformed CommandDefs
+    //|> Result.map OutputCommandWrapper                         // Passes CodeModel
 
 
 

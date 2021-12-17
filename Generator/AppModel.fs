@@ -60,12 +60,6 @@ type AppModel<'T>() =
     abstract member Info: SemanticModel -> 'T -> AppModelCommandInfo
     abstract member Transformers: Transformer list
 
-    //member this.ApplyTransforms commandDefs =
-    //    let applyToCommandDef commandDef =
-    //        List.fold Transformer.ApplyTransform commandDef this.Transformers
-
-    //    0
-
     default _.Transformers = 
         [ DescriptionsFromXmlCommentsTransformer() 
           DescriptionsFromAttributesTransformer()
