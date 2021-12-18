@@ -14,12 +14,13 @@ type ``When using DSL``() =
     member _.``Can add using to namespace``() =
         let Namespace = new NamespaceBuilder()
 
-        let nSpace = Some (NamespaceModel.Default())
+        let nSpace = NamespaceModel.Default()
 
-        let code1 = Namespace.addUsing(nSpace, { Namespace = "Fred"; Alias = None } )
+        let code1 = Namespace.addUsing { Namespace = "Fred"; Alias = None } 
 
         let code = 
             Namespace {
+                Name "George"
                 Using { Namespace = "Fred"; Alias = None } 
                 }
 
