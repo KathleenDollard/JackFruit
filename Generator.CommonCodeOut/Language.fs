@@ -276,7 +276,7 @@ type NamespaceModel =
           Usings = []
           Classes = [] }
     member this.AddUsing (using: UsingModel) =
-        { this with Usings = [ for u in this.Usings do u; using ]}
+        { this with Usings = List.append this.Usings [using]}
 
 type CodeBlock =
     | NamespaceBlock

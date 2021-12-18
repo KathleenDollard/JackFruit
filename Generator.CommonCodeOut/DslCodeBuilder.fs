@@ -4,15 +4,17 @@ open System
 open Generator.Language
 
 type NamespaceBuilder(name: string) =
-
-    member _.Yield (_) = 
+    let mutable state = 
         { NamespaceName = name
           Usings = []
           Classes = [] }
 
+    member _.Yield (_) = state
+
     [<CustomOperation("Using")>]
     member _.addUsing (nspace: NamespaceModel, using): NamespaceModel =
-        nspace.AddUsing using
+        state <- nspace.AddUsing using
+        state
 
 //type ClassModel = unit
 //type FieldModel = unit
