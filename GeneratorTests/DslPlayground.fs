@@ -12,16 +12,24 @@ type ``When using DSL``() =
 
     [<Fact>]
     member _.``Can add using to namespace``() =
-        let Namespace = new NamespaceBuilder()
-
-        let nSpace = NamespaceModel.Default()
-
-        let code1 = Namespace.addUsing { Namespace = "Fred"; Alias = None } 
-
+        let Namespace = NamespaceBuilder("George")
         let code = 
             Namespace {
-                Name "George"
                 Using { Namespace = "Fred"; Alias = None } 
+                }
+
+        Assert.NotNull code
+
+    
+    [<Fact>]
+    member _.``Can add using to namespace2``() =
+        let code = 
+            // If we use this style, rename "NamespaceBuilder" to "Namespace"
+            NamespaceBuilder("George") 
+                {
+                    Using { Namespace = "Fred"; Alias = None } 
+                    Using { Namespace = "Fred"; Alias = None } 
+                    Using { Namespace = "Fred"; Alias = None } 
                 }
 
         Assert.NotNull code

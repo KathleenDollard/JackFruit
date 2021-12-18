@@ -3,20 +3,16 @@
 open System
 open Generator.Language
 
-type NamespaceBuilder() =
-    let mutable nspace = NamespaceModel.Default()
+type NamespaceBuilder(name: string) =
 
-    member _.Zero() = Some (NamespaceModel.Default())
-    member _.Yield (v:NamespaceModel) = Some v
-    member _.For m f = Option.bind f m
-
-    [<CustomOperation("Name")>]
-     member _.addName (name: string): unit =
-         nspace <- { nspace with NamespaceName = name }
+    member _.Yield (_) = 
+        { NamespaceName = name
+          Usings = []
+          Classes = [] }
 
     [<CustomOperation("Using")>]
-    member _.addUsing (using: UsingModel): unit =
-        nspace <- { nspace with Usings = List.append nspace.Usings [using] }
+    member _.addUsing (nspace: NamespaceModel, using): NamespaceModel =
+        nspace.AddUsing using
 
 //type ClassModel = unit
 //type FieldModel = unit
