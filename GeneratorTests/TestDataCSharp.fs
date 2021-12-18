@@ -150,14 +150,14 @@ type Class with
           CSharpBlock = []
           CSharpClose = [ "}" ] }
 
-type Using with
+type UsingModel with
     static member ForTesting =
         let data = { Namespace = "System"; Alias = None }
 
         { Data = data
           CSharp = [ "using System;" ]}
 
-type Namespace with
+type NamespaceModel with
     static member ForTesting =
         let data =
             { NamespaceName = "MyNamespace"

@@ -14,26 +14,26 @@ type ``When working with language parts`` () =
 
     [<Fact>]
     member _.``Using is correct without alias`` () =
-        let actual = cSharp.Using Using.ForTesting.Data
-        actual |> should equal Using.ForTesting.CSharp
+        let actual = cSharp.Using UsingModel.ForTesting.Data
+        actual |> should equal UsingModel.ForTesting.CSharp
 
 
     [<Fact>]
     member _.``Using is correct with alias`` () =
-        let actual = cSharp.Using {  Using.ForTesting.Data with Alias = Some "B"}
+        let actual = cSharp.Using {  UsingModel.ForTesting.Data with Alias = Some "B"}
         actual |> should equal [ "using B = System;" ]
 
 
     [<Fact>]
     member _.``Namespace open is correct`` () =
-        let actual = cSharp.NamespaceOpen Namespace.ForTesting.Data
-        actual |> should equal Namespace.ForTesting.CSharpOpen
+        let actual = cSharp.NamespaceOpen NamespaceModel.ForTesting.Data
+        actual |> should equal NamespaceModel.ForTesting.CSharpOpen
 
 
     [<Fact>]
     member _.``Namespace close is correct`` () =
-        let actual = cSharp.NamespaceClose Namespace.ForTesting.Data
-        actual |> should equal Namespace.ForTesting.CSharpClose
+        let actual = cSharp.NamespaceClose NamespaceModel.ForTesting.Data
+        actual |> should equal NamespaceModel.ForTesting.CSharpClose
 
 
     [<Fact>]
@@ -311,14 +311,14 @@ type ``When outputting code`` () =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
         let expected = 
-            [ (0, Namespace.ForTesting.CSharpOpen |> List.head)
+            [ (0, NamespaceModel.ForTesting.CSharpOpen |> List.head)
               (0, "{")
               (1, Class.ForTesting.CSharpOpen |> List.head)
               (1, "{")
               (1, "}")
               (0, "}")]
         let data = 
-            { Namespace.ForTesting.Data with
+            { NamespaceModel.ForTesting.Data with
                 Classes = [ Class.ForTesting.Data ]}
 
         outPutter.Output data

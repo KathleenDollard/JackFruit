@@ -57,8 +57,10 @@ type ``When outputting code from CommandDef``() =
 
     let OutputCodeFromCommandDef mapData =
         let commandDefs = mapData.CommandDef
-        let codeModel = OutputCommandWrapper commandDefs
-        outputter.Output codeModel
+        let codeModelResult = OutputCommandWrapper commandDefs
+        match codeModelResult with 
+        | Ok codeModel -> outputter.Output codeModel
+        | Error _ -> invalidOp "Failed creating code model"
 
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
@@ -87,8 +89,10 @@ type ``When outputting code from handler code``() =
 
     let OutputCodeFromCode mapData =
         let commandDefs = CommandDefFromHandlerSource mapData.HandlerCode
-        let codeModel = OutputCommandWrapper commandDefs
-        outputter.Output codeModel
+        let codeModelResult = OutputCommandWrapper commandDefs
+        match codeModelResult with 
+        | Ok codeModel -> outputter.Output codeModel
+        | Error _ -> invalidOp "Failed building code model"
 
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]

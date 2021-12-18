@@ -10,6 +10,7 @@
     <Compile Include="Common.fs" />
     <Compile Include="IWriter.fs" />
     <Compile Include="Language.fs" />
+    <Compile Include="DslCodeBuilder.fs" />
     <Compile Include="CSharpLanguageExtensions.fs" />
     <Compile Include="LanguageBase.fs" />
     <Compile Include="LanguageVisualBasic.fs" />
@@ -19,5 +20,7 @@
     <Compile Include="SpaceStringBuilder.fs" />
     <Compile Include="ArrayWriter.fs" />
   </ItemGroup>
+
+  <ItemGroup />
 
 </Project>

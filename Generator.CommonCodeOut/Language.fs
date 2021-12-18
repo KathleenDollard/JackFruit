@@ -7,9 +7,9 @@ open Common
 type ILanguage =
 
     // Language structure
-    abstract member Using: Using -> string list
-    abstract member NamespaceOpen: Namespace -> string list
-    abstract member NamespaceClose: Namespace -> string list
+    abstract member Using: UsingModel -> string list
+    abstract member NamespaceOpen: NamespaceModel -> string list
+    abstract member NamespaceClose: NamespaceModel -> string list
     abstract member ClassOpen: Class -> string list
     abstract member ClassClose: Class -> string list
     abstract member ConstructorOpen: Constructor -> string list
@@ -260,17 +260,23 @@ type Class =
           ImplementedInterfaces = []
           Members = members }
 
-type Using = 
+type UsingModel = 
     { Namespace: string
       Alias: string option }
     static member Create nspace =
         { Namespace = nspace
           Alias = None }
 
-type Namespace = 
+type NamespaceModel = 
     { NamespaceName: string
-      Usings: Using list
+      Usings: UsingModel list
       Classes: Class list}
+    static member Default() =
+        { NamespaceName = ""
+          Usings = []
+          Classes = [] }
+    member this.AddUsing (using: UsingModel) =
+        { this with Usings = [ for u in this.Usings do u; using ]}
 
 type CodeBlock =
     | NamespaceBlock
@@ -397,11 +403,11 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         for cls in classes do 
             this.OutputClass cls
 
-    member _.OutputUsings (usings: Using list) =
+    member _.OutputUsings (usings: UsingModel list) =
         for using in usings do 
             writer.AddLines (language.Using using)
 
-    member this.Output (nspace: Namespace) = 
+    member this.Output (nspace: NamespaceModel) = 
         this.OutputUsings nspace.Usings
         writer.AddLines (language.NamespaceOpen nspace)
         writer.IncreaseIndent()

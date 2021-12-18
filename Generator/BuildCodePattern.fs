@@ -52,7 +52,7 @@ let optionSpecificValues (memberDef:MemberDef) = []
 let argumentSpecificValues (memberDef:MemberDef) = []
 
 
-let OutputCommandWrapper (commandDefs: CommandDef list) : Result <Namespace, AppErrors> =
+let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel, AppErrors> =
 
 
     let propStatements (mbr:MemberDef) =
@@ -209,10 +209,10 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result <Namespace, App
         // KAD: Figure out right namespace
         Ok ({ NamespaceName = "GeneratedHandlers"
               Usings = 
-                [ Using.Create "System" 
-                  Using.Create "System.CommandLine"
-                  Using.Create "System.CommandLine.Invocation"
-                  Using.Create "System.Threading.Tasks"]
+                [ UsingModel.Create "System" 
+                  UsingModel.Create "System.CommandLine"
+                  UsingModel.Create "System.CommandLine.Invocation"
+                  UsingModel.Create "System.Threading.Tasks"]
               Classes = classes })
     with
     | ex -> Error (Other $"Error creating code model {ex.Message}")
