@@ -138,12 +138,8 @@ type Property with
 type ClassModel with
     static member ForTesting =
         let data =
-            { ClassName = NamedItem.ForTesting.Data
-              StaticOrInstance = Instance
-              Scope = Public
-              InheritedFrom = None
-              ImplementedInterfaces = []
-              Members = [] }
+            ClassModel.Create (NamedItem.ForTesting.Data, Public, [])
+         
 
         { Data = data
           CSharpOpen = [ "public class RonWeasley"; "{" ]

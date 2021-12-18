@@ -247,15 +247,19 @@ type Member =
 
 type ClassModel = 
     { ClassName: NamedItem
-      StaticOrInstance: StaticOrInstance
       Scope: Scope
+      StaticOrInstance: StaticOrInstance
+      IsAsync: bool
+      IsPartial: bool
       InheritedFrom: NamedItem option
       ImplementedInterfaces: NamedItem list
       Members: Member list}
     static member Create(className: NamedItem, scope: Scope, members: Member list) =
         { ClassName = className
-          StaticOrInstance = Instance
           Scope = scope
+          StaticOrInstance = Instance
+          IsAsync = false
+          IsPartial = false
           InheritedFrom = None
           ImplementedInterfaces = []
           Members = members }

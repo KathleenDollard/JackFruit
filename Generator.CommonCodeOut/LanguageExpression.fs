@@ -125,34 +125,6 @@ let extensionMethod
           Statements = statements
         }
 
-let cls 
-    (scope: Scope) 
-    (name: string) 
-    (members: Member list) =
-    Member.Class
-        { ClassName = SimpleNamedItem name
-          Scope = scope
-          StaticOrInstance = Instance 
-          InheritedFrom = None
-          ImplementedInterfaces = []
-          Members = members
-        }
-
-let clsWithBase
-    (scope: Scope) 
-    (name: string) 
-    (inheritedFrom: NamedItem)
-    (members: Member list) =
-    Member.Class
-        { ClassName = SimpleNamedItem name
-          Scope = scope
-          StaticOrInstance = Instance 
-          InheritedFrom = Some inheritedFrom
-          ImplementedInterfaces = []
-          Members = members
-        }
-
-
 let clsWithInterfaces
     (scope: Scope) 
     (name: string) 
@@ -162,23 +134,13 @@ let clsWithInterfaces
         { ClassName = SimpleNamedItem name
           Scope = scope
           StaticOrInstance = Instance 
+          IsAsync = false
+          IsPartial = false
           InheritedFrom = None
           ImplementedInterfaces = interfaces
           Members = members
         }
 
-let genericCls 
-    (scope: Scope) 
-    (name: NamedItem) 
-    (members: Member list) =
-    Member.Class
-        { ClassName = name
-          Scope = scope
-          StaticOrInstance = Instance 
-          InheritedFrom = None
-          ImplementedInterfaces = []
-          Members = members
-        }    
 
 let param
     (name: string)
