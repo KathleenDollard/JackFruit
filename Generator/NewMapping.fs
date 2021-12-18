@@ -52,6 +52,7 @@ let CommandDefsFrom<'T> semanticModel (appModel: AppModel<'T>) (items: 'T list) 
         commandDef.SubCommands <- subCommands
         //RunTransformers commandDef appModel
         commandDef
-
-    [ for item in items do
-        depthFirstCreate item ]
+    try
+        Ok [ for item in items do depthFirstCreate item ]
+    with
+    | ex -> Error (Other ex.Message)

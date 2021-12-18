@@ -1,4 +1,4 @@
-﻿namespace Generator
+﻿module Generator.AppModelHelpers
 
 open Generator.Models
 open Microsoft.CodeAnalysis
@@ -7,7 +7,6 @@ open System.Linq
 open System
 open XmlCommentPatterns
 
-module AppModelHelpers =
 
     let DescriptionFromLookup mapOption (commandDef: CommandDef) =
         let key = commandDef.PathString

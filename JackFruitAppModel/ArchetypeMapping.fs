@@ -159,7 +159,7 @@ let ArchetypeInfoListFrom invocations =
                 | _ -> () ]
         | _ -> Error (Generator.Aggregate errors)
 
-let ArchetypeInfoTreeFrom (archetypeInfoList: ArchetypeInfo list): TreeNodeType<ArchetypeInfo> list = 
+let ArchetypeInfoTreeFrom (archetypeInfoList: ArchetypeInfo list) = 
     let mapBranch parents item childList=
         let data = 
             match item with
@@ -172,4 +172,7 @@ let ArchetypeInfoTreeFrom (archetypeInfoList: ArchetypeInfo list): TreeNodeType<
 
     let getKey (item: ArchetypeInfo) = item.Path
 
-    TreeFromList getKey mapBranch archetypeInfoList
+    try
+      Ok (TreeFromList getKey mapBranch archetypeInfoList)
+    with 
+    | ex -> Error (Other ex.Message)

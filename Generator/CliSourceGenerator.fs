@@ -1,4 +1,4 @@
-﻿namespace Generator
+﻿module Generator.SourceGenerator
 
 open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp
@@ -6,15 +6,14 @@ open Microsoft.CodeAnalysis.VisualBasic
 open Generator
 open Generator.NewMapping
 open Generator.BuildCodePattern
+open Generator.Transforms
 
-//let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel =
-    //try //  Move this into each step, then at least we can tell the user the step that failed
-        //appModel.Initialize(semanticModel)                     //Passes 'T
-        //|> Result.map (CommandDefsFrom semanticModel appModel) // Passes CommandDefs shape
-        //|> Result.map AppModel.RunTransformers                 // Passes transformed CommandDefs
-        //|> Result.map OutputCommandWrapper                     // Passes CodeModel
+let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel =
+    appModel.Initialize(semanticModel)                           //Passes 'T
+    |> Result.bind (CommandDefsFrom semanticModel appModel)      // Passes CommandDefs shape
+    |> Result.bind (ApplyTransformsToMany appModel.Transformers) // Passes transformed CommandDefs
+    |> Result.bind OutputCommandWrapper                          // Passes CodeModel/Namespace
 
- // bind might have issues. Map shoudl be bullet proof.
 
 
 //[<Generator>]

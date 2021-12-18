@@ -10,7 +10,7 @@ open BuildCodePattern
 open Generator.Language
 open ApprovalTests
 open ApprovalTests.Reporters
-open Generator.Transform
+open Generator.Transforms
 open UtilsForTests
 
 // I'm not sure what we should be testing first
@@ -123,7 +123,7 @@ type ``Transforms for descriptions``() =
         [ for commandDef in commandDefs do 
             let mutable newCommandDef = commandDef
             for transform in transforms do
-                newCommandDef <- ApplyTransform transform newCommandDef
+                newCommandDef <- ApplyTransform newCommandDef transform
             newCommandDef ]
 
     let commandDesc = "Command Description"
@@ -134,7 +134,7 @@ type ``Transforms for descriptions``() =
         let commandDefs =
             ApplyTransformsToCommandDefs 
                 "" 
-                [DescriptionsFromXmlCommentsTransforer()]
+                [DescriptionsFromXmlCommentsTransformer()]
         Assert.Empty (commandDefs)
 
     [<Fact>]
@@ -146,7 +146,7 @@ type ``Transforms for descriptions``() =
                  /// </summary>
                  /// <param name=""one""></param>
                  public static void A(string one) {{}}"
-                [DescriptionsFromXmlCommentsTransforer()]
+                [DescriptionsFromXmlCommentsTransformer()]
             |> List.head
         Assert.Equal (Some commandDesc, commandDef.Description)
         Assert.Equal (None, commandDef.Members.Head.Description)
@@ -160,7 +160,7 @@ type ``Transforms for descriptions``() =
                  /// </summary>
                  /// <param name=""one"">{memberDesc}</param>
                  public static void A(string one) {{}}"
-                [DescriptionsFromXmlCommentsTransforer()]
+                [DescriptionsFromXmlCommentsTransformer()]
             |> List.head
          Assert.Equal (None, commandDef.Description)
          Assert.Equal (Some memberDesc, commandDef.Members.Head.Description)
@@ -212,7 +212,7 @@ type ``Transforms for descriptions``() =
                  /// <param name=""one"">{memberDesc}</param>
                  [Description(""{commandDesc}"")]
                  public static void A(string one) {{}}"
-                [DescriptionsFromXmlCommentsTransforer()]
+                [DescriptionsFromXmlCommentsTransformer()]
             |> List.head
          Assert.Equal (Some commandDesc, commandDef.Description)
          Assert.Equal (Some memberDesc, commandDef.Members.Head.Description)
@@ -227,7 +227,7 @@ type ``Transforms for descriptions``() =
                  /// </summary>
                  /// <param name=""one"">{memberDesc}</param>
                  public static void A(string one) {{}}"
-                [DescriptionsFromXmlCommentsTransforer()]
+                [DescriptionsFromXmlCommentsTransformer()]
             |> List.head
         Assert.Equal (Some commandDesc, commandDef.Description)
         Assert.Equal (Some memberDesc, commandDef.Members.Head.Description)

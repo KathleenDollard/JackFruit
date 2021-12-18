@@ -1,9 +1,9 @@
-﻿module Generator.Transform
+﻿module Generator.Transforms
 
 open Generator.Models
 open Generator
 
-
+// TODO: Change transforms to be Result based
 let AddToCommandAliases (transform: Transformer) commandDef =
     match transform.CommandAliasesToAdd commandDef with
         | UsePreviousValue -> commandDef
@@ -62,29 +62,41 @@ let UpdateMemberRequiredOverride (transform: Transformer) memberDef =
                 memberDef
 
 let AddToMemberPocket (transform: Transformer) (memberDef: MemberDef) =
-        match transform.MemberPocketItemsToAdd memberDef with
-            | UsePreviousValue -> memberDef
-            | NewValue pairs -> 
-                List.iter (fun (key, value) -> memberDef.AddToPocket key value) pairs
-                memberDef
+    match transform.MemberPocketItemsToAdd memberDef with
+        | UsePreviousValue -> memberDef
+        | NewValue pairs -> 
+            List.iter (fun (key, value) -> memberDef.AddToPocket key value) pairs
+            memberDef
 
-let ApplyTransform (transform: Transformer) commandDef =
+let ApplyTransform commandDef (transform: Transformer) =
+    let rec ApplyToCommandDef commandDef : CommandDef =
+        let newCommandDef = 
+            AddToCommandAliases transform commandDef
+            |> UpdateCommandDescription transform
+            |> AddToCommandPocket transform
+        for mbr in newCommandDef.Members do
+            UpdateMemberKind transform mbr
+            |> AddMemberAliases transform 
+            |> UpdateMemberArgDisplayName transform
+            |> UpdateMemberDescription transform
+            |> UpdateMemberRequiredOverride transform
+            |> AddToMemberPocket transform |> ignore
+        for subCommandDef in newCommandDef.SubCommands do
+            ApplyToCommandDef subCommandDef |> ignore
+        commandDef
 
-        let rec ApplyToCommandDef commandDef : CommandDef =
-            let newCommandDef = 
-                AddToCommandAliases transform commandDef
-                |> UpdateCommandDescription transform
-                |> AddToCommandPocket transform
-            for mbr in newCommandDef.Members do
-                UpdateMemberKind transform mbr
-                |> AddMemberAliases transform 
-                |> UpdateMemberArgDisplayName transform
-                |> UpdateMemberDescription transform
-                |> UpdateMemberRequiredOverride transform
-                |> AddToMemberPocket transform |> ignore
-            for subCommandDef in newCommandDef.SubCommands do
-                ApplyToCommandDef subCommandDef |> ignore
-            commandDef
+    let commandDef2 = ApplyToCommandDef commandDef
+    commandDef2
 
-        let commandDef2 = ApplyToCommandDef commandDef
-        commandDef2
+let ApplyTransforms commandDef transformers =
+
+    match transformers with
+    | [] -> commandDef
+    | _ -> (List.fold ApplyTransform commandDef transformers)
+
+let ApplyTransformsToMany transformers commandDefs =
+    try
+        Ok [ for commandDef in commandDefs do
+             ApplyTransforms commandDef transformers ]
+    with 
+    | ex -> Error (Other $"Error applying transforms to {ex.Message}")
