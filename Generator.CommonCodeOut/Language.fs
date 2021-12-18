@@ -278,12 +278,12 @@ type NamespaceModel =
     { NamespaceName: string
       Usings: UsingModel list
       Classes: ClassModel list}
-    static member Default() =
-        { NamespaceName = ""
+    static member Create(name: string) =
+        { NamespaceName = name
           Usings = []
-          Classes = [] }
-    member this.AddUsings (usings: UsingModel list) =
+          Classes = [] }    member this.AddUsings (usings: UsingModel list) =
         { this with Usings = List.append this.Usings usings }
+    static member Default() = NamespaceModel.Create ""
     member this.AddClasses (classes: ClassModel list) =
         { this with Classes = List.append this.Classes classes }
 

@@ -1,5 +1,9 @@
 ﻿module DslCodeBuilder
 
+// KAD-Don: What is this syntax (from:https://putridparrot.com/blog/my-first-attempt-as-implementing-a-computational-expression-in-f/
+//     let (Items items) = curves
+//     Specifically, the part in parens. A deconstructing cast from context?
+
 open System
 open Generator.Language
 
@@ -20,39 +24,31 @@ type StaticWord =
 //            { Namespace = name; Alias = Some alias } 
 //    static member Using (name: string) = { Namespace = name; Alias = None } 
 
-
 type NamespaceBuilder(name: string) =
-    let mutable state = 
-        { NamespaceName = name
-          Usings = []
-          Classes = [] }
 
-    member _.Yield (_) = state
+    member _.Yield (()) =  NamespaceModel.Create(name)
 
-    [<CustomOperation("Usings")>]
+    [<CustomOperation("Usings", MaintainsVariableSpace = true)>]
     member _.addUsings (nspace: NamespaceModel, usings): NamespaceModel =
-        state <- nspace.AddUsings usings
-        state
+        nspace.AddUsings usings
 
-    [<CustomOperation("Using")>]
+    [<CustomOperation("Using", MaintainsVariableSpace = true)>]
     member _.addUsingWithAlias (nspace: NamespaceModel, name: string, _:AliasWord, alias: string): NamespaceModel =
         let newUsing =
             if String.IsNullOrWhiteSpace alias then
                 { Namespace = name; Alias = None } 
             else
                 { Namespace = name; Alias = Some alias } 
-        state <- nspace.AddUsings [ newUsing ]
-        state
-
-    [<CustomOperation("Using")>]
+        nspace.AddUsings [ newUsing ]
+        
+    [<CustomOperation("Using", MaintainsVariableSpace = true)>]
     member this.addUsing (nspace: NamespaceModel, name: string): NamespaceModel =
         this.addUsingWithAlias(nspace, name, Alias, "")
-
-    
-    [<CustomOperation("Classes")>]
+  
+    [<CustomOperation("Classes", MaintainsVariableSpace = true)>]
     member _.addClasses (nspace: NamespaceModel, classes): NamespaceModel =
-        state <- nspace.AddClasses classes
-        state
+        nspace.AddClasses classes
+
 
 type ClassBuilder(name: string) =
     let mutable state = 
@@ -71,8 +67,12 @@ type ClassBuilder(name: string) =
     [<CustomOperation("Public")>]
     member _.modifiersWithStatic (cls: ClassModel, _: StaticWord) =
         updateModifiers cls Public StaticOrInstance.Static
-//    [<CustomOperation("Private")>]
-//    [<CustomOperation("InheritedFrom")>]
+
+//    TODO: [<CustomOperation("Private")>], etc
+
+    [<CustomOperation("InheritedFrom")>]
+    member _.inheritedFrom (cls: ClassModel, _: StaticWord) =
+        updateModifiers cls Public StaticOrInstance.Static
 //    [<CustomOperation("Interfaces")>]
 //    [<CustomOperation("Generics")>]
 //    [<CustomOperation("Members")>]
