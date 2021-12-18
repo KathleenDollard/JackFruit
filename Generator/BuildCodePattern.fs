@@ -195,7 +195,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel
         ]
 
     let classForCommandDef (commandDef: CommandDef) =
-        Class.Create 
+        ClassModel.Create 
             ( SimpleNamedItem (commandClassName commandDef),
               Public,
               commandDefClass commandDef)

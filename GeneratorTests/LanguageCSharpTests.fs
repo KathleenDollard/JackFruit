@@ -38,14 +38,14 @@ type ``When working with language parts`` () =
 
     [<Fact>]
     member _.``Class open is correct`` () =
-        let actual = cSharp.ClassOpen Class.ForTesting.Data
-        actual |> should equal Class.ForTesting.CSharpOpen
+        let actual = cSharp.ClassOpen ClassModel.ForTesting.Data
+        actual |> should equal ClassModel.ForTesting.CSharpOpen
 
 
     [<Fact>]
     member _.``Class close is correct`` () =
-        let actual = cSharp.ClassClose Class.ForTesting.Data
-        actual |> should equal Class.ForTesting.CSharpClose
+        let actual = cSharp.ClassClose ClassModel.ForTesting.Data
+        actual |> should equal ClassModel.ForTesting.CSharpClose
 
 
     [<Fact>]
@@ -291,14 +291,14 @@ type ``When outputting code`` () =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
         let expected = 
-            [ (0, Class.ForTesting.CSharpOpen |> List.head)
+            [ (0, ClassModel.ForTesting.CSharpOpen |> List.head)
               (0, "{")
               (1, Method.ForTesting.CSharpOpen |> List.head)
               (1, "{")
               (1, "}")
               (0, "}")]
         let data = 
-            { Class.ForTesting.Data with
+            { ClassModel.ForTesting.Data with
                 Members = [ Method Method.ForTesting.Data ]}
 
         outPutter.OutputClass data
@@ -313,13 +313,13 @@ type ``When outputting code`` () =
         let expected = 
             [ (0, NamespaceModel.ForTesting.CSharpOpen |> List.head)
               (0, "{")
-              (1, Class.ForTesting.CSharpOpen |> List.head)
+              (1, ClassModel.ForTesting.CSharpOpen |> List.head)
               (1, "{")
               (1, "}")
               (0, "}")]
         let data = 
             { NamespaceModel.ForTesting.Data with
-                Classes = [ Class.ForTesting.Data ]}
+                Classes = [ ClassModel.ForTesting.Data ]}
 
         outPutter.Output data
         let actual = writer.LinePairs()

@@ -135,7 +135,7 @@ type Property with
           CSharpBlock = []
           CSharpClose = [ "}"] }
 
-type Class with
+type ClassModel with
     static member ForTesting =
         let data =
             { ClassName = NamedItem.ForTesting.Data

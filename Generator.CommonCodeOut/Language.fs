@@ -10,8 +10,8 @@ type ILanguage =
     abstract member Using: UsingModel -> string list
     abstract member NamespaceOpen: NamespaceModel -> string list
     abstract member NamespaceClose: NamespaceModel -> string list
-    abstract member ClassOpen: Class -> string list
-    abstract member ClassClose: Class -> string list
+    abstract member ClassOpen: ClassModel -> string list
+    abstract member ClassClose: ClassModel -> string list
     abstract member ConstructorOpen: Constructor -> string list
     abstract member ConstructorClose: Constructor -> string list
     abstract member MethodOpen: Method -> string list
@@ -243,9 +243,9 @@ type Member =
     | Property of Property
     | Field of Field
     | Constructor of Constructor
-    | Class of Class
+    | Class of ClassModel
 
-type Class = 
+type ClassModel = 
     { ClassName: NamedItem
       StaticOrInstance: StaticOrInstance
       Scope: Scope
@@ -259,6 +259,9 @@ type Class =
           InheritedFrom = None
           ImplementedInterfaces = []
           Members = members }
+    static member Create(className: string, scope: Scope, members: Member list) =
+        ClassModel.Create((SimpleNamedItem className), scope, members)
+
 
 type UsingModel = 
     { Namespace: string
@@ -270,13 +273,16 @@ type UsingModel =
 type NamespaceModel = 
     { NamespaceName: string
       Usings: UsingModel list
-      Classes: Class list}
+      Classes: ClassModel list}
     static member Default() =
         { NamespaceName = ""
           Usings = []
           Classes = [] }
-    member this.AddUsing (using: UsingModel) =
-        { this with Usings = List.append this.Usings [using]}
+    member this.AddUsings (usings: UsingModel list) =
+        { this with Usings = List.append this.Usings usings }
+    member this.AddClasses (classes: ClassModel list) =
+        { this with Classes = List.append this.Classes classes }
+
 
 type CodeBlock =
     | NamespaceBlock
@@ -399,7 +405,7 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         writer.DecreaseIndent()
         writer.AddLines (language.ClassClose cls)
 
-    member this.OutputClasses (classes: Class list) =
+    member this.OutputClasses (classes: ClassModel list) =
         for cls in classes do 
             this.OutputClass cls
 

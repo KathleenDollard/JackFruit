@@ -35,7 +35,7 @@ type LanguageBase() =
     abstract member ConstructorName: Constructor -> string
 
     abstract member Generic: typeNames: NamedItem list -> string
-    abstract member ClassOpen: Class -> string list
+    abstract member ClassOpen: ClassModel -> string list
     abstract member MethodOpen: Method -> string list
     abstract member MethodClose: Method -> string list
     abstract member AutoProperty: Property -> string list
