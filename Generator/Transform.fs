@@ -91,8 +91,8 @@ let ApplyTransform commandDef (transform: Transformer) =
 let ApplyTransforms commandDef transformers =
 
     match transformers with
-    | [] -> Ok commandDef
-    | _ -> Ok (List.fold ApplyTransform commandDef transformers)
+    | [] -> commandDef
+    | _ -> (List.fold ApplyTransform commandDef transformers)
 
 let ApplyTransformsToMany transformers commandDefs =
     try
