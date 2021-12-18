@@ -6,6 +6,7 @@
 
 open System
 open Generator.Language
+open Common
 
 type AliasWord =
 | Alias
@@ -51,31 +52,46 @@ type NamespaceBuilder(name: string) =
 
 
 type ClassBuilder(name: string) =
-    let mutable state = 
-        ClassModel.Create (name, Public, [])
       
     let updateModifiers (cls: ClassModel) scope staticOrInstance  =
         { cls with Scope = scope; StaticOrInstance = staticOrInstance }
         
-    member _.Yield (_) = state
+    member _.Yield (_) = ClassModel.Create(name, Public, [])
+
+    // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
+    [<CustomOperation("Generics", MaintainsVariableSpace = true)>]
+    member _.generics (cls: ClassModel, generics: NamedItem list) =
+        let currentName =
+            match cls.ClassName with 
+            | SimpleNamedItem n -> n
+            | GenericNamedItem (n, _ ) -> n
+        { cls with ClassName = NamedItem.Create currentName generics }
 
     // TODO: Add async and partial to class model and here
-    [<CustomOperation("Public")>]
+    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.modifiers (cls: ClassModel) =
-        updateModifiers cls, Public, Instance
+        updateModifiers cls Public Instance
 
-    [<CustomOperation("Public")>]
-    member _.modifiersWithStatic (cls: ClassModel, _: StaticWord) =
+    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
+    member _.modifiersWithStatic (cls: ClassModel) (_: StaticWord): ClassModel =
         updateModifiers cls Public StaticOrInstance.Static
 
-//    TODO: [<CustomOperation("Private")>], etc
+    //    TODO: [<CustomOperation("Private")>], etc
 
-    [<CustomOperation("InheritedFrom")>]
-    member _.inheritedFrom (cls: ClassModel, _: StaticWord) =
-        updateModifiers cls Public StaticOrInstance.Static
-//    [<CustomOperation("Interfaces")>]
-//    [<CustomOperation("Generics")>]
-//    [<CustomOperation("Members")>]
+    // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
+    [<CustomOperation("InheritedFrom", MaintainsVariableSpace = true)>]
+    member _.inheritedFrom (cls: ClassModel, inheritedFrom: NamedItem option) =
+        { cls with InheritedFrom = inheritedFrom }
+
+    // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
+    [<CustomOperation("Interfaces", MaintainsVariableSpace = true)>]
+    member _.interfaces (cls: ClassModel, interfaces: NamedItem list) =
+        { cls with ImplementedInterfaces = interfaces }
+
+    [<CustomOperation("Members", MaintainsVariableSpace = true)>]
+    member _.members (cls: ClassModel, members: Member list) =
+        { cls with Members = members }
+
 
 
 

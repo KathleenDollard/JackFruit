@@ -265,6 +265,8 @@ type ClassModel =
           Members = members }
     static member Create(className: string, scope: Scope, members: Member list) =
         ClassModel.Create((SimpleNamedItem className), scope, members)
+    static member Create(className: string) =
+        ClassModel.Create((SimpleNamedItem className), Public, [])
 
 
 type UsingModel = 
