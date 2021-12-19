@@ -14,6 +14,9 @@ type AliasWord =
 type StaticWord =
 | Static
 
+type OfWord =
+| Of
+
  //KAD-Don: I want to do the following but get an error. Tomas had an example that looked like this, so I want 
  //         to check if I really can't do this before I abandon. https://stackoverflow.com/questions/5745172/f-overload-functions
 //          Or, can I do optional overloads for this. Tuples would make the DSL ugly
@@ -24,6 +27,14 @@ type StaticWord =
 //        else
 //            { Namespace = name; Alias = Some alias } 
 //    static member Using (name: string) = { Namespace = name; Alias = None } 
+
+// I want to do something like the following (NamedItem exists). Punctuation minimized as I think I need to be flexible.
+//
+//   typeName: NamedItem = "typeName" Of "T1"  "T2"  (Of "T3" (Of "T4")) "T4"
+//
+// The only way I have thought to do this is to have a dummy C# class "GenericShim" that has an implicit 
+// conversion from string to itself, then have a paramArray of the shim type. Can the types IntelliSense 
+// avoid this being entirely non-discoverable.
 
 type NamespaceBuilder(name: string) =
 
@@ -58,6 +69,20 @@ type ClassBuilder(name: string) =
         
     member _.Yield (_) = ClassModel.Create(name, Public, [])
 
+    //// TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
+    //[<CustomOperation("Name", MaintainsVariableSpace = true)>]
+    //member _.name (cls: ClassModel, name: string, _: OfWord, generics: NamedItem list) =
+    //    let generics =
+    //        match generics with 
+    //        | [] -> SimpleNamedItem name
+    //        | GenericNamedItem (n, _ ) -> n
+    //    { cls with ClassName = NamedItem.Create currentName generics }
+
+    //// TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
+    //[<CustomOperation("Name", MaintainsVariableSpace = true)>]
+    //member _.name (cls: ClassModel, name: string) =
+    //    SimpleNamedItem name
+
     // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
     [<CustomOperation("Generics", MaintainsVariableSpace = true)>]
     member _.generics (cls: ClassModel, generics: NamedItem list) =
@@ -80,8 +105,9 @@ type ClassBuilder(name: string) =
 
     // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
     [<CustomOperation("InheritedFrom", MaintainsVariableSpace = true)>]
-    member _.inheritedFrom (cls: ClassModel, inheritedFrom: NamedItem option) =
-        { cls with InheritedFrom = inheritedFrom }
+    member _.inheritedFrom (cls: ClassModel, inheritedFrom: NamedItem) =
+        // Consider whether resetting this to None is a valid scenario
+        { cls with InheritedFrom = Some inheritedFrom }
 
     // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
     [<CustomOperation("Interfaces", MaintainsVariableSpace = true)>]

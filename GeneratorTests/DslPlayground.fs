@@ -43,7 +43,7 @@ type ``When using DSL``() =
 
                     Using "Jill"
                     // KAD-Don: Why doesn't this work? (I have not gotten any overloads to work)
-                    //Using "Jack" Alias "Hill"
+                    // Using "Jack" Alias "Hill"
 
                 }
 
@@ -79,7 +79,8 @@ type ``When using DSL``() =
         let Class = ClassBuilder(className)
         let codeModel = 
             Class { 
-                Public  }
+                Public
+                }
 
         let actualName = 
             match codeModel.ClassName with
@@ -121,16 +122,21 @@ type ``When using DSL``() =
     [<Fact>]
     member _.``Can create class with base class``() =
         let className = "George"
+        let genericName = "Bart"
         let Class = ClassBuilder(className)
         let codeModel = 
             Class {
-                Public
-                // KAD-Don: Why doesn't this work? (I have not gotten most overloads to work)
-                //Public Static
-
+                InheritedFrom (SimpleNamedItem genericName)
                 }
 
-        Assert.True false
+        let actual = 
+            match codeModel.InheritedFrom with
+            | None -> invalidOp "No InheritedFrom was found"
+            | Some namedItem -> 
+                match namedItem with 
+                | SimpleNamedItem n -> n
+                | _ -> invalidOp "Simple name not found for InheritedFrom"
+        Assert.Equal(genericName, actual)
 
     [<Fact>]
     member _.``Can create class with implemented interfaces``() =
