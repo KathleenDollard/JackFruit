@@ -7,8 +7,8 @@ let method
     (scope: Scope)
     (returnType: Return)
     (name: NamedItem) 
-    (parameters: Parameter list)
-    (statements: Statement list) =
+    (parameters: ParameterModel list)
+    (statements: StatementModel list) =
     Member.Method
         { MethodName = name
           Scope = scope
@@ -25,8 +25,8 @@ let asyncMethod
     (scope: Scope)
     (returnType: Return)
     (name: NamedItem) 
-    (parameters: Parameter list)
-    (statements: Statement list) =
+    (parameters: ParameterModel list)
+    (statements: StatementModel list) =
     Member.Method
         { MethodName = name
           Scope = scope
@@ -43,8 +43,8 @@ let staticMethod
     (scope: Scope)
     (returnType: Return)
     (name: NamedItem) 
-    (parameters: Parameter list)
-    (statements: Statement list) =
+    (parameters: ParameterModel list)
+    (statements: StatementModel list) =
     Member.Method
         { MethodName = name
           Scope = scope
@@ -59,10 +59,10 @@ let staticMethod
 let ctor 
     (scope: Scope)
     (className: string)
-    (parameters: Parameter list)
-    (statements: Statement list) =
+    (parameters: ParameterModel list)
+    (statements: StatementModel list) =
     Member.Constructor
-        { ClassName = SimpleNamedItem className
+        { ClassName = className
           Scope = scope
           StaticOrInstance = Instance 
           Parameters = parameters
@@ -72,10 +72,10 @@ let ctor
 let staticCtor
     (scope: Scope)
     (className: string)
-    (parameters: Parameter list)
-    (statements: Statement list) =
+    (parameters: ParameterModel list)
+    (statements: StatementModel list) =
     Member.Constructor
-        { ClassName = SimpleNamedItem className
+        { ClassName = className
           Scope = scope
           StaticOrInstance = Static 
           Parameters = parameters
@@ -85,7 +85,7 @@ let staticCtor
 let field
     (fieldType: NamedItem)
     (name: string)
-    (initialValue: Expression) =
+    (initialValue: ExpressionModel) =
     Member.Field
         { FieldName = name
           StaticOrInstance = Instance 
@@ -112,8 +112,8 @@ let extensionMethod
     (scope: Scope) 
     (returnType: Return)
     (name: string) 
-    (parameters: Parameter list)
-    (statements: Statement list) =
+    (parameters: ParameterModel list)
+    (statements: StatementModel list) =
     Member.Method
         { MethodName = SimpleNamedItem name
           Scope = scope
@@ -125,21 +125,21 @@ let extensionMethod
           Statements = statements
         }
 
-let clsWithInterfaces
-    (scope: Scope) 
-    (name: string) 
-    (interfaces: NamedItem list)
-    (members: Member list) =
-    Member.Class
-        { ClassName = SimpleNamedItem name
-          Scope = scope
-          StaticOrInstance = Instance 
-          IsAsync = false
-          IsPartial = false
-          InheritedFrom = None
-          ImplementedInterfaces = interfaces
-          Members = members
-        }
+//let clsWithInterfaces
+//    (scope: Scope) 
+//    (name: string) 
+//    (interfaces: NamedItem list)
+//    (members: Member list) =
+//    Member.Class
+//        { ClassName = SimpleNamedItem name
+//          Scope = scope
+//          StaticOrInstance = Instance 
+//          IsAsync = false
+//          IsPartial = false
+//          InheritedFrom = None
+//          ImplementedInterfaces = interfaces
+//          Members = members
+//        }
 
 
 let param
@@ -152,8 +152,8 @@ let param
 
 let assign 
     (item: string)
-    (value: Expression) =
-    Statement.Assign 
+    (value: ExpressionModel) =
+    StatementModel.Assign 
         { Item = item
           Value = value }
 
@@ -161,8 +161,8 @@ let prop
     (scope: Scope)
     (propertyType: NamedItem)
     (propertyName: string)
-    (getStatements: Statement list)
-    (setStatements: Statement list) =
+    (getStatements: StatementModel list)
+    (setStatements: StatementModel list) =
     Member.Property
         { PropertyName = propertyName
           Type = propertyType
@@ -172,9 +172,9 @@ let prop
           SetStatements = setStatements }
 
 let ifThen 
-    (condition: Expression)
-    (ifStatements: Statement list) =
-    Statement.If
+    (condition: ExpressionModel)
+    (ifStatements: StatementModel list) =
+    StatementModel.If
         { Condition = condition
           Statements = ifStatements
           Elses = []}
@@ -182,8 +182,8 @@ let ifThen
 let invoke 
      ( instance: string)
      ( methodName: string)
-     ( arguments: Expression list) =
-     Expression.Invocation 
+     ( arguments: ExpressionModel list) =
+     ExpressionModel.Invocation 
         { Instance = SimpleNamedItem instance 
           MethodName = SimpleNamedItem methodName
           ShouldAwait = false
@@ -192,8 +192,8 @@ let invoke
 let invokeAwait
     ( instance: string)
     ( methodName: string)
-    ( arguments: Expression list) =
-    Expression.Invocation 
+    ( arguments: ExpressionModel list) =
+    ExpressionModel.Invocation 
        { Instance = SimpleNamedItem instance 
          MethodName = SimpleNamedItem methodName
          ShouldAwait = true

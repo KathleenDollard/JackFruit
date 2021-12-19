@@ -9,7 +9,22 @@ open Microsoft.CodeAnalysis
 open Generator.Language
 open Common
 
-type ``When using DSL``() =
+let NameFromSimpleName (namedItem: NamedItem) =
+    match namedItem with
+    | SimpleNamedItem n -> n
+    | _ -> invalidOp "Simple name not found"
+  
+let NameAndGenericsFromName (namedItem: NamedItem) =
+    match namedItem with
+    | GenericNamedItem (n, g) -> 
+        n, 
+        [for x in g do 
+            match x with 
+            | SimpleNamedItem gn -> gn
+            | _ -> invalidOp "Generic was not a simple name" ]
+    | _ -> invalidOp "Generic name not found"
+
+type ``When creating a namespace``() =
 
     [<Fact>]
     member _.``Can add using to namespace``() =
@@ -54,6 +69,27 @@ type ``When using DSL``() =
         Assert.Equal(UsingModel.Create usingName2, codeModel.Usings[2])
         Assert.Empty(codeModel.Classes)
 
+type ``When creating a class``() =
+
+    
+    [<Fact>]
+    member _.``Can create class``() =
+        let className = "George"
+        let Class = ClassBuilder(className)
+        let codeModel = 
+            Class { 
+                Public
+                }
+
+        Assert.Equal(className, NameFromSimpleName codeModel.ClassName)
+        Assert.Equal(Public, codeModel.Scope)
+        Assert.Equal(Instance, codeModel.StaticOrInstance)
+        Assert.Equal(false, codeModel.IsAsync)
+        Assert.Equal(false, codeModel.IsPartial)
+        Assert.Equal(None, codeModel.InheritedFrom)
+        Assert.Empty(codeModel.ImplementedInterfaces)
+        Assert.Empty(codeModel.Members)
+        
     [<Fact>]
     member _.``Can add class to namespace``() =
         let nspace = "George"
@@ -72,30 +108,10 @@ type ``When using DSL``() =
         Assert.Equal(ClassModel.Create className[1], codeModel.Classes[1])
         Assert.Equal(ClassModel.Create className[2], codeModel.Classes[2])
         Assert.Empty(codeModel.Usings)
-    
-    [<Fact>]
-    member _.``Can create class``() =
-        let className = "George"
-        let Class = ClassBuilder(className)
-        let codeModel = 
-            Class { 
-                Public
-                }
 
-        let actualName = 
-            match codeModel.ClassName with
-            | SimpleNamedItem n -> n
-            | _ -> invalidOp "Simple name not found"
-        Assert.Equal(className, actualName)
-        Assert.Equal(Public, codeModel.Scope)
-        Assert.Equal(Instance, codeModel.StaticOrInstance)
-        Assert.Equal(false, codeModel.IsAsync)
-        Assert.Equal(false, codeModel.IsPartial)
-        Assert.Equal(None, codeModel.InheritedFrom)
-        Assert.Empty(codeModel.ImplementedInterfaces)
-        Assert.Empty(codeModel.Members)
      
     [<Fact>]
+    // TODO: The syntax for generics is being rather problematic (KAD-Chet)
     member _.``Can create class with generic types``() =
         let className = "George"
         let genericNames = ["string"; "int"]
@@ -105,19 +121,12 @@ type ``When using DSL``() =
                 Generics [ SimpleNamedItem genericNames[0]; SimpleNamedItem genericNames[1] ]
                 }
 
-        let (actualName, actualGenerics) = 
-            match codeModel.ClassName with
-            | GenericNamedItem (n, g) -> 
-                n, 
-                [for x in g do 
-                    match x with 
-                    | SimpleNamedItem gn -> gn
-                    | _ -> invalidOp "Generic was not a simple name" ]
-            | _ -> invalidOp "Generic name not found"
+        let (actualName, actualGenerics) = NameAndGenericsFromName codeModel.ClassName        
+        
         Assert.Equal(className, actualName)
         Assert.Equal(2, actualGenerics.Length)
-        Assert.Equal(actualGenerics[0], genericNames[0])
-        Assert.Equal(actualGenerics[1], genericNames[1])
+        Assert.Equal(genericNames[0], actualGenerics[0])
+        Assert.Equal(genericNames[1], actualGenerics[1])
 
     [<Fact>]
     member _.``Can create class with base class``() =
@@ -141,27 +150,100 @@ type ``When using DSL``() =
     [<Fact>]
     member _.``Can create class with implemented interfaces``() =
         let className = "George"
+        let interfaceNames = ["A"; "B"]
         let Class = ClassBuilder(className)
         let codeModel = 
             Class {
-                Public
-                // KAD-Don: Why doesn't this work? (I have not gotten most overloads to work)
-                //Public Static
-
+                ImplementedInterfaces [for i in interfaceNames do NamedItem.Create i []]
                 }
 
-        Assert.True false
+        Assert.Equal(2, codeModel.ImplementedInterfaces.Length)
+        Assert.Equal(interfaceNames[0], NameFromSimpleName codeModel.ImplementedInterfaces[0])
+        Assert.Equal(interfaceNames[1], NameFromSimpleName codeModel.ImplementedInterfaces[1])
+
+type ``When creating a field``() =
 
     [<Fact>]
-    member _.``Can create class with members``() =
-        let className = "George"
-        let Class = ClassBuilder(className)
+    member _.``Can create a field``() =
+        let name = "A"
+        let fieldType = SimpleNamedItem "int"
+        let Field = FieldBuilder(name, fieldType)
         let codeModel = 
-            Class {
+            Field {
                 Public
-                // KAD-Don: Why doesn't this work? (I have not gotten most overloads to work)
-                //Public Static
-
                 }
 
-        Assert.True false
+        Assert.Equal(name, codeModel.FieldName)
+        Assert.Equal(fieldType, codeModel.FieldType)
+
+    
+    [<Fact>]
+    member _.``Can add field to class``() =
+        let className = "George"
+        let fieldName = "A"
+        let fieldType = SimpleNamedItem "int"
+        let Class = ClassBuilder(className)
+        let Field = FieldBuilder(fieldName, fieldType)
+        let codeModel = 
+            Class {
+                Members
+                    [ Field {
+                        Public
+                        }
+                    ]
+                }
+
+        Assert.Equal(className, NameFromSimpleName codeModel.ClassName)
+        Assert.Equal(1, codeModel.Members.Length)
+        let actualField =
+            match codeModel.Members.Head with 
+            | :? FieldModel as f -> f
+            | _ -> invalidOp "A field was not found"
+        Assert.Equal(fieldName, actualField.FieldName)
+        Assert.Equal(fieldType, actualField.FieldType)
+
+type ``When creating a method``() =
+
+    [<Fact>]
+    member _.``Can create a method``() =
+        let name = "A"
+        let returnType = Void
+        let Method = MethodBuilder(name, returnType)
+        let codeModel = 
+            Method {
+                Public
+                }
+
+        Assert.Equal(name, NameFromSimpleName codeModel.MethodName)
+        Assert.Equal(returnType, codeModel.ReturnType)
+
+        
+type ``When creating a property``() =
+
+    [<Fact>]
+    member _.``Can create a property``() =
+        let name = "A"
+        let propertyType = SimpleNamedItem "int"
+        let Property = PropertyBuilder(name, propertyType)
+        let codeModel = 
+            Property {
+                Public
+                }
+
+        Assert.Equal(name, codeModel.PropertyName)
+        Assert.Equal(propertyType, codeModel.Type)
+
+
+type ``When creating a constructor``() =
+
+    [<Fact>]
+    member _.``Can create a ctor``() =
+        let className = "A"
+        let Constructor = ConstructorBuilder className
+        // KAD-Chet: Why does this fail when the others pass?
+        let codeModel = 
+            Constructor {
+                Public
+                }
+
+        Assert.Equal(className, codeModel.ClassName)

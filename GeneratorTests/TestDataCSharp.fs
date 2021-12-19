@@ -20,7 +20,7 @@ type NamedItem with
         { Data = data
           CSharp = [ "RonWeasley(JackRussell)" ] }
 
-type Invocation with
+type InvocationModel with
     static member ForTesting =
         let data =
             { Instance = NamedItem.ForTesting.Data
@@ -31,7 +31,7 @@ type Invocation with
         { Data = data
           CSharp = [ "RonWeasley(JackRussell)" ] }
 
-type Instantiation with
+type InstantiationModel with
     static member ForTesting =
         let data =
             { TypeName = NamedItem.ForTesting.Data
@@ -40,7 +40,7 @@ type Instantiation with
         { Data = data
           CSharp = [ "new RonWeasley()" ] }
 
-type Comparison with
+type ComparisonModel with
     static member ForTesting =
         let data =
             { Left = Symbol "left"
@@ -50,7 +50,7 @@ type Comparison with
         { Data = data
           CSharp = [ "left = \"querty\"" ] }
 
-type If with
+type IfModel with
     static member ForTesting =
         let data =
             { Condition =
@@ -66,7 +66,7 @@ type If with
           CSharpBlock = []
           CSharpClose = [ "}" ] }
 
-type ForEach with
+type ForEachModel with
     static member ForTesting =
         let data =
             { LoopVar = "x"
@@ -80,7 +80,7 @@ type ForEach with
           CSharpBlock = []
           CSharpClose = [ "}" ] }
 
-type Assignment with
+type AssignmentModel with
     static member ForTesting =
         let data =
             { Item = "item"
@@ -90,7 +90,7 @@ type Assignment with
           CSharp = [ "item = \"boo!\";" ] }
 
 
-type AssignWithDeclare with
+type AssignWithDeclareModel with
     static member ForTesting =
         let data =
             { Variable = "item"
@@ -100,7 +100,7 @@ type AssignWithDeclare with
         { Data = data
           CSharp = [ "var item = \"boo!\";" ] }
 
-type Parameter with
+type ParameterModel with
     static member ForTesting =
         let data =
             { ParameterName = "param1"
@@ -111,16 +111,16 @@ type Parameter with
         { Data = data
           CSharp = [ "string param1" ] }
 
-type Method with
+type MethodModel with
     static member ForTesting =
-        let data = Method.Create "MyMethod" (Type (NamedItem.Create "string"  []))
+        let data = MethodModel.Create "MyMethod" (Type (NamedItem.Create "string"  []))
 
         { Data = data
           CSharpOpen = [ "public string MyMethod()"; "{" ]
           CSharpBlock = []
           CSharpClose = [ "}" ] }
 
-type Property with
+type PropertyModel with
     static member ForTesting =
         let data =
             { PropertyName = "MyProperty"

@@ -32,21 +32,21 @@ type LanguageBase() =
 
     abstract member TypeAndName: typeName: NamedItem -> name: string -> string
     abstract member BlockClose: blockType: string -> string
-    abstract member ConstructorName: Constructor -> string
+    abstract member ConstructorName: ConstructorModel -> string
 
     abstract member Generic: typeNames: NamedItem list -> string
     abstract member ClassOpen: ClassModel -> string list
-    abstract member MethodOpen: Method -> string list
-    abstract member MethodClose: Method -> string list
-    abstract member AutoProperty: Property -> string list
-    abstract member PropertyOpen: Property -> string list
-    abstract member Field: Field -> string list
+    abstract member MethodOpen: MethodModel -> string list
+    abstract member MethodClose: MethodModel -> string list
+    abstract member AutoProperty: PropertyModel -> string list
+    abstract member PropertyOpen: PropertyModel -> string list
+    abstract member Field: FieldModel -> string list
 
-    abstract member IfOpen: If -> string list
-    abstract member ForEachOpen: ForEach -> string list
-    abstract member ForEachClose : ForEach -> string list 
+    abstract member IfOpen: IfModel -> string list
+    abstract member ForEachOpen: ForEachModel -> string list
+    abstract member ForEachClose : ForEachModel -> string list 
 
-    abstract member AssignWithDeclare: AssignWithDeclare -> string list
+    abstract member AssignWithDeclare: AssignWithDeclareModel -> string list
 
 
     interface ILanguage with 
@@ -67,7 +67,7 @@ type LanguageBase() =
         member this.ClassClose _ =
             [this.BlockClose this.ClassKeyword ]
 
-        member this.ConstructorOpen(ctor: Constructor) =
+        member this.ConstructorOpen(ctor: ConstructorModel) =
             [ $"{this.ScopeOutput ctor.Scope}{this.StaticOutput ctor.StaticOrInstance} {this.ConstructorName ctor}({this.OutputParameters ctor.Parameters})"
               this.BlockOpen]
         member this.ConstructorClose _ =
@@ -84,7 +84,7 @@ type LanguageBase() =
         member this.SetOpen _ =[this.SetKeyword; this.BlockOpen]
         member this.SetClose _ = [this.BlockClose "Set"]
 
-        member this.Field (field: Field) = this.Field field
+        member this.Field (field: FieldModel) = this.Field field
 
         member this.IfOpen ifInfo = this.IfOpen ifInfo
         member this.IfClose _ = [this.BlockClose "If"]
@@ -139,7 +139,7 @@ type LanguageBase() =
         | Internal -> this.InternalKeyword
         | Protected -> this.ProtectedKeyword
 
-    member this.OutputParameters (parameters: Parameter list) = 
+    member this.OutputParameters (parameters: ParameterModel list) = 
         let getDefault parameter =
             match parameter.Default with 
                 | None -> ""
@@ -169,7 +169,7 @@ type LanguageBase() =
                     this.Generic genericTypes
             $"{name}{generics}"
     
-    member this.OutputArguments (arguments: Expression list) = 
+    member this.OutputArguments (arguments: ExpressionModel list) = 
         let s = [ for arg in arguments do
                     $"{this.OutputExpression arg}"]
         String.Join(", ", s)
@@ -180,7 +180,7 @@ type LanguageBase() =
     member this.OutputComparison comparison = 
         $"{this.OutputExpression comparison.Left} {this.OutputOperator comparison.Operator} {this.OutputExpression comparison.Right}"
     
-    member this.OutputInstantiation (instantiation: Instantiation) = 
+    member this.OutputInstantiation (instantiation: InstantiationModel) = 
         $"{this.NewKeyword} {this.OutputNamedItem instantiation.TypeName}({this.OutputArguments instantiation.Arguments})"  
     
     member this.OutputExpression expression =

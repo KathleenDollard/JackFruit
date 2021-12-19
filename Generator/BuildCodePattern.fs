@@ -95,7 +95,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel
         let propertyName = memberPropName mbr 
         let prop = 
             prop Public symbolType propertyName
-                [ ifThen (Expression.Compare fieldNameSymbol Equals Null)
+                [ ifThen (ExpressionModel.Compare fieldNameSymbol Equals Null)
                     (propStatements mbr)
                   Return (Symbol fieldName)
                 ] []
@@ -113,13 +113,13 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel
         let handlerClass = generatedCommandHandlerName commandDef
         let memberFieldSymbol memberDef = Symbol (memberFieldName memberDef)
 
-        [ ifThen (Expression.Compare commandFieldSymbol Equals Null)
+        [ ifThen (ExpressionModel.Compare commandFieldSymbol Equals Null)
             [
                 // Should the following be name or first alias?
                 assign commandFieldName (New "Command" [ StringLiteral commandDef.Name ])
 
                 for memberDef in commandDef.Members do
-                    Statement.Invoke commandFieldName (SimpleNamedItem "Add") [ memberFieldSymbol memberDef ]
+                    StatementModel.Invoke commandFieldName (SimpleNamedItem "Add") [ memberFieldSymbol memberDef ]
  
                 assign commandHandlerName 
                     (New handlerClass 
@@ -158,47 +158,50 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel
 
           method Public (Type invokeReturnType) invokeMethodName 
             [ param "context" (SimpleNamedItem "InvocationContext")]
-            [ Statement.Invoke operationFieldName (SimpleNamedItem "Invoke") 
+            [ StatementModel.Invoke operationFieldName (SimpleNamedItem "Invoke") 
                 [ for memberDef in commandDef.Members do 
                     getValueForMember memberDef]
               Return (invokeAwait "Task" "FromResult" [Symbol "context.ExitCode"]) ]
         ]
 
-    let commandDefClass (commandDef: CommandDef) = 
-        let methodSig = methodSigFromCommandDef commandDef
-        [ readonlyField methodSig operationFieldName
-          field (SimpleNamedItem "Command") (commandFieldName commandDef) Null
+    //let commandDefClass (commandDef: CommandDef) = 
+    //    let methodSig = methodSigFromCommandDef commandDef
+    //    [ readonlyField methodSig operationFieldName
+    //      field (SimpleNamedItem "Command") (commandFieldName commandDef) Null
           
-          for mbr in commandDef.OptionsAndArgs do
-            match fieldFromMember mbr with
-            | None -> ()
-            | Some field -> field
+    //      for mbr in commandDef.OptionsAndArgs do
+    //        match fieldFromMember mbr with
+    //        | None -> ()
+    //        | Some field -> field
 
-          ctor Public (commandClassName commandDef)
-            [ param operationName methodSig]
-            [ assign $"_{operationName}" (Symbol operationName)]
+    //      ctor Public (commandClassName commandDef)
+    //        [ param operationName methodSig]
+    //        [ assign $"_{operationName}" (Symbol operationName)]
 
-          for mbr in commandDef.Members do
-            match propFromMember mbr with
-            | None -> ()
-            | Some prop -> prop
+    //      for mbr in commandDef.Members do
+    //        match propFromMember mbr with
+    //        | None -> ()
+    //        | Some prop -> prop
 
-          prop Public (SimpleNamedItem "Command") (commandPropName commandDef)
-            (commandProp commandDef)
-            []
+    //      prop Public (SimpleNamedItem "Command") (commandPropName commandDef)
+    //        (commandProp commandDef)
+    //        []
 
-          let handlerClassName = generatedCommandHandlerName commandDef
-          let commandHandlerInterface = SimpleNamedItem "ICommandHandler"
-          clsWithInterfaces Private handlerClassName [commandHandlerInterface] (generatedHandler commandDef)
+    //      let handlerClassName = generatedCommandHandlerName commandDef
+    //      let commandHandlerInterface = SimpleNamedItem "ICommandHandler"
+    //      clsWithInterfaces Private handlerClassName [commandHandlerInterface] (generatedHandler commandDef)
     
             
-        ]
+    //    ]
 
-    let classForCommandDef (commandDef: CommandDef) =
-        ClassModel.Create 
-            ( SimpleNamedItem (commandClassName commandDef),
-              Public,
-              commandDefClass commandDef)
+    //let classForCommandDef (commandDef: CommandDef) =
+    //    ClassModel.Create 
+    //        ( SimpleNamedItem (commandClassName commandDef),
+    //          Public,
+    //          commandDefClass commandDef)
+
+    let classForCommandDef (commandDef: CommandDef) = ()
+
 
     let classes = 
         [ for commandDef in commandDefs do

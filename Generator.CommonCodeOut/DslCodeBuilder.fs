@@ -38,7 +38,7 @@ type OfWord =
 
 type NamespaceBuilder(name: string) =
 
-    member _.Yield (()) =  NamespaceModel.Create(name)
+    member _.Yield (()) =  NamespaceModel.Create name
 
     [<CustomOperation("Usings", MaintainsVariableSpace = true)>]
     member _.addUsings (nspace: NamespaceModel, usings): NamespaceModel =
@@ -110,16 +110,56 @@ type ClassBuilder(name: string) =
         { cls with InheritedFrom = Some inheritedFrom }
 
     // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
-    [<CustomOperation("Interfaces", MaintainsVariableSpace = true)>]
-    member _.interfaces (cls: ClassModel, interfaces: NamedItem list) =
+    [<CustomOperation("ImplementedInterfaces", MaintainsVariableSpace = true)>]
+    member _.interfaces (cls: ClassModel, [<ParamArray>]interfaces: NamedItem list) =
         { cls with ImplementedInterfaces = interfaces }
 
     [<CustomOperation("Members", MaintainsVariableSpace = true)>]
-    member _.members (cls: ClassModel, members: Member list) =
+    member _.members (cls: ClassModel, members: IMember list) =
         { cls with Members = members }
 
 
+type FieldBuilder(name: string, typeName: NamedItem) =
+    let updateModifiers (field: FieldModel) scope staticOrInstance  =
+        { field with Scope = scope; StaticOrInstance = staticOrInstance }
+        
+    member _.Yield (_) = FieldModel.Create name typeName
 
+    // TODO: Add async and partial to class model and here
+    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
+    member _.modifiers (cls: FieldModel) =
+        updateModifiers cls Public Instance
+
+type MethodBuilder(name: string, returnType: Return) =
+    let updateModifiers (method: MethodModel) scope staticOrInstance  =
+        { method with Scope = scope; StaticOrInstance = staticOrInstance }
+        
+    member _.Yield (_) = MethodModel.Create name returnType
+
+    // TODO: Add async and partial to class model and here
+    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
+    member _.modifiers (method: MethodModel) =
+        updateModifiers method Public Instance
+
+type PropertyBuilder(name: string, typeName: NamedItem) =
+    let updateModifiers (property: PropertyModel) scope staticOrInstance  =
+        { property with Scope = scope; StaticOrInstance = staticOrInstance }
+        
+    member _.Yield (_) = PropertyModel.Create name typeName
+
+    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
+    member _.modifiers (property: PropertyModel) =
+        updateModifiers property Public Instance
+
+type ConstructorBuilder(className: string) =
+    let updateModifiers (ctor: ConstructorModel) scope staticOrInstance  =
+        { ctor with Scope = scope; StaticOrInstance = staticOrInstance }
+        
+    member _.Yield (_) = ConstructorModel.Create className
+
+    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
+    member _.modifiers (ctor: ConstructorModel) =
+        updateModifiers ctor Public Instance
 
 
 //type ClassModel = unit
