@@ -130,7 +130,7 @@ type Field(name: string, typeName: NamedItem) =
     member _.modifiers (cls: FieldModel) =
         updateModifiers cls Public Instance
 
-type Method(name: string, returnType: Return) =
+type Method(name: NamedItem, returnType: Return) =
     let updateModifiers (method: MethodModel) scope staticOrInstance  =
         { method with Scope = scope; StaticOrInstance = staticOrInstance }
         

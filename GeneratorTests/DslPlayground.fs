@@ -156,6 +156,8 @@ type ``When creating a class``() =
         Assert.Equal(interfaceNames[0], NameFromSimpleName codeModel.ImplementedInterfaces[0])
         Assert.Equal(interfaceNames[1], NameFromSimpleName codeModel.ImplementedInterfaces[1])
 
+
+
 type ``When creating a field``() =
 
     [<Fact>]
@@ -201,7 +203,7 @@ type ``When creating a method``() =
         let name = "A"
         let returnType = Void
         let codeModel = 
-            Method(name, returnType) {
+            Method(SimpleNamedItem name, returnType) {
                 Public
                 }
 

@@ -201,7 +201,7 @@ type MethodModel =
       Parameters: ParameterModel list
       Statements: StatementModel list}
     static member Create methodName returnType =
-        { MethodName = NamedItem.Create methodName []
+        { MethodName = methodName
           ReturnType = returnType
           StaticOrInstance = Instance
           IsExtension = false
@@ -289,6 +289,7 @@ type ClassModel =
         ClassModel.Create((SimpleNamedItem className), scope, members)
     static member Create(className: string) =
         ClassModel.Create((SimpleNamedItem className), Public, [])
+    interface IMember
 
 
 type UsingModel = 
