@@ -36,7 +36,7 @@ type OfWord =
 // conversion from string to itself, then have a paramArray of the shim type. Can the types IntelliSense 
 // avoid this being entirely non-discoverable.
 
-type NamespaceBuilder(name: string) =
+type Namespace(name: string) =
 
     member _.Yield (()) =  NamespaceModel.Create name
 
@@ -62,7 +62,7 @@ type NamespaceBuilder(name: string) =
         nspace.AddClasses classes
 
 
-type ClassBuilder(name: string) =
+type Class(name: string) =
       
     let updateModifiers (cls: ClassModel) scope staticOrInstance  =
         { cls with Scope = scope; StaticOrInstance = staticOrInstance }
@@ -119,7 +119,7 @@ type ClassBuilder(name: string) =
         { cls with Members = members }
 
 
-type FieldBuilder(name: string, typeName: NamedItem) =
+type Field(name: string, typeName: NamedItem) =
     let updateModifiers (field: FieldModel) scope staticOrInstance  =
         { field with Scope = scope; StaticOrInstance = staticOrInstance }
         
@@ -130,7 +130,7 @@ type FieldBuilder(name: string, typeName: NamedItem) =
     member _.modifiers (cls: FieldModel) =
         updateModifiers cls Public Instance
 
-type MethodBuilder(name: string, returnType: Return) =
+type Method(name: string, returnType: Return) =
     let updateModifiers (method: MethodModel) scope staticOrInstance  =
         { method with Scope = scope; StaticOrInstance = staticOrInstance }
         
@@ -141,7 +141,7 @@ type MethodBuilder(name: string, returnType: Return) =
     member _.modifiers (method: MethodModel) =
         updateModifiers method Public Instance
 
-type PropertyBuilder(name: string, typeName: NamedItem) =
+type Property(name: string, typeName: NamedItem) =
     let updateModifiers (property: PropertyModel) scope staticOrInstance  =
         { property with Scope = scope; StaticOrInstance = staticOrInstance }
         
@@ -151,7 +151,7 @@ type PropertyBuilder(name: string, typeName: NamedItem) =
     member _.modifiers (property: PropertyModel) =
         updateModifiers property Public Instance
 
-type ConstructorBuilder(className: string) =
+type Constructor(className: string) =
     let updateModifiers (ctor: ConstructorModel) scope staticOrInstance  =
         { ctor with Scope = scope; StaticOrInstance = staticOrInstance }
         

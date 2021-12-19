@@ -1,6 +1,6 @@
 ﻿module DslPlayground
 
-open DslCodeBuilder
+
 open Xunit
 open FsUnit.Xunit
 open FsUnit.CustomMatchers
@@ -8,6 +8,7 @@ open Generator.RoslynUtils
 open Microsoft.CodeAnalysis
 open Generator.Language
 open Common
+open DslCodeBuilder
 
 let NameFromSimpleName (namedItem: NamedItem) =
     match namedItem with
@@ -30,9 +31,8 @@ type ``When creating a namespace``() =
     member _.``Can add using to namespace``() =
         let nspace = "George"
         let usingName = "Fred"
-        let Namespace = NamespaceBuilder(nspace)
         let codeModel = 
-            Namespace {
+             Namespace(nspace) {
                 Usings [ { Namespace = usingName; Alias = None } ]
                 }
 
@@ -49,7 +49,7 @@ type ``When creating a namespace``() =
         let usingName1 = "Sally"
         let usingName2 = "Sue"
         let codeModel = 
-            NamespaceBuilder(nspace) 
+            Namespace(nspace) 
                 {
                     Usings 
                         [ { Namespace = usingName0; Alias = None } 
@@ -75,9 +75,8 @@ type ``When creating a class``() =
     [<Fact>]
     member _.``Can create class``() =
         let className = "George"
-        let Class = ClassBuilder(className)
         let codeModel = 
-            Class { 
+            Class(className) { 
                 Public
                 }
 
@@ -94,9 +93,8 @@ type ``When creating a class``() =
     member _.``Can add class to namespace``() =
         let nspace = "George"
         let className = ["Fred"; "Sally"; "Sue"]
-        let Namespace = NamespaceBuilder("George")
         let codeModel = 
-            Namespace {
+            Namespace("George") {
                 Classes 
                     [ for n in className do
                         ClassModel.Create(n, Public, []) ]
@@ -115,9 +113,8 @@ type ``When creating a class``() =
     member _.``Can create class with generic types``() =
         let className = "George"
         let genericNames = ["string"; "int"]
-        let Class = ClassBuilder(className)
         let codeModel = 
-            Class {
+            Class(className) {
                 Generics [ SimpleNamedItem genericNames[0]; SimpleNamedItem genericNames[1] ]
                 }
 
@@ -132,9 +129,8 @@ type ``When creating a class``() =
     member _.``Can create class with base class``() =
         let className = "George"
         let genericName = "Bart"
-        let Class = ClassBuilder(className)
         let codeModel = 
-            Class {
+            Class(className) {
                 InheritedFrom (SimpleNamedItem genericName)
                 }
 
@@ -151,9 +147,8 @@ type ``When creating a class``() =
     member _.``Can create class with implemented interfaces``() =
         let className = "George"
         let interfaceNames = ["A"; "B"]
-        let Class = ClassBuilder(className)
         let codeModel = 
-            Class {
+            Class(className) {
                 ImplementedInterfaces [for i in interfaceNames do NamedItem.Create i []]
                 }
 
@@ -167,9 +162,8 @@ type ``When creating a field``() =
     member _.``Can create a field``() =
         let name = "A"
         let fieldType = SimpleNamedItem "int"
-        let Field = FieldBuilder(name, fieldType)
         let codeModel = 
-            Field {
+            Field(name, fieldType) {
                 Public
                 }
 
@@ -182,12 +176,10 @@ type ``When creating a field``() =
         let className = "George"
         let fieldName = "A"
         let fieldType = SimpleNamedItem "int"
-        let Class = ClassBuilder(className)
-        let Field = FieldBuilder(fieldName, fieldType)
         let codeModel = 
-            Class {
+            Class(className) {
                 Members
-                    [ Field {
+                    [ Field(fieldName, fieldType) {
                         Public
                         }
                     ]
@@ -208,9 +200,8 @@ type ``When creating a method``() =
     member _.``Can create a method``() =
         let name = "A"
         let returnType = Void
-        let Method = MethodBuilder(name, returnType)
         let codeModel = 
-            Method {
+            Method(name, returnType) {
                 Public
                 }
 
@@ -224,9 +215,8 @@ type ``When creating a property``() =
     member _.``Can create a property``() =
         let name = "A"
         let propertyType = SimpleNamedItem "int"
-        let Property = PropertyBuilder(name, propertyType)
         let codeModel = 
-            Property {
+            Property(name, propertyType) {
                 Public
                 }
 
@@ -239,10 +229,9 @@ type ``When creating a constructor``() =
     [<Fact>]
     member _.``Can create a ctor``() =
         let className = "A"
-        let Constructor = ConstructorBuilder className
         // KAD-Chet: Why does this fail when the others pass?
         let codeModel = 
-            Constructor {
+            Constructor(className) {
                 Public
                 }
 
