@@ -7,6 +7,7 @@
 open System
 open Generator.Language
 open Common
+open type Generator.Language.Statements
 
 type AliasWord =
 | Alias
@@ -138,7 +139,17 @@ type Field(name: string, typeName: NamedItem) =
     member _.modifiers (cls: FieldModel) =
         updateModifiers cls Public Instance
 
-type Method(name: NamedItem, returnType: Return) =
+
+type StatementContainer<'T when 'T :> IStatementContainer<'T>>() =
+ 
+    [<CustomOperation("Statements", MaintainsVariableSpace = true)>]
+    member _.statements (item: 'T, statements: IStatement list) =
+        item.AddStatements statements
+
+
+type Method(name: NamedItem, returnType: ReturnType) =
+    inherit StatementContainer<MethodModel>()
+
     let updateModifiers (method: MethodModel) scope staticOrInstance  =
         { method with Scope = scope; StaticOrInstance = staticOrInstance }
         
@@ -149,10 +160,6 @@ type Method(name: NamedItem, returnType: Return) =
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.modifiers (method: MethodModel) =
         updateModifiers method Public Instance
-
-    [<CustomOperation("Statements", MaintainsVariableSpace = true)>]
-    member _.statements (method: MethodModel, statements: IStatement list) =
-        { method with Statements = statements }
 
 
 type Property(name: string, typeName: NamedItem) =
@@ -177,7 +184,10 @@ type Constructor(className: string) =
     member _.modifiers (ctor: ConstructorModel) =
         updateModifiers ctor Public Instance
 
-
+//type Return() =
+//    member _.Yield (_) = { ReturnModel.Expression = None }
+//    member this.Zero() = this.Yield()
+   
 
 
 //type ClassModel = unit

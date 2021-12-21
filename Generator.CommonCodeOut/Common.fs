@@ -19,7 +19,7 @@ type NamedItem =
         | _ -> GenericNamedItem (name, generics)
 
 
-type Return =
+type ReturnType =
     | Void
     | Type of t: NamedItem
     static member Create typeName =

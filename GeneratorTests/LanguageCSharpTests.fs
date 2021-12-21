@@ -169,7 +169,7 @@ type ``When outputting code`` () =
         let outPutter = RoslynOut(LanguageCSharp(),writer)
         let expected = 
             [ (0,"return 42;") ]
-        let data =  { ReturnModel.Expression = NonStringLiteral "42" }
+        let data =  { ReturnModel.Expression = Some (NonStringLiteral "42") }
 
         outPutter.OutputReturn data
         let actual = writer.LinePairs()
@@ -250,7 +250,7 @@ type ``When outputting code`` () =
               (0, "}")]
         let data = 
             { PropertyModel.ForTesting.Data with 
-                GetStatements = [ { ReturnModel.Expression = Symbol "x" } ]
+                GetStatements = [ { ReturnModel.Expression = Some (Symbol "x") } ]
                 SetStatements = [  { AssignmentModel.Item = "value"; Value = Symbol "x"}] }
 
         outPutter.OutputProperty data

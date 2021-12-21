@@ -74,6 +74,8 @@ let OfGeneric = AsGeneric
 type IMember = interface end
 type IStatement = interface end
 type IExpression = interface end
+type IStatementContainer<'T> = 
+    abstract member AddStatements: IStatement list -> 'T
 
 type InvocationModel =
     { Instance: NamedItem // Named item for invoking static methods on generic types
@@ -165,27 +167,27 @@ type AssignWithDeclareModel =
     interface IStatement
 
 type ReturnModel =
-    { Expression: ExpressionModel }
+    { Expression: ExpressionModel option }
     interface IStatement
 
 type SimpleCallModel =
     { Expression: ExpressionModel }
     interface IStatement
 
-type Statement =
-    | If of IfModel
-    | Assign of AssignmentModel
-    | AssignWithDeclare of AssignWithDeclareModel
-    | ForEach of ForEachModel
-    | Return of ExpressionModel
-    | SimpleCall of ExpressionModel
-    static member Invoke instanceName methodName arguments =
-        SimpleCall 
-            ( Invocation
-                { Instance = SimpleNamedItem instanceName
-                  MethodName = methodName
-                  ShouldAwait = false
-                  Arguments = arguments } )
+//type Statement =
+//    | If of IfModel
+//    | Assign of AssignmentModel
+//    | AssignWithDeclare of AssignWithDeclareModel
+//    | ForEach of ForEachModel
+//    | Return of ExpressionModel
+//    | SimpleCall of ExpressionModel
+//    static member Invoke instanceName methodName arguments =
+//        SimpleCall 
+//            ( Invocation
+//                { Instance = SimpleNamedItem instanceName
+//                  MethodName = methodName
+//                  ShouldAwait = false
+//                  Arguments = arguments } )
 
 type ParameterModel =
     { ParameterName: string
@@ -200,7 +202,7 @@ type ParameterModel =
 
 type MethodModel =
     { MethodName: NamedItem
-      ReturnType: Return
+      ReturnType: ReturnType
       StaticOrInstance: StaticOrInstance
       IsExtension: bool
       IsAsync: bool
@@ -217,6 +219,10 @@ type MethodModel =
           Parameters = []
           Statements = [] }
     interface IMember
+    interface IStatementContainer<MethodModel> with
+        member this.AddStatements statements =
+            { this with Statements = statements }
+            
  
 
 type ConstructorModel =
@@ -326,6 +332,11 @@ type CodeBlock =
     | FunctionBlock
     | IfBlock
     | ForBlock
+
+type Statements =
+    static member Return() = { ReturnModel.Expression = None}
+    static member Return(expr: ExpressionModel) = { ReturnModel.Expression = Some expr}
+
 
 
 type RoslynOut(language: ILanguage, writer: IWriter) =

@@ -22,7 +22,7 @@ let CommandDefFromMethod model (info: AppModelCommandInfo) =
     let returnType = 
         match info.Method with 
         // KAD-Don-Chet: Why do we need the parens here? The error is "successive args..." when there is only one arg [Consider issue]
-        | Some m -> Return.Create (m.ReturnType.ToDisplayString())
+        | Some m -> ReturnType.Create (m.ReturnType.ToDisplayString())
         | None -> Void
 
     let commandDef = CommandDef(id, info.Path, returnType, usage)

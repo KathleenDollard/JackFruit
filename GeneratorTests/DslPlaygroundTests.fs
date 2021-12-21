@@ -10,6 +10,7 @@ open Generator.Language
 open Common
 open DslCodeBuilder
 open FSharp.Quotations
+open type Generator.Language.Statements
 
 let NameFromSimpleName (namedItem: NamedItem) =
     match namedItem with
@@ -48,7 +49,7 @@ type ``When creating a namespace``() =
         let usingName = "Fred"
         let codeModel = 
              Namespace(nspace) {
-                Usings [ { Namespace = usingName; Alias = None } ]
+                Usings [ { Namespace = usingName; Alias = None }]
                 }
 
         Assert.Equal(nspace, codeModel.NamespaceName)
@@ -261,3 +262,21 @@ type ``When creating a constructor``() =
                 }
 
         Assert.Equal(className, codeModel.ClassName)
+
+
+type ``When creating Return statements``() =
+    [<Fact>]
+    member _.``Can create void return``() =
+        let methodName = "A"
+        let codeModel = 
+            Method(SimpleNamedItem methodName, Void) {
+                Statements 
+                    [ 
+                        // KAD-Chet: I'd like to use DSL here, but I don't want to 
+                        Return()
+                    ]
+                }
+
+        Assert.Equal(1, codeModel.Statements.Length)
+        Assert.IsType<ReturnModel>(codeModel)
+

@@ -5,7 +5,7 @@ open Common
 
 let method 
     (scope: Scope)
-    (returnType: Return)
+    (returnType: ReturnType)
     (name: NamedItem) 
     (parameters: ParameterModel list)
     (statements: IStatement list) =
@@ -23,7 +23,7 @@ let method
 
 let asyncMethod 
     (scope: Scope)
-    (returnType: Return)
+    (returnType: ReturnType)
     (name: NamedItem) 
     (parameters: ParameterModel list)
     (statements: IStatement list) =
@@ -41,7 +41,7 @@ let asyncMethod
 
 let staticMethod 
     (scope: Scope)
-    (returnType: Return)
+    (returnType: ReturnType)
     (name: NamedItem) 
     (parameters: ParameterModel list)
     (statements: IStatement list) =
@@ -110,7 +110,7 @@ let readonlyField
 
 let extensionMethod 
     (scope: Scope) 
-    (returnType: Return)
+    (returnType: ReturnType)
     (name: string) 
     (parameters: ParameterModel list)
     (statements: IStatement list) =
@@ -150,12 +150,12 @@ let param
       Default = None
       IsParams = false}
 
-let assign 
-    (item: string)
-    (value: ExpressionModel) =
-    Statement.Assign 
-        { Item = item
-          Value = value }
+//let assign 
+//    (item: string)
+//    (value: ExpressionModel) =
+//    Statement.Assign 
+//        { Item = item
+//          Value = value }
 
 let prop
     (scope: Scope)
@@ -171,13 +171,13 @@ let prop
           GetStatements = getStatements
           SetStatements = setStatements }
 
-let ifThen 
-    (condition: ExpressionModel)
-    (ifStatements: IStatement list) =
-    Statement.If
-        { Condition = condition
-          Statements = ifStatements
-          Elses = []}
+//let ifThen 
+//    (condition: ExpressionModel)
+//    (ifStatements: IStatement list) =
+//    Statement.If
+//        { Condition = condition
+//          Statements = ifStatements
+//          Elses = []}
 
 let invoke 
      ( instance: string)

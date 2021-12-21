@@ -97,7 +97,9 @@ type LanguageBase() =
         member this.AssignWithDeclare assign = this.AssignWithDeclare assign
       
         member this.Return ret =
-            [$"{this.ReturnKeyword} {this.OutputExpression ret.Expression}{this.EndOfStatement}"]
+            match ret.Expression with 
+            | None -> [$"{this.ReturnKeyword}{this.EndOfStatement}"]
+            | Some expr -> [$"{this.ReturnKeyword} {this.OutputExpression expr}{this.EndOfStatement}"]
         member this.SimpleCall simple =
             [$"{this.OutputExpression simple.Expression}{this.EndOfStatement}"]
         member this.Comment comment =

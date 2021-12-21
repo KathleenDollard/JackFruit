@@ -198,7 +198,7 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: NamedItem, me
 
 
 /// The main structure for commands during transformations
-and CommandDef(commandId: string, path: string list, returnType: Return, commandDefUsage: CommandDefUsage) =
+and CommandDef(commandId: string, path: string list, returnType: ReturnType, commandDefUsage: CommandDefUsage) =
 
     let pocket = Dictionary<string, obj>()
 
@@ -292,7 +292,7 @@ and CommandDef(commandId: string, path: string list, returnType: Return, command
     /// the environment return, and thus this is often unit (null)
     ///
     /// This always comes from the method and cannot be changed by transformers
-    member _.ReturnType: Return = returnType
+    member _.ReturnType: ReturnType = returnType
 
     /// Used by the generator to determine whether to output SetHandler.
     /// When GenerateSetHandler is set to false, any tree structure is unused
