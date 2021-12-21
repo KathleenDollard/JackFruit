@@ -5,8 +5,8 @@ open FsUnit.Xunit
 open FsUnit.CustomMatchers
 open Generator.GeneralUtils
 open Generator
-open Generator.Language
 open Generator.Tests.TestData
+open Generator.Language
 open Common
 
 type ``When working with language parts`` () =
@@ -110,7 +110,7 @@ type ``When outputting code`` () =
               (0, "{")
               (1, AssignmentModel.ForTesting.CSharp |> List.head)
               (0, "}")]
-        let data = { IfModel.ForTesting.Data with Statements = [ StatementModel.Assign AssignmentModel.ForTesting.Data] }
+        let data = { IfModel.ForTesting.Data with Statements = [ AssignmentModel.ForTesting.Data] }
 
         outPutter.OutputIf data
         let actual = writer.LinePairs()
@@ -127,7 +127,7 @@ type ``When outputting code`` () =
               (0, "{")
               (1, AssignmentModel.ForTesting.CSharp |> List.head)
               (0, "}")]
-        let data = { ForEachModel.ForTesting.Data with Statements = [ StatementModel.Assign AssignmentModel.ForTesting.Data] }
+        let data = { ForEachModel.ForTesting.Data with Statements = [ AssignmentModel.ForTesting.Data] }
 
         outPutter.OutputForEach data
         let actual = writer.LinePairs()
@@ -169,7 +169,7 @@ type ``When outputting code`` () =
         let outPutter = RoslynOut(LanguageCSharp(),writer)
         let expected = 
             [ (0,"return 42;") ]
-        let data = NonStringLiteral "42"
+        let data =  { ReturnModel.Expression = NonStringLiteral "42" }
 
         outPutter.OutputReturn data
         let actual = writer.LinePairs()
@@ -183,7 +183,7 @@ type ``When outputting code`` () =
         let outPutter = RoslynOut(LanguageCSharp(),writer)
         let expected = 
             [ (0,"\"Harry\";") ]
-        let data = StringLiteral "Harry"
+        let data =  { SimpleCallModel.Expression = StringLiteral "Harry" }
 
         outPutter.OutputSimpleCall data
         let actual = writer.LinePairs()
@@ -222,7 +222,7 @@ type ``When outputting code`` () =
     member _.``Expanded properties output correctly``() =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        //// **Don**: This is the issue from VS
+        //// KAD-Don: This is the issue from VS
         //let issue = 
         //  [ "public MyReturnType MyProperty "
         //    "{"
@@ -250,8 +250,8 @@ type ``When outputting code`` () =
               (0, "}")]
         let data = 
             { PropertyModel.ForTesting.Data with 
-                GetStatements = [Return (Symbol "x")]
-                SetStatements = [StatementModel.Assign { Item = "value"; Value = (Symbol "x")}] }
+                GetStatements = [ { ReturnModel.Expression = Symbol "x" } ]
+                SetStatements = [  { AssignmentModel.Item = "value"; Value = Symbol "x"}] }
 
         outPutter.OutputProperty data
         let actual = writer.LinePairs()
@@ -269,16 +269,19 @@ type ``When outputting code`` () =
               (1, "var x = 42;")
               (1, "Console.WriteLine();")
               (0, "}")]
+        let assignWithDeclare =  { Variable = "x"; TypeName = None; Value = (NonStringLiteral "42")}
+        let simpleCall = 
+            { SimpleCallModel.Expression = 
+                 Invocation 
+                    { Instance = (NamedItem.Create "Console" [])
+                      MethodName = SimpleNamedItem "WriteLine"
+                      ShouldAwait = false
+                      Arguments = [] } }
         let data = 
             { MethodModel.ForTesting.Data with 
                 Statements = 
-                    [ AssignWithDeclare { Variable = "x"; TypeName = None; Value = (NonStringLiteral "42")}
-                      SimpleCall 
-                        ( Invocation 
-                            { Instance = (NamedItem.Create "Console" [])
-                              MethodName = SimpleNamedItem "WriteLine"
-                              ShouldAwait = false
-                              Arguments = [] }) ] }
+                    [ assignWithDeclare
+                      simpleCall ] }
 
         outPutter.OutputMethod data
         let actual = writer.LinePairs()

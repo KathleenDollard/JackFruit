@@ -33,8 +33,8 @@ type ILanguage =
 
     abstract member Assignment: AssignmentModel -> string list
     abstract member AssignWithDeclare: AssignWithDeclareModel -> string list
-    abstract member Return: ExpressionModel -> string list
-    abstract member SimpleCall: ExpressionModel -> string list
+    abstract member Return: ReturnModel -> string list
+    abstract member SimpleCall: SimpleCallModel -> string list
     abstract member Comment: ExpressionModel -> string list
     abstract member Pragma: ExpressionModel -> string list
 
@@ -71,6 +71,9 @@ let AsGeneric name genericTypes =
       GenericTypes = genericTypes }
 let OfGeneric = AsGeneric
 
+type IMember = interface end
+type IStatement = interface end
+type IExpression = interface end
 
 type InvocationModel =
     { Instance: NamedItem // Named item for invoking static methods on generic types
@@ -140,29 +143,36 @@ type ExpressionModel =
 
 type IfModel =
     { Condition: ExpressionModel
-      Statements: StatementModel list
+      Statements: IStatement list
       Elses: IfModel list}
+    interface IStatement
 
 type ForEachModel =
     { LoopVar: string
       LoopOver: string
-      Statements: StatementModel list }
+      Statements: IStatement list }
+    interface IStatement
 
 type AssignmentModel = 
     { Item: string
       Value: ExpressionModel}
+    interface IStatement
 
 type AssignWithDeclareModel =
     { Variable: string
       TypeName: NamedItem option
       Value: ExpressionModel}
-let AssignVar variable value =
-    StatementModel.AssignWithDeclare 
-        { Variable = variable
-          Value = value 
-          TypeName = None }
+    interface IStatement
 
-type StatementModel =
+type ReturnModel =
+    { Expression: ExpressionModel }
+    interface IStatement
+
+type SimpleCallModel =
+    { Expression: ExpressionModel }
+    interface IStatement
+
+type Statement =
     | If of IfModel
     | Assign of AssignmentModel
     | AssignWithDeclare of AssignWithDeclareModel
@@ -188,9 +198,6 @@ type ParameterModel =
           Default = None
           IsParams = false }
 
-
-type IMember = interface end
-
 type MethodModel =
     { MethodName: NamedItem
       ReturnType: Return
@@ -199,7 +206,7 @@ type MethodModel =
       IsAsync: bool
       Scope: Scope
       Parameters: ParameterModel list
-      Statements: StatementModel list}
+      Statements: IStatement list}
     static member Create methodName returnType =
         { MethodName = methodName
           ReturnType = returnType
@@ -217,7 +224,7 @@ type ConstructorModel =
       StaticOrInstance: StaticOrInstance
       Scope: Scope
       Parameters: ParameterModel list
-      Statements: StatementModel list}
+      Statements: IStatement list}
     static member Create className =
         { ClassName =  className
           StaticOrInstance = Instance
@@ -231,8 +238,8 @@ type PropertyModel =
       Type: NamedItem
       StaticOrInstance: StaticOrInstance
       Scope: Scope
-      GetStatements: StatementModel list
-      SetStatements: StatementModel list}
+      GetStatements: IStatement list
+      SetStatements: IStatement list}
     static member Create propertyName propertyType =
       { PropertyName = propertyName
         Type = propertyType
@@ -255,7 +262,7 @@ type FieldModel =
         FieldType = fieldType
         IsReadonly = false
         StaticOrInstance = Instance
-        Scope = Public
+        Scope = Private
         InitialValue = None }
     interface IMember
       
@@ -332,16 +339,16 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
     member _.BlankLine() =
         writer.AddLine ""
 
-    member this.OutputStatement (statement: StatementModel) =
+    member this.OutputStatement (statement: IStatement) =
         match statement with 
-        | If x -> this.OutputIf x
-        | Assign x -> this.OutputAssignment x
-        | AssignWithDeclare x -> this.OutputAssignWithDeclare x
-        | Return x -> this.OutputReturn x
-        | ForEach x -> this.OutputForEach x
-        | SimpleCall x -> this.OutputSimpleCall x
+        | :? IfModel as x -> this.OutputIf x
+        | :? AssignmentModel as x -> this.OutputAssignment x
+        | :? AssignWithDeclareModel as x -> this.OutputAssignWithDeclare x
+        | :? ReturnModel as x -> this.OutputReturn x
+        | :? ForEachModel as x -> this.OutputForEach x
+        | :? SimpleCallModel as x -> this.OutputSimpleCall x
 
-    member this.OutputStatements (statements: StatementModel list) =
+    member this.OutputStatements (statements: IStatement list) =
         for statement in statements do 
             this.OutputStatement statement
 

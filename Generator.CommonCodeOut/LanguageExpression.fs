@@ -8,7 +8,7 @@ let method
     (returnType: Return)
     (name: NamedItem) 
     (parameters: ParameterModel list)
-    (statements: StatementModel list) =
+    (statements: IStatement list) =
     Member.Method
         { MethodName = name
           Scope = scope
@@ -26,7 +26,7 @@ let asyncMethod
     (returnType: Return)
     (name: NamedItem) 
     (parameters: ParameterModel list)
-    (statements: StatementModel list) =
+    (statements: IStatement list) =
     Member.Method
         { MethodName = name
           Scope = scope
@@ -44,7 +44,7 @@ let staticMethod
     (returnType: Return)
     (name: NamedItem) 
     (parameters: ParameterModel list)
-    (statements: StatementModel list) =
+    (statements: IStatement list) =
     Member.Method
         { MethodName = name
           Scope = scope
@@ -60,7 +60,7 @@ let ctor
     (scope: Scope)
     (className: string)
     (parameters: ParameterModel list)
-    (statements: StatementModel list) =
+    (statements: IStatement list) =
     Member.Constructor
         { ClassName = className
           Scope = scope
@@ -73,7 +73,7 @@ let staticCtor
     (scope: Scope)
     (className: string)
     (parameters: ParameterModel list)
-    (statements: StatementModel list) =
+    (statements: IStatement list) =
     Member.Constructor
         { ClassName = className
           Scope = scope
@@ -113,7 +113,7 @@ let extensionMethod
     (returnType: Return)
     (name: string) 
     (parameters: ParameterModel list)
-    (statements: StatementModel list) =
+    (statements: IStatement list) =
     Member.Method
         { MethodName = SimpleNamedItem name
           Scope = scope
@@ -153,7 +153,7 @@ let param
 let assign 
     (item: string)
     (value: ExpressionModel) =
-    StatementModel.Assign 
+    Statement.Assign 
         { Item = item
           Value = value }
 
@@ -161,8 +161,8 @@ let prop
     (scope: Scope)
     (propertyType: NamedItem)
     (propertyName: string)
-    (getStatements: StatementModel list)
-    (setStatements: StatementModel list) =
+    (getStatements: IStatement list)
+    (setStatements: IStatement list) =
     Member.Property
         { PropertyName = propertyName
           Type = propertyType
@@ -173,8 +173,8 @@ let prop
 
 let ifThen 
     (condition: ExpressionModel)
-    (ifStatements: StatementModel list) =
-    StatementModel.If
+    (ifStatements: IStatement list) =
+    Statement.If
         { Condition = condition
           Statements = ifStatements
           Elses = []}

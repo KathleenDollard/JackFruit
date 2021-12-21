@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="CommonTests.fs" />
     <Compile Include="TestDataCSharp.fs" />
     <Compile Include="MapData.fs" />
     <Compile Include="UtilForTests.fs" />
@@ -16,7 +17,7 @@
     <Compile Include="CommandDefMappingTests.fs" />
     <Compile Include="SourceGeneratorTests.fs" />
     <Compile Include="RoslynUtilsTests.fs" />
-    <Compile Include="DslPlayground.fs" />
+    <Compile Include="DslPlaygroundTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

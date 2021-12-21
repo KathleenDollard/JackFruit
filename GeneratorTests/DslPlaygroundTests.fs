@@ -1,4 +1,4 @@
-﻿module DslPlayground
+﻿module DslPlaygroundTests
 
 
 open Xunit
@@ -9,6 +9,7 @@ open Microsoft.CodeAnalysis
 open Generator.Language
 open Common
 open DslCodeBuilder
+open FSharp.Quotations
 
 let NameFromSimpleName (namedItem: NamedItem) =
     match namedItem with
@@ -26,6 +27,20 @@ let NameAndGenericsFromName (namedItem: NamedItem) =
     | _ -> invalidOp "Generic name not found"
 
 type ``When creating a namespace``() =
+    let namespaces: Namespace list = []
+
+    [<Fact>]
+    member _.``Can create a namespace``() =
+        let nspace = "George"
+
+        // KAD-Don-Chet: I thought when I created a Zero method, I'd be able to remove the body of these expressions if they were empty.
+        let codeModel = 
+             Namespace(nspace) {
+                Usings []
+                }
+        Assert.Equal(nspace, codeModel.NamespaceName)
+        Assert.Empty(codeModel.Usings)
+        Assert.Empty(codeModel.Classes)
 
     [<Fact>]
     member _.``Can add using to namespace``() =
@@ -40,7 +55,6 @@ type ``When creating a namespace``() =
         Assert.Equal(1, codeModel.Usings.Length)
         Assert.Equal(codeModel.Usings[0], UsingModel.Create usingName)
         Assert.Empty(codeModel.Classes)
-
     
     [<Fact>]
     member _.``Can add multiple usings to namespace``() =
@@ -106,7 +120,6 @@ type ``When creating a class``() =
         Assert.Equal(ClassModel.Create className[1], codeModel.Classes[1])
         Assert.Equal(ClassModel.Create className[2], codeModel.Classes[2])
         Assert.Empty(codeModel.Usings)
-
      
     [<Fact>]
     // TODO: The syntax for generics is being rather problematic (KAD-Chet)
@@ -156,7 +169,18 @@ type ``When creating a class``() =
         Assert.Equal(interfaceNames[0], NameFromSimpleName codeModel.ImplementedInterfaces[0])
         Assert.Equal(interfaceNames[1], NameFromSimpleName codeModel.ImplementedInterfaces[1])
 
+    //[<Fact(Skip="Uncomment for overloads issue")>]
+    //member _.``Can create class with static modifier``() =
+    //    let className = "George"
+    //    let interfaceNames = ["A"; "B"]
+    //    let codeModel = 
+    //        Class(className) {
+    //                Public Static
+    //            }
 
+    //    Assert.Equal(2, codeModel.ImplementedInterfaces.Length)
+    //    Assert.Equal(interfaceNames[0], NameFromSimpleName codeModel.ImplementedInterfaces[0])
+    //    Assert.Equal(interfaceNames[1], NameFromSimpleName codeModel.ImplementedInterfaces[1])
 
 type ``When creating a field``() =
 
@@ -231,7 +255,6 @@ type ``When creating a constructor``() =
     [<Fact>]
     member _.``Can create a ctor``() =
         let className = "A"
-        // KAD-Chet: Why does this fail when the others pass?
         let codeModel = 
             Constructor(className) {
                 Public

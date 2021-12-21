@@ -6,6 +6,7 @@ open Jackfruit.Models
 open Generator.RoslynUtils
 open Microsoft.CodeAnalysis
 open Generator
+open Common
 
 
 let (|Command|Arg|Option|) (part: string) =
@@ -173,6 +174,6 @@ let ArchetypeInfoTreeFrom (archetypeInfoList: ArchetypeInfo list) =
     let getKey (item: ArchetypeInfo) = item.Path
 
     try
-      Ok (TreeFromList getKey mapBranch archetypeInfoList)
+      Ok (TreeFromKeyedList getKey mapBranch archetypeInfoList)
     with 
     | ex -> Error (Other ex.Message)

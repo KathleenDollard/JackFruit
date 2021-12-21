@@ -38,7 +38,9 @@ type OfWord =
 
 type Namespace(name: string) =
 
-    member _.Yield (()) =  NamespaceModel.Create name
+    member _.Yield (_) =  NamespaceModel.Create name
+    member this.Zero(_) = this.Yield()
+    //member _.Quote() = ()
 
     [<CustomOperation("Usings", MaintainsVariableSpace = true)>]
     member _.addUsings (nspace: NamespaceModel, usings): NamespaceModel =
@@ -68,6 +70,7 @@ type Class(name: string) =
         { cls with Scope = scope; StaticOrInstance = staticOrInstance }
         
     member _.Yield (_) = ClassModel.Create(name, Public, [])
+    member this.Zero() = this.Yield()
 
     //// TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
     //[<CustomOperation("Name", MaintainsVariableSpace = true)>]
@@ -93,6 +96,7 @@ type Class(name: string) =
         { cls with ClassName = NamedItem.Create currentName generics }
 
     // TODO: Add async and partial to class model and here
+    // KAD-Don-Chet: Why are these overloads not working. See test DslPlaygroundTests.When creating a class.can create class with static modifier
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.modifiers (cls: ClassModel) =
         updateModifiers cls Public Instance
@@ -118,12 +122,16 @@ type Class(name: string) =
     member _.members (cls: ClassModel, members: IMember list) =
         { cls with Members = members }
 
-
+// KAD-Don: I have not been able to create a CE that supports an empty body. Is it possible?
+//          I want to allow: 
+//            Field(n, t) { }
+//            Field(n, t) { Public Static }
 type Field(name: string, typeName: NamedItem) =
     let updateModifiers (field: FieldModel) scope staticOrInstance  =
         { field with Scope = scope; StaticOrInstance = staticOrInstance }
         
     member _.Yield (_) = FieldModel.Create name typeName
+    member this.Zero() = this.Yield()
 
     // TODO: Add async and partial to class model and here
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
@@ -135,17 +143,24 @@ type Method(name: NamedItem, returnType: Return) =
         { method with Scope = scope; StaticOrInstance = staticOrInstance }
         
     member _.Yield (_) = MethodModel.Create name returnType
+    member this.Zero() = this.Yield()
 
     // TODO: Add async and partial to class model and here
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.modifiers (method: MethodModel) =
         updateModifiers method Public Instance
 
+    [<CustomOperation("Statements", MaintainsVariableSpace = true)>]
+    member _.statements (method: MethodModel, statements: IStatement list) =
+        { method with Statements = statements }
+
+
 type Property(name: string, typeName: NamedItem) =
     let updateModifiers (property: PropertyModel) scope staticOrInstance  =
         { property with Scope = scope; StaticOrInstance = staticOrInstance }
         
     member _.Yield (_) = PropertyModel.Create name typeName
+    member this.Zero() = this.Yield()
 
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.modifiers (property: PropertyModel) =
@@ -156,10 +171,13 @@ type Constructor(className: string) =
         { ctor with Scope = scope; StaticOrInstance = staticOrInstance }
         
     member _.Yield (_) = ConstructorModel.Create className
+    member this.Zero() = this.Yield()
 
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.modifiers (ctor: ConstructorModel) =
         updateModifiers ctor Public Instance
+
+
 
 
 //type ClassModel = unit

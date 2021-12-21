@@ -169,7 +169,7 @@ type ``Transforms for descriptions``() =
          Assert.Equal (None, commandDef.Description)
          Assert.Equal (Some memberDesc, commandDef.Members.Head.Description)
 
-    [<Fact>]
+    [<Fact(Skip = "Not yet implemented")>]
     member _.``Attribute xform finds command description``() =
         let commandDef =
             ApplyTransformsToCommandDefs 
@@ -180,7 +180,7 @@ type ``Transforms for descriptions``() =
         Assert.Equal (Some commandDesc, commandDef.Description)
         Assert.Equal (None, commandDef.Members.Head.Description)
 
-    [<Fact>]
+    [<Fact(Skip = "Not yet implemented")>]
     member _.``Attribute xform finds member description``() =
          let commandDef =
             ApplyTransformsToCommandDefs 
@@ -206,7 +206,7 @@ type ``Transforms for descriptions``() =
     //        MapData.OneSimpleMapping 
     //        [DescriptionsFromXmlCommentsTransforer()]
 
-    [<Fact>]
+    [<Fact(Skip = "Not yet implemented")>]
     member _.``Multiple transforms work together``() =
          let commandDef =
             ApplyTransformsToCommandDefs 

@@ -8,6 +8,7 @@ open System
 open Microsoft.CodeAnalysis
 open Jackfruit.ArchetypeMapping
 open Generator.NewMapping
+open Common
 
 
 type AppModel() =

@@ -97,9 +97,9 @@ type LanguageBase() =
         member this.AssignWithDeclare assign = this.AssignWithDeclare assign
       
         member this.Return ret =
-            [$"{this.ReturnKeyword} {this.OutputExpression ret}{this.EndOfStatement}"]
+            [$"{this.ReturnKeyword} {this.OutputExpression ret.Expression}{this.EndOfStatement}"]
         member this.SimpleCall simple =
-            [$"{this.OutputExpression simple}{this.EndOfStatement}"]
+            [$"{this.OutputExpression simple.Expression}{this.EndOfStatement}"]
         member this.Comment comment =
             [$"{this.OutputExpression comment}"]
         member this.Pragma pragma =

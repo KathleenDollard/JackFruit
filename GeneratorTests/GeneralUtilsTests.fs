@@ -4,6 +4,7 @@ open Xunit
 open FsUnit.Xunit
 open FsUnit.CustomMatchers
 open Generator.GeneralUtils
+open Common
 
 type ``When working with strings`` () =
 
@@ -169,7 +170,7 @@ let private mapBranch parents item childList=
 let private getKey item = item.Parents
 
 let private treeNodeTypeFromInput (input: InputType<string> list) = 
-    Generator.GeneralUtils.TreeFromList getKey mapBranch input
+    TreeFromKeyedList getKey mapBranch input
 
 let private matches (expected: TreeNodeType<string> list) (actual: TreeNodeType<string> list) =
     let rec recurse (exp: TreeNodeType<string> list) (act: TreeNodeType<string> list) = 
