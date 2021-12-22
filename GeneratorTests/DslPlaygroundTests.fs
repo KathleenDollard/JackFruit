@@ -26,6 +26,7 @@ let NameAndGenericsFromName (namedItem: NamedItem) =
 type ``When creating a namespace``() =
     let namespaces: Namespace list = []
 
+    // KAD-Don-Chet: It appears that we don't support the empty case.
     [<Fact(Skip="Can't create an empty thing yet. May drop requirement.")>]
     member _.``Can create a namespace``() =
         let nspace = "George"
@@ -100,20 +101,11 @@ type ``When creating a namespace``() =
         let className = ["Fred"; "Bill"]
         let codeModel = 
             Namespace(nspace) {
-                // KAD-Chet: This is where I next got stuck. Sometimes the thing that goes into the parent
-                //           will be a CE itself. I did not work out a way to get joy from a CE Class method, 
-                //           but this doesn't suck
-                Classes 
-                   [ Class(className[0]) {
-                        Public } ]
-                }
-        let codeModelOld =
-            Namespace("George") {
-                Classes 
-                    [ for n in className do
-                        ClassModel.Create(n, Public, []) ]
-                }
+                let x = 42
+                Class(className[0]) {
+                        Public }
 
+                }
 
         Assert.Equal(nspace, codeModel.NamespaceName)
         Assert.Empty(codeModel.Usings)
@@ -245,11 +237,9 @@ type ``When creating a class``() =
         // think we can do other members that way
         let codeModel = 
             Class(className) {
-                Members
-                    [ Field(fieldName, fieldType) {
-                        Public
-                        }
-                    ]
+                Field(fieldName, fieldType) {
+                    Public
+                    }
                 }
 
         Assert.Equal(className, NameFromSimpleName codeModel.ClassName)
@@ -330,6 +320,7 @@ type ``When creating Return statements``() =
         let methodName = "A"
         let codeModelExpr = 
             Method(SimpleNamedItem methodName, Void) {
+                Public
                 Return
                 }
 

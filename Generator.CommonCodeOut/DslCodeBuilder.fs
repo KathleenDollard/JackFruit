@@ -49,12 +49,14 @@ type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
 type Namespace(name: string) =
     inherit BuilderBase<NamespaceModel>()
 
-    override _.EmptyItem() =  NamespaceModel.Create name
-    override _.InternalCombine nspace nspace2 =
+    override _.EmptyItem() : NamespaceModel =  NamespaceModel.Create name
+    override _.InternalCombine nspace nspace2 : NamespaceModel =
         { nspace with 
             Usings =  List.append nspace.Usings nspace2.Usings
             Classes = List.append nspace.Classes nspace2.Classes }  
-
+    member this.Yield (classModel: ClassModel) : NamespaceModel = 
+        { this.Zero() with Classes = [ classModel ] }
+ 
     [<CustomOperation("Using", MaintainsVariableSpace = true)>]
     member _.addUsing (nspace: NamespaceModel, name: string, _:AliasWord, alias: string): NamespaceModel =
         let newUsing =
@@ -68,10 +70,6 @@ type Namespace(name: string) =
     member this.addUsing (nspace: NamespaceModel, name: string): NamespaceModel =
         this.addUsing(nspace, name, Alias, "")
   
-    [<CustomOperation("Classes", MaintainsVariableSpace = true)>]
-    member _.addClasses (nspace: NamespaceModel, classes): NamespaceModel =
-        nspace.AddClasses classes
-
 
 type Class(name: string) =
     inherit BuilderBase<ClassModel>()
@@ -88,6 +86,8 @@ type Class(name: string) =
     override _.EmptyItem() =  ClassModel.Create name
     override _.InternalCombine cls cls2 =
         { cls with Members =  List.append cls.Members cls2.Members }  
+    member this.Yield (memberModel: IMember) : ClassModel = 
+        { this.Zero() with Members = [ memberModel ] }
 
     [<CustomOperation("Generics", MaintainsVariableSpace = true)>]
     member _.generics (cls: ClassModel, generics: NamedItem list) =
@@ -100,6 +100,7 @@ type Class(name: string) =
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.publicWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
         // KAD-Don: Is there a better way to upcast the members of an array or list?
+        // Try making Evaluate generic with 'T when IModifierWord and array and then pass array
         let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
         updateModifiers cls Public modifiers
 
@@ -129,9 +130,10 @@ type Class(name: string) =
     member _.interfaces (cls: ClassModel, [<ParamArray>]interfaces: NamedItem list) =
         { cls with ImplementedInterfaces = interfaces }
 
-    [<CustomOperation("Members", MaintainsVariableSpace = true)>]
-    member _.members (cls: ClassModel, members: IMember list) =
-        { cls with Members = members }
+    [<CustomOperation("AddMember", MaintainsVariableSpace = true)>]
+    member _.addMember (cls: ClassModel, memberModel: IMember) =
+        { cls with Members =  List.append cls.Members [ memberModel ] }
+ 
 
 
 // KAD-Don: I have not been able to create a CE that supports an empty body. Is it possible?
@@ -139,16 +141,37 @@ type Class(name: string) =
 //            Field(n, t) { }
 //            Field(n, t) { Public Static }
 type Field(name: string, typeName: NamedItem) =
-    let updateModifiers (field: FieldModel) scope staticOrInstance  =
-        { field with Scope = scope; StaticOrInstance = staticOrInstance }
-        
-    member _.Yield (_) = FieldModel.Create name typeName
-    member this.Zero() = this.Yield()
+    inherit BuilderBase<FieldModel>()
 
-    // TODO: Add async and partial to class model and here
+    let updateModifiers (field: FieldModel) scope modifiers  =
+        { field with 
+            Scope = scope
+            StaticOrInstance = modifiers.StaticOrInstance }
+        
+    override _.EmptyItem() =  FieldModel.Create name typeName
+    // KAD-Chet: This is goofy
+    override _.InternalCombine cls cls2 = cls
+
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
-    member _.modifiers (cls: FieldModel) =
-        updateModifiers cls Public Instance
+    member _.publicWithModifiers (field: FieldModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
+        // KAD-Don: Is there a better way to upcast the members of an array or list?
+        let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
+        updateModifiers field Public modifiers
+
+    [<CustomOperation("Private", MaintainsVariableSpace = true)>]
+    member _.privateWithModifiers (field: FieldModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
+        let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
+        updateModifiers field Private modifiers
+
+    [<CustomOperation("Internal", MaintainsVariableSpace = true)>]
+    member _.internalWithModifiers (field: FieldModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
+        let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
+        updateModifiers field Internal modifiers
+
+    [<CustomOperation("Protected", MaintainsVariableSpace = true)>]
+    member _.protectedWithModifiers (field: FieldModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
+        let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
+        updateModifiers field Protected modifiers
 
 
 type Method(name: NamedItem, returnType: ReturnType) =
@@ -197,6 +220,7 @@ type Property(name: string, typeName: NamedItem) =
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.modifiers (property: PropertyModel) =
         updateModifiers property Public Instance
+
 
 type Constructor(className: string) =
     let updateModifiers (ctor: ConstructorModel) scope staticOrInstance  =

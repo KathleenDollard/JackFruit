@@ -7,6 +7,10 @@ open Generator.Language
 type AliasWord =
 | Alias
 
+type OfWord =
+    | Of
+
+
 type IModifierWord = interface end
 type IClassModifierWord = interface inherit IModifierWord end
 type IFieldModifierWord = interface inherit IModifierWord end
@@ -38,11 +42,12 @@ type SealedWord =
     interface IClassModifierWord
     interface IMethodModifierWord
 
-type OfWord =
-    | Of
+type ReadonlyWord = 
+    | ReadOnly
+    interface IFieldModifierWord
 
 // This is expected to grow, thus the pattern to evaluate words in one place. It might change to all keywords
-type Modifiers =
+type internal Modifiers =
     { StaticOrInstance: StaticOrInstance
       IsAbstract: bool
       IsAsync: bool
