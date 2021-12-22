@@ -171,7 +171,7 @@ type LanguageBase() =
                     this.Generic genericTypes
             $"{name}{generics}"
     
-    member this.OutputArguments (arguments: ExpressionModel list) = 
+    member this.OutputArguments (arguments: IExpression list) = 
         let s = [ for arg in arguments do
                     $"{this.OutputExpression arg}"]
         String.Join(", ", s)
@@ -187,15 +187,15 @@ type LanguageBase() =
     
     member this.OutputExpression expression =
         match expression with 
-        | Invocation x -> this.OutputInvocation x
-        | Comparison x -> this.OutputComparison x
-        | Instantiation x -> this.OutputInstantiation x
-        | StringLiteral x -> "\"" + x + "\""
-        | NonStringLiteral x -> x
-        | Symbol x -> x
-        | Comment x -> $"{this.CommentPrefix} {x}"
-        | Pragma x -> $"# {x}"
-        | Null _ -> this.NullKeyword // TODO: Watch for issues with this. Comparisons with Null from Nullable can be flipped from C#
+        | :? InvocationModel as x -> this.OutputInvocation x
+        | :? ComparisonModel as x -> this.OutputComparison x
+        | :? InstantiationModel as x -> this.OutputInstantiation x
+        | :? StringLiteralModel as x -> "\"" + x.Expression + "\""
+        | :? NonStringLiteralModel as x -> x.Expression
+        | :? SymbolModel as x -> x.Expression
+        | :? CommentModel as x -> $"{this.CommentPrefix} {x.Expression}"
+        | :? PragmaModel as x -> $"# {x.Expression}"
+        | :? NullModel as _ -> this.NullKeyword // TODO: Watch for issues with this. Comparisons with Null from Nullable can be flipped from C#
     
     member this.OutputAssignment assignment =
         $"{assignment.Item} = {assignment.Value}"

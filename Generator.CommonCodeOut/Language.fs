@@ -35,8 +35,8 @@ type ILanguage =
     abstract member AssignWithDeclare: AssignWithDeclareModel -> string list
     abstract member Return: ReturnModel -> string list
     abstract member SimpleCall: SimpleCallModel -> string list
-    abstract member Comment: ExpressionModel -> string list
-    abstract member Pragma: ExpressionModel -> string list
+    abstract member Comment: IExpression -> string list
+    abstract member Pragma: IExpression -> string list
 
     abstract member Invocation: InvocationModel -> string
     abstract member Comparison: ComparisonModel -> string
@@ -81,26 +81,28 @@ type InvocationModel =
     { Instance: NamedItem // Named item for invoking static methods on generic types
       MethodName: NamedItem // For generic methods
       ShouldAwait: bool
-      Arguments: ExpressionModel list}
-let Invoke instanceName methodName arguments =
-    ExpressionModel.Invocation
-        { Instance = SimpleNamedItem instanceName
-          MethodName = methodName
-          ShouldAwait = false
-          Arguments = arguments } 
-let With (arguments: ExpressionModel list) = arguments 
+      Arguments: IExpression list}
+    interface IExpression
+//let Invoke instanceName methodName arguments =
+//    ExpressionModel.Invocation
+//        { Instance = SimpleNamedItem instanceName
+//          MethodName = methodName
+//          ShouldAwait = false
+//          Arguments = arguments } 
+//let With (arguments: IExpression list) = arguments 
 
 type InstantiationModel =
     { TypeName: NamedItem
-      Arguments: ExpressionModel list}
-let New typeName arguments = 
-    ExpressionModel.Instantiation 
-        { TypeName = NamedItem.Create typeName []
-          Arguments = arguments }
-let NewGeneric typeName genericName arguments =
-    ExpressionModel.Instantiation
-        { TypeName = NamedItem.Create typeName [ NamedItem.Create genericName [] ]
-          Arguments = arguments }
+      Arguments: IExpression list}
+    interface IExpression
+//let New typeName arguments = 
+//    ExpressionModel.Instantiation 
+//        { TypeName = NamedItem.Create typeName []
+//          Arguments = arguments }
+//let NewGeneric typeName genericName arguments =
+//    ExpressionModel.Instantiation
+//        { TypeName = NamedItem.Create typeName [ NamedItem.Create genericName [] ]
+//          Arguments = arguments }
 
 type Operator =
     | Equals
@@ -111,9 +113,10 @@ type Operator =
     | LessThanOrEqualTo
 
 type ComparisonModel =
-    { Left: ExpressionModel
-      Right: ExpressionModel
+    { Left: IExpression
+      Right: IExpression
       Operator: Operator}
+    interface IExpression
     //static member Equals left right =
     //    { Left = left
     //      Right = right
@@ -123,28 +126,62 @@ type ComparisonModel =
     //      Right = right
     //      Operator = Operator.NotEquals }  
 
-type ExpressionModel =
-    | Invocation of InvocationModel
-    | Comparison of ComparisonModel
-    | Instantiation of InstantiationModel
-    | StringLiteral of string
-    | NonStringLiteral of string
-    | Symbol of string
-    | Comment of string
-    | Pragma of string
-    | Null
-    static member Compare left operator right =
-        Comparison
-            { Left = left
-              Right = right
-              Operator = operator }
-    static member NotEquals left right =
-        { Left = left
-          Right = right
-          Operator = Operator.NotEquals }  
+type StringLiteralModel =
+    { Expression: string}
+    interface IExpression
+    static member Create text =
+        { Expression = text }
+
+type NonStringLiteralModel =
+    { Expression: string}
+    interface IExpression
+    static member Create text =
+        { Expression = text }
+
+type SymbolModel =
+    { Expression: string}
+    interface IExpression
+    static member Create text =
+        { Expression = text }
+
+type CommentModel =
+    { Expression: string}
+    interface IExpression
+    static member Create text =
+        { Expression = text }
+
+type PragmaModel =
+    { Expression: string}
+    interface IExpression
+    static member Create text =
+        { Expression = text }
+
+type NullModel =
+    { Dummy: string} // not sure how to manage this
+    interface IExpression
+
+//type ExpressionModel =
+//    | Invocation of InvocationModel
+//    | Comparison of ComparisonModel
+//    | Instantiation of InstantiationModel
+//    | StringLiteral of string
+//    | NonStringLiteral of string
+//    | Symbol of string
+//    | Comment of string
+//    | Pragma of string
+//    | Null
+//    static member Compare left operator right =
+//        Comparison
+//            { Left = left
+//              Right = right
+//              Operator = operator }
+//    static member NotEquals left right =
+//        { Left = left
+//          Right = right
+//          Operator = Operator.NotEquals }  
 
 type IfModel =
-    { Condition: ExpressionModel
+    { Condition: IExpression
       Statements: IStatement list
       Elses: IfModel list}
     interface IStatement
@@ -157,21 +194,21 @@ type ForEachModel =
 
 type AssignmentModel = 
     { Item: string
-      Value: ExpressionModel}
+      Value: IExpression}
     interface IStatement
 
 type AssignWithDeclareModel =
     { Variable: string
       TypeName: NamedItem option
-      Value: ExpressionModel}
+      Value: IExpression}
     interface IStatement
 
 type ReturnModel =
-    { Expression: ExpressionModel option }
+    { Expression: IExpression option }
     interface IStatement
 
 type SimpleCallModel =
-    { Expression: ExpressionModel }
+    { Expression: IExpression }
     interface IStatement
 
 //type Statement =
@@ -179,8 +216,8 @@ type SimpleCallModel =
 //    | Assign of AssignmentModel
 //    | AssignWithDeclare of AssignWithDeclareModel
 //    | ForEach of ForEachModel
-//    | Return of ExpressionModel
-//    | SimpleCall of ExpressionModel
+//    | Return of IExpression
+//    | SimpleCall of IExpression
 //    static member Invoke instanceName methodName arguments =
 //        SimpleCall 
 //            ( Invocation
@@ -192,7 +229,7 @@ type SimpleCallModel =
 type ParameterModel =
     { ParameterName: string
       Type: NamedItem
-      Default: ExpressionModel option
+      Default: IExpression option
       IsParams: bool}
     static member Create name paramType =
         { ParameterName = name
@@ -262,7 +299,7 @@ type FieldModel =
       IsReadonly: bool
       StaticOrInstance: StaticOrInstance
       Scope: Scope
-      InitialValue: ExpressionModel option}
+      InitialValue: IExpression option}
     static member Create fieldName fieldType =
       { FieldName = fieldName
         FieldType = fieldType
@@ -339,7 +376,7 @@ type CodeBlock =
 
 type Statements =
     static member Return2() = { ReturnModel.Expression = None}
-    static member Return2(expr: ExpressionModel) = { ReturnModel.Expression = Some expr}
+    static member Return2(expr: IExpression) = { ReturnModel.Expression = Some expr}
 
 
 

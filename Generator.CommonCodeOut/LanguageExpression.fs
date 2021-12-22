@@ -85,7 +85,7 @@ let staticCtor
 let field
     (fieldType: NamedItem)
     (name: string)
-    (initialValue: ExpressionModel) =
+    (initialValue: IExpression) =
     Member.Field
         { FieldName = name
           StaticOrInstance = Instance 
@@ -179,25 +179,25 @@ let prop
 //          Statements = ifStatements
 //          Elses = []}
 
-let invoke 
-     ( instance: string)
-     ( methodName: string)
-     ( arguments: ExpressionModel list) =
-     ExpressionModel.Invocation 
-        { Instance = SimpleNamedItem instance 
-          MethodName = SimpleNamedItem methodName
-          ShouldAwait = false
-          Arguments = arguments }
+//let invoke 
+//     ( instance: string)
+//     ( methodName: string)
+//     ( arguments: IExpressionModel list) =
+//     ExpressionModel.Invocation 
+//        { Instance = SimpleNamedItem instance 
+//          MethodName = SimpleNamedItem methodName
+//          ShouldAwait = false
+//          Arguments = arguments }
 
-let invokeAwait
-    ( instance: string)
-    ( methodName: string)
-    ( arguments: ExpressionModel list) =
-    ExpressionModel.Invocation 
-       { Instance = SimpleNamedItem instance 
-         MethodName = SimpleNamedItem methodName
-         ShouldAwait = true
-         Arguments = arguments }
+//let invokeAwait
+//    ( instance: string)
+//    ( methodName: string)
+//    ( arguments: ExpressionModel list) =
+//    ExpressionModel.Invocation 
+//       { Instance = SimpleNamedItem instance 
+//         MethodName = SimpleNamedItem methodName
+//         ShouldAwait = true
+//         Arguments = arguments }
 
     
     

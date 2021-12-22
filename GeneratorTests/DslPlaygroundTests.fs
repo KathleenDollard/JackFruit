@@ -233,10 +233,9 @@ type ``When creating a class``() =
         let className = "George"
         let fieldName = "A"
         let fieldType = SimpleNamedItem "int"
-        // KAD-Chet: Can we do better here? We could do field with a method, but I do not 
-        // think we can do other members that way
         let codeModel = 
             Class(className) {
+                //Public  // KAD-Chet-Don: Uncommenting this shows current issue
                 Field(fieldName, fieldType) {
                     Public
                     }
@@ -322,9 +321,10 @@ type ``When creating Return statements``() =
             Method(SimpleNamedItem methodName, Void) {
                 Public
                 Return
+                Return
                 }
 
         let codeModel = EvaluateQuotation codeModelExpr :?> MethodModel
-        Assert.Equal(1, codeModel.Statements.Length)
+        Assert.Equal(2, codeModel.Statements.Length)
         Assert.IsType<MethodModel>(codeModel)
 

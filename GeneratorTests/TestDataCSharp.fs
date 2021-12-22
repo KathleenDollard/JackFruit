@@ -43,8 +43,8 @@ type InstantiationModel with
 type ComparisonModel with
     static member ForTesting =
         let data =
-            { Left = Symbol "left"
-              Right = StringLiteral "qwerty"
+            { Left = SymbolModel.Create "left"
+              Right = StringLiteralModel.Create "qwerty"
               Operator = Operator.Equals }
 
         { Data = data
@@ -54,10 +54,9 @@ type IfModel with
     static member ForTesting =
         let data =
             { Condition =
-                Comparison
-                    { Left = Symbol "A"
-                      Right = NonStringLiteral "42"
-                      Operator = Operator.Equals }
+                { Left = SymbolModel.Create "A"
+                  Right = NonStringLiteralModel.Create "42"
+                  Operator = Operator.Equals }
               Statements = []
               Elses = [] }
 
@@ -84,7 +83,7 @@ type AssignmentModel with
     static member ForTesting =
         let data =
             { Item = "item"
-              Value = StringLiteral "boo!" }
+              Value = StringLiteralModel.Create "boo!" }
 
         { Data = data
           CSharp = [ "item = \"boo!\";" ] }
@@ -95,7 +94,7 @@ type AssignWithDeclareModel with
         let data =
             { Variable = "item"
               TypeName = None
-              Value = StringLiteral "boo!" }
+              Value = StringLiteralModel.Create "boo!" }
 
         { Data = data
           CSharp = [ "var item = \"boo!\";" ] }

@@ -11,15 +11,15 @@ let private operationName = "operation"
 let private operationFieldName = "_operation"
 
 let private OutputHeader (outputter: RoslynOut) =
-    outputter.OutputComment(Comment "Copyright (c) .NET Foundation and contributors. All rights reserved.")
+    outputter.OutputComment(CommentModel.Create "Copyright (c) .NET Foundation and contributors. All rights reserved.")
 
     outputter.OutputComment(
-        Comment "Licensed under the MIT license. See LICENSE file in the project root for full license information."
+        CommentModel.Create "Licensed under the MIT license. See LICENSE file in the project root for full license information."
     )
 
     outputter.BlankLine()
 
-    outputter.OutputPragma(Pragma "warning disable")
+    outputter.OutputPragma(PragmaModel.Create "warning disable")
     ()
     
 let private methodSigFromCommandDef (commandDef: CommandDef) =

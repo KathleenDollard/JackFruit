@@ -20,15 +20,13 @@ type BuilderBase<'T>() =
     abstract member InternalCombine: 'T -> 'T -> 'T
 
     member this.Yield (()) : 'T = this.EmptyItem()
+    member this.Combine (method: 'T, method2: 'T) : 'T=
+        this.InternalCombine method method2
     member this.Zero() : 'T = this.Yield(())
-    // KAD-Chet: I had to comment out the following to get Namespace to work. I do not know 
-    //           what is different. And the value of quote isn't yet clear to me.
-    //member _.Quote() = ()
-    member this.Combine (item: 'T, item2: 'T) : 'T = this.InternalCombine item item2
     member _.Delay(f: unit -> 'T) : 'T = f()
-    member this.For(items, f) : 'T = 
-        let itemList = Seq.toList items
-        match itemList with 
+    member this.For(methods, f) :'T = 
+        let methodList = Seq.toList methods
+        match methodList with 
         | [] -> this.Zero()
         | [x] -> f(x)
         | head::tail ->
@@ -37,13 +35,31 @@ type BuilderBase<'T>() =
                 headResult <- this.Combine(headResult, f(x))
             headResult
 
+    //member this.Yield (()) : 'T = this.EmptyItem()
+    //member this.Zero() : 'T = this.Yield(())
+    //// KAD-Chet: I had to comment out the following to get Namespace to work. I do not know 
+    ////           what is different. And the value of quote isn't yet clear to me.
+    ////member _.Quote() = ()
+    //member this.Combine (item: 'T, item2: 'T) : 'T = this.InternalCombine item item2
+    //member _.Delay(f: unit -> 'T) : 'T = f()
+    //member this.For(items, f) : 'T = 
+    //    let itemList = Seq.toList items
+    //    match itemList with 
+    //    | [] -> this.Zero()
+    //    | [x] -> f(x)
+    //    | head::tail ->
+    //        let mutable headResult = f(head)
+    //        for x in tail do 
+    //            headResult <- this.Combine(headResult, f(x))
+    //        headResult
+
 [<AbstractClass>]
 type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
     inherit BuilderBase<'T>()
 
     [<CustomOperation("Return", MaintainsVariableSpace = true)>]
-    member _.addReturn (method: MethodModel) =
-        { method with Statements =  List.append method.Statements [ {ReturnModel.Expression = None} ] }
+    member _.addReturn (container: 'T) =
+        container.AddStatements [ {ReturnModel.Expression = None} ]
  
 
 type Namespace(name: string) =
@@ -89,13 +105,7 @@ type Class(name: string) =
     member this.Yield (memberModel: IMember) : ClassModel = 
         { this.Zero() with Members = [ memberModel ] }
 
-    [<CustomOperation("Generics", MaintainsVariableSpace = true)>]
-    member _.generics (cls: ClassModel, generics: NamedItem list) =
-        let currentName =
-            match cls.ClassName with 
-            | SimpleNamedItem n -> n
-            | GenericNamedItem (n, _ ) -> n
-        { cls with ClassName = NamedItem.Create currentName generics }
+    //member _.Quote() = ()
 
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.publicWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
@@ -129,6 +139,14 @@ type Class(name: string) =
     [<CustomOperation("ImplementedInterfaces", MaintainsVariableSpace = true)>]
     member _.interfaces (cls: ClassModel, [<ParamArray>]interfaces: NamedItem list) =
         { cls with ImplementedInterfaces = interfaces }
+
+    [<CustomOperation("Generics", MaintainsVariableSpace = true)>]
+    member _.generics (cls: ClassModel, generics: NamedItem list) =
+        let currentName =
+            match cls.ClassName with 
+            | SimpleNamedItem n -> n
+            | GenericNamedItem (n, _ ) -> n
+        { cls with ClassName = NamedItem.Create currentName generics }
 
     [<CustomOperation("AddMember", MaintainsVariableSpace = true)>]
     member _.addMember (cls: ClassModel, memberModel: IMember) =
@@ -175,39 +193,72 @@ type Field(name: string, typeName: NamedItem) =
 
 
 type Method(name: NamedItem, returnType: ReturnType) =
-    //inherit StatementContainerBuilder<MethodModel>()
+    inherit StatementBuilderBase<MethodModel>()
 
-    let updateModifiers (method: MethodModel) scope staticOrInstance  =
-        { method with Scope = scope; StaticOrInstance = staticOrInstance }
-        
-    member _.Yield (()) : MethodModel = MethodModel.Create name returnType
-    member this.Yield (statement: IStatement) : MethodModel = 
-        { this.Zero() with Statements = [statement] }
-    member _.Combine (method: MethodModel, method2: MethodModel) : MethodModel=
+    let updateModifiers (method: MethodModel) scope modifiers =
+        { method with 
+            Scope = scope; 
+            StaticOrInstance = modifiers.StaticOrInstance
+            IsAsync = modifiers.IsAsync }
+ 
+    override _.EmptyItem() : MethodModel =  MethodModel.Create name returnType
+    override _.InternalCombine (method: MethodModel) (method2: MethodModel) =
         { method with Statements =  List.append method.Statements method2.Statements }
-    member this.Zero() : MethodModel = this.Yield(())
-    member _.Quote() = ()
-    member _.Delay(f: unit -> MethodModel) : MethodModel = f()
-    member this.For(methods, f) :MethodModel = 
-        let methodList = Seq.toList methods
-        match methodList with 
-        | [] -> this.Zero()
-        | [x] -> f(x)
-        | head::tail ->
-            let mutable headResult = f(head)
-            for x in tail do 
-                headResult <- this.Combine(headResult, f(x))
-            headResult
+    member this.Yield (statement: IStatement) : MethodModel = 
+        { this.Zero() with Statements = [ statement ] }
 
-    // TODO: Add async and partial to class model and here
+    // KAD-Don: When Quote is in the base class, expressions instead of result classes are returned. And when it is in Class
+    member _.Quote() = ()
+
+    //member this.Yield (()) : MethodModel = this.EmptyItem()
+    //member this.Yield (statement: IStatement) : MethodModel = 
+    //    { this.Zero() with Statements = [statement] }
+    //member this.Combine (method: MethodModel, method2: MethodModel) : MethodModel=
+    //    this.InternalCombine method method2
+    //member this.Zero() : MethodModel = this.Yield(())
+    //member _.Quote() = ()
+    //member _.Delay(f: unit -> MethodModel) : MethodModel = f()
+    //member this.For(methods, f) :MethodModel = 
+    //    let methodList = Seq.toList methods
+    //    match methodList with 
+    //    | [] -> this.Zero()
+    //    | [x] -> f(x)
+    //    | head::tail ->
+    //        let mutable headResult = f(head)
+    //        for x in tail do 
+    //            headResult <- this.Combine(headResult, f(x))
+    //        headResult
+
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
-    member _.modifiers (method: MethodModel) =
-        updateModifiers method Public Instance
+    member _.publicWithModifiers (method: MethodModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
+        // KAD-Don: Is there a better way to upcast the members of an array or list?
+        // Try making Evaluate generic with 'T when IModifierWord and array and then pass array
+        let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
+        updateModifiers method Public modifiers
+
+    [<CustomOperation("Private", MaintainsVariableSpace = true)>]
+    member _.privateWithModifiers (method: MethodModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
+        let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
+        updateModifiers method Private modifiers
+
+    [<CustomOperation("Internal", MaintainsVariableSpace = true)>]
+    member _.internalWithModifiers (method: MethodModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
+        let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
+        updateModifiers method Internal modifiers
+
+    [<CustomOperation("Protected", MaintainsVariableSpace = true)>]
+    member _.protectedWithModifiers (method: MethodModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
+        let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
+        updateModifiers method Protected modifiers
 
     // KAD-Chet: I do notunderstand how adding the statements here and in combine don't double them
     [<CustomOperation("Return", MaintainsVariableSpace = true)>]
     member _.addReturn (method: MethodModel) =
         { method with Statements =  List.append method.Statements [ {ReturnModel.Expression = None} ] }
+
+    [<CustomOperation("Return", MaintainsVariableSpace = true)>]
+    member _.addReturn (method: MethodModel, expression: IExpression) =
+        { method with Statements =  List.append method.Statements [ {ReturnModel.Expression = Some expression} ] }
 
 
 type Property(name: string, typeName: NamedItem) =
