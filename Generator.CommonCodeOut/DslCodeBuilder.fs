@@ -10,51 +10,7 @@ open Common
 open type Generator.Language.Statements
 open System.Linq
 open System.Collections.Generic
-
-type AliasWord =
-| Alias
-
-type IModifierWord = interface end
-type IClassModifierWord = interface inherit IModifierWord end
-type IFieldModifierWord = interface inherit IModifierWord end
-type IMethodModifierWord = interface inherit IModifierWord end
-
-type StaticWord =
-    | Static
-    interface IClassModifierWord
-    interface IFieldModifierWord
-    interface IMethodModifierWord
-
-type AsyncWord = 
-    | Async
-    interface IClassModifierWord
-    interface IMethodModifierWord
-
-type PartialWord =
-    | Partial
-    interface IClassModifierWord
-    interface IMethodModifierWord
-
-type AbstractWord = 
-    | Abstract
-    interface IClassModifierWord
-    interface IMethodModifierWord
-
-type SealedWord = 
-    | Abstract
-    interface IClassModifierWord
-    interface IMethodModifierWord
-
-type OfWord =
-    | Of
-
-let Modifiers (modifiers:IEnumerable<IModifierWord>) staticOrInstance isAsync isPartial =
-    (  
-        (if modifiers.Contains Static then StaticOrInstance.Static else staticOrInstance),
-        (if modifiers.Contains Async then true else isAsync),
-        (if modifiers.Contains Partial then true else isPartial)
-    )
-
+open DslKeywords
 
 // I want to do something like the following (NamedItem exists). Punctuation minimized as I think I need to be flexible.
 //
@@ -157,27 +113,24 @@ type Class(name: string) =
     // TODO: Add seale and abstract to class model and here
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.publicWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
-        let (staticOrInstance, isAsync, isPartial) = 
-            Modifiers (modifiers.OfType<IModifierWord>()) cls.StaticOrInstance cls.IsAsync cls.IsPartial
-        updateModifiers cls Public staticOrInstance isAsync isPartial
+        // KAD-Don: Is there a better way to upcast the members of an array or list?
+        let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
+        updateModifiers cls Public modifiers.StaticOrInstance modifiers.IsAsync modifiers.IsPartial
 
     [<CustomOperation("Private", MaintainsVariableSpace = true)>]
     member _.privateWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
-        let (staticOrInstance, isAsync, isPartial) = 
-            Modifiers (modifiers.OfType<IModifierWord>()) cls.StaticOrInstance cls.IsAsync cls.IsPartial
-        updateModifiers cls Private staticOrInstance isAsync isPartial
+        let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
+        updateModifiers cls Public modifiers.StaticOrInstance modifiers.IsAsync modifiers.IsPartial
 
     [<CustomOperation("Internal", MaintainsVariableSpace = true)>]
     member _.internalWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
-        let (staticOrInstance, isAsync, isPartial) = 
-            Modifiers (modifiers.OfType<IModifierWord>()) cls.StaticOrInstance cls.IsAsync cls.IsPartial
-        updateModifiers cls Internal staticOrInstance isAsync isPartial
+        let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
+        updateModifiers cls Public modifiers.StaticOrInstance modifiers.IsAsync modifiers.IsPartial
 
     [<CustomOperation("Protected", MaintainsVariableSpace = true)>]
     member _.protectedWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
-        let (staticOrInstance, isAsync, isPartial) = 
-            Modifiers (modifiers.OfType<IModifierWord>()) cls.StaticOrInstance cls.IsAsync cls.IsPartial
-        updateModifiers cls Protected staticOrInstance isAsync isPartial
+        let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
+        updateModifiers cls Public modifiers.StaticOrInstance modifiers.IsAsync modifiers.IsPartial
 
     // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
     [<CustomOperation("InheritedFrom", MaintainsVariableSpace = true)>]

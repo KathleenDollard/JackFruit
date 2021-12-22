@@ -11,6 +11,7 @@
 		<Compile Include="Common.fs" />
 		<Compile Include="IWriter.fs" />
 		<Compile Include="Language.fs" />
+		<Compile Include="DslKeywords.fs" />
 		<Compile Include="DslCodeBuilder.fs" />
 		<Compile Include="CSharpLanguageExtensions.fs" />
 		<Compile Include="LanguageBase.fs" />

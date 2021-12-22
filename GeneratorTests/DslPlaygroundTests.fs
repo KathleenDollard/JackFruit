@@ -2,15 +2,10 @@
 
 
 open Xunit
-open FsUnit.Xunit
-open FsUnit.CustomMatchers
-open Generator.RoslynUtils
-open Microsoft.CodeAnalysis
 open Generator.Language
 open Common
+open DslKeywords
 open DslCodeBuilder
-open FSharp.Quotations
-open type Generator.Language.Statements
 open FSharp.Linq.RuntimeHelpers.LeafExpressionConverter
 
 let NameFromSimpleName (namedItem: NamedItem) =
