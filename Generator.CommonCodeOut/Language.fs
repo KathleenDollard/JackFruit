@@ -334,8 +334,8 @@ type CodeBlock =
     | ForBlock
 
 type Statements =
-    static member Return() = { ReturnModel.Expression = None}
-    static member Return(expr: ExpressionModel) = { ReturnModel.Expression = Some expr}
+    static member Return2() = { ReturnModel.Expression = None}
+    static member Return2(expr: ExpressionModel) = { ReturnModel.Expression = Some expr}
 
 
 

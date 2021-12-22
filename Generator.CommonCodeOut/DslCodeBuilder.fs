@@ -8,26 +8,53 @@ open System
 open Generator.Language
 open Common
 open type Generator.Language.Statements
+open System.Linq
+open System.Collections.Generic
 
 type AliasWord =
 | Alias
 
+type IModifierWord = interface end
+type IClassModifierWord = interface inherit IModifierWord end
+type IFieldModifierWord = interface inherit IModifierWord end
+type IMethodModifierWord = interface inherit IModifierWord end
+
 type StaticWord =
-| Static
+    | Static
+    interface IClassModifierWord
+    interface IFieldModifierWord
+    interface IMethodModifierWord
+
+type AsyncWord = 
+    | Async
+    interface IClassModifierWord
+    interface IMethodModifierWord
+
+type PartialWord =
+    | Partial
+    interface IClassModifierWord
+    interface IMethodModifierWord
+
+type AbstractWord = 
+    | Abstract
+    interface IClassModifierWord
+    interface IMethodModifierWord
+
+type SealedWord = 
+    | Abstract
+    interface IClassModifierWord
+    interface IMethodModifierWord
 
 type OfWord =
-| Of
+    | Of
 
- //KAD-Don: I want to do the following but get an error. Tomas had an example that looked like this, so I want 
- //         to check if I really can't do this before I abandon. https://stackoverflow.com/questions/5745172/f-overload-functions
-//          Or, can I do optional overloads for this. Tuples would make the DSL ugly
-//type DslHelpers =
-//    static member Using (name: string) (_: AliasWord) (alias: string): UsingModel =
-//        if String.IsNullOrWhiteSpace alias then
-//            { Namespace = name; Alias = None } 
-//        else
-//            { Namespace = name; Alias = Some alias } 
-//    static member Using (name: string) = { Namespace = name; Alias = None } 
+let Modifiers (modifiers:IEnumerable<IModifierWord>) staticOrInstance isAsync isPartial =
+    (  
+        (if modifiers.Contains Static then StaticOrInstance.Static else staticOrInstance),
+        (if modifiers.Contains Async then true else isAsync),
+        (if modifiers.Contains Partial then true else isPartial)
+    )
+
 
 // I want to do something like the following (NamedItem exists). Punctuation minimized as I think I need to be flexible.
 //
@@ -36,6 +63,37 @@ type OfWord =
 // The only way I have thought to do this is to have a dummy C# class "GenericShim" that has an implicit 
 // conversion from string to itself, then have a paramArray of the shim type. Can the types IntelliSense 
 // avoid this being entirely non-discoverable.
+
+[<AbstractClass>]
+type BuilderBase<'T when 'T :> IStatementContainer<'T>>() =
+ 
+    abstract member EmptyItem: unit -> 'T
+    abstract member InternalCombine: 'T -> 'T -> 'T
+
+    member this.Yield (()) : 'T = this.EmptyItem()
+    member this.Zero() : 'T = this.Yield(())
+    member _.Quote() = ()
+    member _.Delay(f: unit -> 'T) : 'T = f()
+    member this.Combine (item: 'T, item2: 'T) : 'T = this.InternalCombine item item2
+    member this.For(items, f) : 'T = 
+        let itemList = Seq.toList items
+        match itemList with 
+        | [] -> this.Zero()
+        | [x] -> f(x)
+        | head::tail ->
+            let mutable headResult = f(head)
+            for x in tail do 
+                headResult <- this.Combine(headResult, f(x))
+            headResult
+
+[<AbstractClass>]
+type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
+    inherit BuilderBase<'T>()
+
+    [<CustomOperation("Return", MaintainsVariableSpace = true)>]
+    member _.addReturn (method: MethodModel) =
+        { method with Statements =  List.append method.Statements [ {ReturnModel.Expression = None} ] }
+ 
 
 type Namespace(name: string) =
 
@@ -48,7 +106,7 @@ type Namespace(name: string) =
         nspace.AddUsings usings
 
     [<CustomOperation("Using", MaintainsVariableSpace = true)>]
-    member _.addUsingWithAlias (nspace: NamespaceModel, name: string, _:AliasWord, alias: string): NamespaceModel =
+    member _.addUsing (nspace: NamespaceModel, name: string, _:AliasWord, alias: string): NamespaceModel =
         let newUsing =
             if String.IsNullOrWhiteSpace alias then
                 { Namespace = name; Alias = None } 
@@ -58,7 +116,7 @@ type Namespace(name: string) =
         
     [<CustomOperation("Using", MaintainsVariableSpace = true)>]
     member this.addUsing (nspace: NamespaceModel, name: string): NamespaceModel =
-        this.addUsingWithAlias(nspace, name, Alias, "")
+        this.addUsing(nspace, name, Alias, "")
   
     [<CustomOperation("Classes", MaintainsVariableSpace = true)>]
     member _.addClasses (nspace: NamespaceModel, classes): NamespaceModel =
@@ -67,8 +125,8 @@ type Namespace(name: string) =
 
 type Class(name: string) =
       
-    let updateModifiers (cls: ClassModel) scope staticOrInstance  =
-        { cls with Scope = scope; StaticOrInstance = staticOrInstance }
+    let updateModifiers (cls: ClassModel) scope staticOrInstance isAsync isPartial =
+        { cls with Scope = scope; StaticOrInstance = staticOrInstance; IsAsync = isAsync; IsPartial = isPartial}
         
     member _.Yield (_) = ClassModel.Create(name, Public, [])
     member this.Zero() = this.Yield()
@@ -96,17 +154,30 @@ type Class(name: string) =
             | GenericNamedItem (n, _ ) -> n
         { cls with ClassName = NamedItem.Create currentName generics }
 
-    // TODO: Add async and partial to class model and here
-    // KAD-Don-Chet: Why are these overloads not working. See test DslPlaygroundTests.When creating a class.can create class with static modifier
+    // TODO: Add seale and abstract to class model and here
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
-    member _.modifiers (cls: ClassModel) =
-        updateModifiers cls Public Instance
+    member _.publicWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
+        let (staticOrInstance, isAsync, isPartial) = 
+            Modifiers (modifiers.OfType<IModifierWord>()) cls.StaticOrInstance cls.IsAsync cls.IsPartial
+        updateModifiers cls Public staticOrInstance isAsync isPartial
 
-    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
-    member _.modifiersWithStatic (cls: ClassModel) (_: StaticWord): ClassModel =
-        updateModifiers cls Public StaticOrInstance.Static
+    [<CustomOperation("Private", MaintainsVariableSpace = true)>]
+    member _.privateWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
+        let (staticOrInstance, isAsync, isPartial) = 
+            Modifiers (modifiers.OfType<IModifierWord>()) cls.StaticOrInstance cls.IsAsync cls.IsPartial
+        updateModifiers cls Private staticOrInstance isAsync isPartial
 
-    //    TODO: [<CustomOperation("Private")>], etc
+    [<CustomOperation("Internal", MaintainsVariableSpace = true)>]
+    member _.internalWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
+        let (staticOrInstance, isAsync, isPartial) = 
+            Modifiers (modifiers.OfType<IModifierWord>()) cls.StaticOrInstance cls.IsAsync cls.IsPartial
+        updateModifiers cls Internal staticOrInstance isAsync isPartial
+
+    [<CustomOperation("Protected", MaintainsVariableSpace = true)>]
+    member _.protectedWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
+        let (staticOrInstance, isAsync, isPartial) = 
+            Modifiers (modifiers.OfType<IModifierWord>()) cls.StaticOrInstance cls.IsAsync cls.IsPartial
+        updateModifiers cls Protected staticOrInstance isAsync isPartial
 
     // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
     [<CustomOperation("InheritedFrom", MaintainsVariableSpace = true)>]
@@ -122,6 +193,7 @@ type Class(name: string) =
     [<CustomOperation("Members", MaintainsVariableSpace = true)>]
     member _.members (cls: ClassModel, members: IMember list) =
         { cls with Members = members }
+
 
 // KAD-Don: I have not been able to create a CE that supports an empty body. Is it possible?
 //          I want to allow: 
@@ -140,26 +212,39 @@ type Field(name: string, typeName: NamedItem) =
         updateModifiers cls Public Instance
 
 
-type StatementContainer<'T when 'T :> IStatementContainer<'T>>() =
- 
-    [<CustomOperation("Statements", MaintainsVariableSpace = true)>]
-    member _.statements (item: 'T, statements: IStatement list) =
-        item.AddStatements statements
-
-
 type Method(name: NamedItem, returnType: ReturnType) =
-    inherit StatementContainer<MethodModel>()
+    //inherit StatementContainerBuilder<MethodModel>()
 
     let updateModifiers (method: MethodModel) scope staticOrInstance  =
         { method with Scope = scope; StaticOrInstance = staticOrInstance }
         
-    member _.Yield (_) = MethodModel.Create name returnType
-    member this.Zero() = this.Yield()
+    member _.Yield (()) : MethodModel = MethodModel.Create name returnType
+    member this.Yield (statement: IStatement) : MethodModel = 
+        { this.Zero() with Statements = [statement] }
+    member _.Combine (method: MethodModel, method2: MethodModel) : MethodModel=
+        { method with Statements =  List.append method.Statements method2.Statements }
+    member this.Zero() : MethodModel = this.Yield(())
+    member _.Quote() = ()
+    member _.Delay(f: unit -> MethodModel) : MethodModel = f()
+    member this.For(methods, f) :MethodModel = 
+        let methodList = Seq.toList methods
+        match methodList with 
+        | [] -> this.Zero()
+        | [x] -> f(x)
+        | head::tail ->
+            let mutable headResult = f(head)
+            for x in tail do 
+                headResult <- this.Combine(headResult, f(x))
+            headResult
 
     // TODO: Add async and partial to class model and here
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.modifiers (method: MethodModel) =
         updateModifiers method Public Instance
+
+    [<CustomOperation("Return", MaintainsVariableSpace = true)>]
+    member _.addReturn (method: MethodModel) =
+        { method with Statements =  List.append method.Statements [ {ReturnModel.Expression = None} ] }
 
 
 type Property(name: string, typeName: NamedItem) =

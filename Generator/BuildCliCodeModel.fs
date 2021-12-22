@@ -67,7 +67,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel
                         Field ("operation", GenericNamedItem ("Action", [SimpleNamedItem "int"]))
                             {
                                 // TODO: Make private the default and support Zero so body can be empty
-                                Private // TODO: Add private support
+                                Public // TODO: Add private support
                             }
                         Constructor(className) 
                             {

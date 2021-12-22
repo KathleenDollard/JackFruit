@@ -11,6 +11,7 @@ open Common
 open DslCodeBuilder
 open FSharp.Quotations
 open type Generator.Language.Statements
+open FSharp.Linq.RuntimeHelpers.LeafExpressionConverter
 
 let NameFromSimpleName (namedItem: NamedItem) =
     match namedItem with
@@ -56,7 +57,22 @@ type ``When creating a namespace``() =
         Assert.Equal(1, codeModel.Usings.Length)
         Assert.Equal(codeModel.Usings[0], UsingModel.Create usingName)
         Assert.Empty(codeModel.Classes)
-    
+ 
+    [<Fact>]
+    member _.``Can add using with alias to namespace``() =
+        let nspace = "George"
+        let usingName = "Fred"
+        let codeModel = 
+             Namespace(nspace) {
+                Using usingName
+                }
+
+        Assert.Equal(nspace, codeModel.NamespaceName)
+        Assert.Equal(1, codeModel.Usings.Length)
+        Assert.Equal(codeModel.Usings[0], UsingModel.Create usingName)
+        Assert.Empty(codeModel.Classes)
+
+
     [<Fact>]
     member _.``Can add multiple usings to namespace``() =
         let nspace = "George"
@@ -103,6 +119,24 @@ type ``When creating a class``() =
         Assert.Equal(None, codeModel.InheritedFrom)
         Assert.Empty(codeModel.ImplementedInterfaces)
         Assert.Empty(codeModel.Members)
+
+    [<Fact>]
+    member _.``Can create class with multiple modifiers``() =
+        let className = "George"
+        let codeModel = 
+            Class(className) { 
+                Public Static Async Partial
+                }
+
+        Assert.Equal(className, NameFromSimpleName codeModel.ClassName)
+        Assert.Equal(Public, codeModel.Scope)
+        Assert.Equal(StaticOrInstance.Static, codeModel.StaticOrInstance)
+        Assert.True(codeModel.IsAsync)
+        Assert.True(codeModel.IsPartial)
+        Assert.Equal(None, codeModel.InheritedFrom)
+        Assert.Empty(codeModel.ImplementedInterfaces)
+        Assert.Empty(codeModel.Members)
+        
         
     [<Fact>]
     member _.``Can add class to namespace``() =
@@ -123,7 +157,6 @@ type ``When creating a class``() =
         Assert.Empty(codeModel.Usings)
      
     [<Fact>]
-    // TODO: The syntax for generics is being rather problematic (KAD-Chet)
     member _.``Can create class with generic types``() =
         let className = "George"
         let genericNames = ["string"; "int"]
@@ -220,21 +253,6 @@ type ``When creating a field``() =
             | _ -> invalidOp "A field was not found"
         Assert.Equal(fieldName, actualField.FieldName)
         Assert.Equal(fieldType, actualField.FieldType)
-
-type ``When creating a method``() =
-
-    [<Fact>]
-    member _.``Can create a method``() =
-        let name = "A"
-        let returnType = Void
-        let codeModel = 
-            Method(SimpleNamedItem name, returnType) {
-                Public
-                }
-
-        Assert.Equal(name, NameFromSimpleName codeModel.MethodName)
-        Assert.Equal(returnType, codeModel.ReturnType)
-
         
 type ``When creating a property``() =
 
@@ -263,20 +281,35 @@ type ``When creating a constructor``() =
 
         Assert.Equal(className, codeModel.ClassName)
 
+        
+//type ``When creating a method``() =
+        
+    //[<Fact>]
+    //member _.``Can create a method``() =
+    //    let name = "A"
+    //    let returnType = Void
+    //    let codeModelExpr = 
+    //        Method(SimpleNamedItem name, returnType) {
+    //            //Public
+    //            }
+        
+    //    let codeModel = EvaluateQuotation codeModelExpr :?> MethodModel
+
+    //    Assert.Equal(name, NameFromSimpleName codeModel.MethodName)
+    //    Assert.Equal(returnType, codeModel.ReturnType)
+        
+        
 
 type ``When creating Return statements``() =
     [<Fact>]
     member _.``Can create void return``() =
         let methodName = "A"
-        let codeModel = 
+        let codeModelExpr = 
             Method(SimpleNamedItem methodName, Void) {
-                Statements 
-                    [ 
-                        // KAD-Chet: I'd like to use DSL here, but I don't want to 
-                        Return()
-                    ]
+                Return
                 }
 
+        let codeModel = EvaluateQuotation codeModelExpr :?> MethodModel
         Assert.Equal(1, codeModel.Statements.Length)
-        Assert.IsType<ReturnModel>(codeModel)
+        Assert.IsType<MethodModel>(codeModel)
 
