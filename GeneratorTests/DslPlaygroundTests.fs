@@ -235,6 +235,14 @@ type ``When creating a class``() =
         let fieldType = SimpleNamedItem "int"
         let codeModel = 
             Class(className) {
+                Public  
+                Members [
+                    Field(fieldName, fieldType) {
+                        Public
+                        }]
+                }
+        let codeModelDesired =
+            Class(className) {
                 //Public  // KAD-Chet-Don: Uncommenting this shows current issue
                 Field(fieldName, fieldType) {
                     Public
@@ -295,36 +303,105 @@ type ``When creating a constructor``() =
         Assert.Equal(className, codeModel.ClassName)
 
         
-//type ``When creating a method``() =
+type ``When creating a method``() =
         
-    //[<Fact>]
-    //member _.``Can create a method``() =
-    //    let name = "A"
-    //    let returnType = Void
-    //    let codeModelExpr = 
-    //        Method(SimpleNamedItem name, returnType) {
-    //            //Public
-    //            }
+    [<Fact>]
+    member _.``Can create a method``() =
+        let name = "A"
+        let returnType = Void
+        let codeModel = 
+            Method(SimpleNamedItem name, returnType) {
+                Public
+                }
         
-    //    let codeModel = EvaluateQuotation codeModelExpr :?> MethodModel
-
-    //    Assert.Equal(name, NameFromSimpleName codeModel.MethodName)
-    //    Assert.Equal(returnType, codeModel.ReturnType)
-        
+        Assert.Equal(name, NameFromSimpleName codeModel.MethodName)
+        Assert.Equal(returnType, codeModel.ReturnType)
         
 
 type ``When creating Return statements``() =
     [<Fact>]
     member _.``Can create void return``() =
         let methodName = "A"
-        let codeModelExpr = 
+        let codeModel = 
             Method(SimpleNamedItem methodName, Void) {
                 Public
                 Return
-                Return
                 }
 
-        let codeModel = EvaluateQuotation codeModelExpr :?> MethodModel
-        Assert.Equal(2, codeModel.Statements.Length)
-        Assert.IsType<MethodModel>(codeModel)
+        Assert.Equal(1, codeModel.Statements.Length)
+        match codeModel.Statements[0] with 
+        | :? ReturnModel as exp -> 
+            match exp.Expression with 
+            | None -> ()
+            | Some x -> Assert.Fail("Return is not void return")
+        | _ -> Assert.Fail("Statement not of expected ReturnModel type")
 
+    [<Fact>]
+    member _.``Can create string return``() =
+        let methodName = "A"
+        let expected: IExpression = (StringLiteralModel.Create "Fred")
+        let codeModel = 
+            Method(SimpleNamedItem methodName, Void) {
+                Return "Fred"
+                }
+
+        Assert.Equal(1, codeModel.Statements.Length)
+        match codeModel.Statements[0] with 
+        | :? ReturnModel as exp -> 
+            match exp.Expression with 
+            | None -> Assert.Fail("Return expression was expected and not found")
+            | Some x -> Assert.Equal(expected, x)
+        | _ -> Assert.Fail("Statement not of expected ReturnModel type")
+
+    [<Fact>]
+    member _.``Can create other literal return``() =
+        let methodName = "A"
+        let expected: IExpression = (NonStringLiteralModel.Create "42")
+        let codeModel = 
+            Method(SimpleNamedItem methodName, Void) {
+                Return 42
+                }
+
+        Assert.Equal(1, codeModel.Statements.Length)
+        match codeModel.Statements[0] with 
+        | :? ReturnModel as exp -> 
+            match exp.Expression with 
+            | None -> Assert.Fail("Return expression was expected and not found")
+            | Some x -> Assert.Equal(expected, x)
+        | _ -> Assert.Fail("Statement not of expected ReturnModel type")
+    
+    [<Fact>]
+    member _.``Can create expression return``() =
+        let methodName = "A"
+        let expected: IExpression = NullModel.Create
+        let codeModel = 
+            Method(SimpleNamedItem methodName, Void) {
+                Return NullModel.Create
+                }
+
+        Assert.Equal(1, codeModel.Statements.Length)
+        match codeModel.Statements[0] with 
+        | :? ReturnModel as exp -> 
+            match exp.Expression with 
+            | None -> Assert.Fail("Return expression was expected and not found")
+            | Some x -> Assert.Equal(expected, x)
+        | _ -> Assert.Fail("Statement not of expected ReturnModel type")
+
+        
+type ``When creating SimpleCall statements``() =
+    [<Fact>]
+    member _.``Can create an invocation``() =
+        let methodName = "A"
+        let instance = "B"
+        let method = "C"
+        let expected: IExpression = (InvocationModel.Create instance method [])
+        let codeModel = 
+            Method(methodName, Void) {
+                Public
+                SimpleCall (InvocationModel.Create instance method [])
+                }
+
+        Assert.Equal(1, codeModel.Statements.Length)
+        match codeModel.Statements[0] with 
+        | :? SimpleCallModel as actualCall -> Assert.Equal(expected, actualCall.Expression)
+        | _ -> Assert.Fail("Statement not of expected SimpleCallModel type")

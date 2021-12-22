@@ -83,26 +83,19 @@ type InvocationModel =
       ShouldAwait: bool
       Arguments: IExpression list}
     interface IExpression
-//let Invoke instanceName methodName arguments =
-//    ExpressionModel.Invocation
-//        { Instance = SimpleNamedItem instanceName
-//          MethodName = methodName
-//          ShouldAwait = false
-//          Arguments = arguments } 
-//let With (arguments: IExpression list) = arguments 
+    static member Create instance methodName arguments =
+        { Instance = instance // Named item for invoking static methods on generic types
+          MethodName = methodName // For generic methods
+          ShouldAwait = false
+          Arguments = arguments }
 
 type InstantiationModel =
     { TypeName: NamedItem
       Arguments: IExpression list}
     interface IExpression
-//let New typeName arguments = 
-//    ExpressionModel.Instantiation 
-//        { TypeName = NamedItem.Create typeName []
-//          Arguments = arguments }
-//let NewGeneric typeName genericName arguments =
-//    ExpressionModel.Instantiation
-//        { TypeName = NamedItem.Create typeName [ NamedItem.Create genericName [] ]
-//          Arguments = arguments }
+    static member Create typeName arguments =
+        { TypeName = typeName
+          Arguments = arguments}
 
 type Operator =
     | Equals
@@ -117,14 +110,10 @@ type ComparisonModel =
       Right: IExpression
       Operator: Operator}
     interface IExpression
-    //static member Equals left right =
-    //    { Left = left
-    //      Right = right
-    //      Operator = Operator.Equals }
-    //static member NotEquals left right =
-    //    { Left = left
-    //      Right = right
-    //      Operator = Operator.NotEquals }  
+    static member Create left right operator =
+        { Left = left
+          Right = right
+          Operator = operator }
 
 type StringLiteralModel =
     { Expression: string}
@@ -156,29 +145,11 @@ type PragmaModel =
     static member Create text =
         { Expression = text }
 
+// KAD-Chet: This seems pretty dumb, but I need something that implements the interface.
 type NullModel =
     { Dummy: string} // not sure how to manage this
     interface IExpression
-
-//type ExpressionModel =
-//    | Invocation of InvocationModel
-//    | Comparison of ComparisonModel
-//    | Instantiation of InstantiationModel
-//    | StringLiteral of string
-//    | NonStringLiteral of string
-//    | Symbol of string
-//    | Comment of string
-//    | Pragma of string
-//    | Null
-//    static member Compare left operator right =
-//        Comparison
-//            { Left = left
-//              Right = right
-//              Operator = operator }
-//    static member NotEquals left right =
-//        { Left = left
-//          Right = right
-//          Operator = Operator.NotEquals }  
+    static member Create = { Dummy = "" }
 
 type IfModel =
     { Condition: IExpression
@@ -211,21 +182,6 @@ type SimpleCallModel =
     { Expression: IExpression }
     interface IStatement
 
-//type Statement =
-//    | If of IfModel
-//    | Assign of AssignmentModel
-//    | AssignWithDeclare of AssignWithDeclareModel
-//    | ForEach of ForEachModel
-//    | Return of IExpression
-//    | SimpleCall of IExpression
-//    static member Invoke instanceName methodName arguments =
-//        SimpleCall 
-//            ( Invocation
-//                { Instance = SimpleNamedItem instanceName
-//                  MethodName = methodName
-//                  ShouldAwait = false
-//                  Arguments = arguments } )
-
 type ParameterModel =
     { ParameterName: string
       Type: NamedItem
@@ -240,10 +196,10 @@ type ParameterModel =
 type MethodModel =
     { MethodName: NamedItem
       ReturnType: ReturnType
-      StaticOrInstance: StaticOrInstance
-      IsExtension: bool
-      IsAsync: bool
       Scope: Scope
+      StaticOrInstance: StaticOrInstance
+      IsAsync: bool
+      IsExtension: bool
       Parameters: ParameterModel list
       Statements: IStatement list}
     static member Create methodName returnType =
@@ -256,9 +212,10 @@ type MethodModel =
           Parameters = []
           Statements = [] }
     interface IMember
+    member this.AddStatements statements =
+        { this with Statements = statements }
     interface IStatementContainer<MethodModel> with
-        member this.AddStatements statements =
-            { this with Statements = statements }
+        member this.AddStatements statements = this.AddStatements statements
             
  
 
@@ -328,7 +285,7 @@ type ClassModel =
       InheritedFrom: NamedItem option
       ImplementedInterfaces: NamedItem list
       Members: IMember list}
-    static member Create(className: NamedItem, scope: Scope, members: IMember list) =
+    static member Create(className, scope) =
         { ClassName = className
           Scope = scope
           StaticOrInstance = Instance
@@ -338,11 +295,11 @@ type ClassModel =
           IsSealed = false
           InheritedFrom = None
           ImplementedInterfaces = []
-          Members = members }
-    static member Create(className: string, scope: Scope, members: IMember list) =
-        ClassModel.Create((SimpleNamedItem className), scope, members)
-    static member Create(className: string) =
-        ClassModel.Create((SimpleNamedItem className), Public, [])
+          Members = [] }
+    //static member Create(className: string, scope: Scope, members: IMember list) =
+    //    ClassModel.Create((SimpleNamedItem className), scope, members)
+    static member Create(className) =
+        ClassModel.Create((SimpleNamedItem className), Public)
     interface IMember
 
 

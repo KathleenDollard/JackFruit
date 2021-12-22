@@ -17,8 +17,8 @@ type NamedItem =
         match generics with 
         | [] -> SimpleNamedItem name
         | _ -> GenericNamedItem (name, generics)
-    // TODO: Have a method that parse the string name for generics
-
+    static member op_Implicit(name: string) : NamedItem = 
+        SimpleNamedItem name
 
 type ReturnType =
     | Void

@@ -137,7 +137,7 @@ type PropertyModel with
 type ClassModel with
     static member ForTesting =
         let data =
-            ClassModel.Create (NamedItem.ForTesting.Data, Public, [])
+            ClassModel.Create (NamedItem.ForTesting.Data, Public)
          
 
         { Data = data
