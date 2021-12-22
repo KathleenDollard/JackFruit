@@ -9,7 +9,7 @@ type NamedItem =
     | SimpleNamedItem of Name: string
     static member GenericsFromStrings (name: string) genericsAsStrings =
         genericsAsStrings |> List.map (fun x -> SimpleNamedItem x)
-    member this.SimpleName() =
+    member this.WithoutGenerics() =
         match this with 
         | SimpleNamedItem name -> name
         | GenericNamedItem (name, t) -> name
@@ -17,6 +17,7 @@ type NamedItem =
         match generics with 
         | [] -> SimpleNamedItem name
         | _ -> GenericNamedItem (name, generics)
+    // TODO: Have a method that parse the string name for generics
 
 
 type ReturnType =

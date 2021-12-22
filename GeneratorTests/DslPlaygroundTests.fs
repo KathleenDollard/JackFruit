@@ -26,14 +26,14 @@ let NameAndGenericsFromName (namedItem: NamedItem) =
 type ``When creating a namespace``() =
     let namespaces: Namespace list = []
 
-    [<Fact>]
+    [<Fact(Skip="Can't create an empty thing yet. May drop requirement.")>]
     member _.``Can create a namespace``() =
         let nspace = "George"
 
         // KAD-Don-Chet: I thought when I created a Zero method, I'd be able to remove the body of these expressions if they were empty.
         let codeModel = 
              Namespace(nspace) {
-                Usings []
+                Using ""
                 }
         Assert.Equal(nspace, codeModel.NamespaceName)
         Assert.Empty(codeModel.Usings)
@@ -45,55 +45,81 @@ type ``When creating a namespace``() =
         let usingName = "Fred"
         let codeModel = 
              Namespace(nspace) {
-                Usings [ { Namespace = usingName; Alias = None }]
+                Using usingName
                 }
 
         Assert.Equal(nspace, codeModel.NamespaceName)
         Assert.Equal(1, codeModel.Usings.Length)
-        Assert.Equal(codeModel.Usings[0], UsingModel.Create usingName)
+        Assert.Equal(UsingModel.Create usingName, codeModel.Usings[0])
         Assert.Empty(codeModel.Classes)
  
     [<Fact>]
     member _.``Can add using with alias to namespace``() =
         let nspace = "George"
         let usingName = "Fred"
+        let alias = "F"
+        let expected = { Namespace = usingName; Alias = Some alias }
         let codeModel = 
              Namespace(nspace) {
-                Using usingName
+                Using usingName Alias alias
                 }
 
         Assert.Equal(nspace, codeModel.NamespaceName)
         Assert.Equal(1, codeModel.Usings.Length)
-        Assert.Equal(codeModel.Usings[0], UsingModel.Create usingName)
+        Assert.Equal(expected, codeModel.Usings[0])
         Assert.Empty(codeModel.Classes)
-
 
     [<Fact>]
     member _.``Can add multiple usings to namespace``() =
         let nspace = "George"
         let usingName0 = "Fred"
         let usingName1 = "Sally"
+        let usingAlias1 = "S"
         let usingName2 = "Sue"
+        let expected0 = UsingModel.Create usingName0
+        let expected1 = { Namespace = usingName1; Alias = Some usingAlias1 }
+        let expected2 = UsingModel.Create usingName2
         let codeModel = 
             Namespace(nspace) 
                 {
-                    Usings 
-                        [ { Namespace = usingName0; Alias = None } 
-                          { Namespace = usingName1; Alias = None } 
-                          { Namespace = usingName2; Alias = None } ]
-
-                    Using "Jill"
-                    // KAD-Don: Why doesn't this work? (I have not gotten any overloads to work)
-                    // Using "Jack" Alias "Hill"
-
+                    Using usingName0
+                    Using usingName1 Alias usingAlias1
+                    Using usingName2
                 }
 
         Assert.Equal(nspace, codeModel.NamespaceName)
-        Assert.Equal(4, codeModel.Usings.Length)
-        Assert.Equal(UsingModel.Create usingName0, codeModel.Usings[0])
-        Assert.Equal(UsingModel.Create usingName1, codeModel.Usings[1])
-        Assert.Equal(UsingModel.Create usingName2, codeModel.Usings[2])
+        Assert.Equal(3, codeModel.Usings.Length)
+        Assert.Equal(expected0, codeModel.Usings[0])
+        Assert.Equal(expected1, codeModel.Usings[1])
+        Assert.Equal(expected2, codeModel.Usings[2])
         Assert.Empty(codeModel.Classes)
+        
+    [<Fact>]
+    member _.``Can add class to namespace``() =
+        let nspace = "George"
+        let className = ["Fred"; "Bill"]
+        let codeModel = 
+            Namespace(nspace) {
+                // KAD-Chet: This is where I next got stuck. Sometimes the thing that goes into the parent
+                //           will be a CE itself. I did not work out a way to get joy from a CE Class method, 
+                //           but this doesn't suck
+                Classes 
+                   [ Class(className[0]) {
+                        Public } ]
+                }
+        let codeModelOld =
+            Namespace("George") {
+                Classes 
+                    [ for n in className do
+                        ClassModel.Create(n, Public, []) ]
+                }
+
+
+        Assert.Equal(nspace, codeModel.NamespaceName)
+        Assert.Empty(codeModel.Usings)
+        Assert.Equal(1, codeModel.Classes.Length)
+        Assert.Equal(ClassModel.Create className[0], codeModel.Classes[0])
+
 
 type ``When creating a class``() =
 
@@ -131,26 +157,38 @@ type ``When creating a class``() =
         Assert.Equal(None, codeModel.InheritedFrom)
         Assert.Empty(codeModel.ImplementedInterfaces)
         Assert.Empty(codeModel.Members)
-        
-        
-    [<Fact>]
-    member _.``Can add class to namespace``() =
-        let nspace = "George"
-        let className = ["Fred"; "Sally"; "Sue"]
-        let codeModel = 
-            Namespace("George") {
-                Classes 
-                    [ for n in className do
-                        ClassModel.Create(n, Public, []) ]
-                }
 
-        Assert.Equal(nspace, codeModel.NamespaceName)
-        Assert.Equal(3, codeModel.Classes.Length)
-        Assert.Equal(ClassModel.Create className[0], codeModel.Classes[0])
-        Assert.Equal(ClassModel.Create className[1], codeModel.Classes[1])
-        Assert.Equal(ClassModel.Create className[2], codeModel.Classes[2])
-        Assert.Empty(codeModel.Usings)
-     
+    // using inline data hacks because VS is terrible at displaying other theory approaches in VS 2019
+    [<Theory>]
+    [<InlineData(0)>]
+    [<InlineData(1)>]
+    [<InlineData(2)>]
+    [<InlineData(3)>]
+    [<InlineData(4)>]
+    [<InlineData(5)>]
+    [<InlineData(6)>]
+    [<InlineData(7)>]
+    [<InlineData(8)>]
+    [<InlineData(9)>]
+    member _.``Can create different scopes and modifiers``(pos: int) =
+        let tupleFromCodeModel (codeModel: ClassModel) = 
+            codeModel.Scope, codeModel.StaticOrInstance, codeModel.IsAbstract, codeModel.IsAsync, codeModel.IsPartial, codeModel.IsSealed
+        let data = 
+            [ (Public, Instance, false, false, false, false), Class("A") { Public }
+              (Public, Instance, false, true, false, false), Class("A") { Public Async }
+              (Public, Instance, true, false, false, false), Class("A") { Public Abstract }
+              (Public, StaticOrInstance.Static, true, false, true, false), Class("A") { Public Static Abstract Partial}
+              (Public, Instance, true, true, true, true), Class("A") { Public Abstract Async Partial Sealed}
+              (Private, Instance, false, false, false, false), Class("A") { Private }
+              (Internal, Instance, false, true, false, false), Class("A") { Internal Async }
+              (Protected, Instance, true, false, false, false), Class("A") { Protected Abstract }
+              (Private, StaticOrInstance.Static, true, false, true, false), Class("A") { Private Static Abstract Partial}
+              (Protected, Instance, true, true, true, true), Class("A") { Protected Abstract Async Partial Sealed}
+            ]
+
+        match data[pos] with 
+        | expected, actual -> Assert.Equal(expected, tupleFromCodeModel actual)
+                
     [<Fact>]
     member _.``Can create class with generic types``() =
         let className = "George"
@@ -197,40 +235,14 @@ type ``When creating a class``() =
         Assert.Equal(2, codeModel.ImplementedInterfaces.Length)
         Assert.Equal(interfaceNames[0], NameFromSimpleName codeModel.ImplementedInterfaces[0])
         Assert.Equal(interfaceNames[1], NameFromSimpleName codeModel.ImplementedInterfaces[1])
-
-    //[<Fact(Skip="Uncomment for overloads issue")>]
-    //member _.``Can create class with static modifier``() =
-    //    let className = "George"
-    //    let interfaceNames = ["A"; "B"]
-    //    let codeModel = 
-    //        Class(className) {
-    //                Public Static
-    //            }
-
-    //    Assert.Equal(2, codeModel.ImplementedInterfaces.Length)
-    //    Assert.Equal(interfaceNames[0], NameFromSimpleName codeModel.ImplementedInterfaces[0])
-    //    Assert.Equal(interfaceNames[1], NameFromSimpleName codeModel.ImplementedInterfaces[1])
-
-type ``When creating a field``() =
-
-    [<Fact>]
-    member _.``Can create a field``() =
-        let name = "A"
-        let fieldType = SimpleNamedItem "int"
-        let codeModel = 
-            Field(name, fieldType) {
-                Public
-                }
-
-        Assert.Equal(name, codeModel.FieldName)
-        Assert.Equal(fieldType, codeModel.FieldType)
-
     
     [<Fact>]
     member _.``Can add field to class``() =
         let className = "George"
         let fieldName = "A"
         let fieldType = SimpleNamedItem "int"
+        // KAD-Chet: Can we do better here? We could do field with a method, but I do not 
+        // think we can do other members that way
         let codeModel = 
             Class(className) {
                 Members
@@ -248,7 +260,24 @@ type ``When creating a field``() =
             | _ -> invalidOp "A field was not found"
         Assert.Equal(fieldName, actualField.FieldName)
         Assert.Equal(fieldType, actualField.FieldType)
-        
+
+
+type ``When creating a field``() =
+
+    [<Fact>]
+    member _.``Can create a field``() =
+        let name = "A"
+        let fieldType = SimpleNamedItem "int"
+        let codeModel = 
+            Field(name, fieldType) {
+                Public
+                }
+
+        Assert.Equal(name, codeModel.FieldName)
+        Assert.Equal(fieldType, codeModel.FieldType)
+
+     
+     
 type ``When creating a property``() =
 
     [<Fact>]

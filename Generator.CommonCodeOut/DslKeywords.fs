@@ -34,7 +34,7 @@ type AbstractWord =
     interface IMethodModifierWord
 
 type SealedWord = 
-    | Abstract
+    | Sealed
     interface IClassModifierWord
     interface IMethodModifierWord
 
@@ -44,16 +44,20 @@ type OfWord =
 // This is expected to grow, thus the pattern to evaluate words in one place. It might change to all keywords
 type Modifiers =
     { StaticOrInstance: StaticOrInstance
+      IsAbstract: bool
       IsAsync: bool
-      IsPartial: bool }
+      IsPartial: bool
+      IsSealed: bool}
     /// This method evaluates a list of modifier keywords and returns a structure that represents 
     /// appropriate values.In the common case, just pass modifiersr. If you can override 
     /// defaults, only then pass named parameters. 
     static member Evaluate (
             modifiers: IEnumerable<IModifierWord>,
             ?staticOrInstance: StaticOrInstance,
+            ?isAbstract,
             ?isAsync: bool,
-            ?isPartial: bool) =
+            ?isPartial: bool,
+            ?isSealed: bool ) =
 
         let getValue word ifWordValue param defaultValue =
             if modifiers.Contains word then ifWordValue
@@ -63,6 +67,8 @@ type Modifiers =
                 | None -> defaultValue
         {
             Modifiers.StaticOrInstance = getValue Static StaticOrInstance.Static staticOrInstance Instance
+            IsAbstract = getValue Abstract true  isAbstract false
             IsAsync = getValue Async true isAsync false
             IsPartial = getValue Partial true isPartial false
+            IsSealed = getValue Sealed true isSealed false
         }

@@ -12,25 +12,20 @@ open System.Linq
 open System.Collections.Generic
 open DslKeywords
 
-// I want to do something like the following (NamedItem exists). Punctuation minimized as I think I need to be flexible.
-//
-//   typeName: NamedItem = "typeName" Of "T1"  "T2"  (Of "T3" (Of "T4")) "T4"
-//
-// The only way I have thought to do this is to have a dummy C# class "GenericShim" that has an implicit 
-// conversion from string to itself, then have a paramArray of the shim type. Can the types IntelliSense 
-// avoid this being entirely non-discoverable.
 
 [<AbstractClass>]
-type BuilderBase<'T when 'T :> IStatementContainer<'T>>() =
+type BuilderBase<'T>() =
  
     abstract member EmptyItem: unit -> 'T
     abstract member InternalCombine: 'T -> 'T -> 'T
 
     member this.Yield (()) : 'T = this.EmptyItem()
     member this.Zero() : 'T = this.Yield(())
-    member _.Quote() = ()
-    member _.Delay(f: unit -> 'T) : 'T = f()
+    // KAD-Chet: I had to comment out the following to get Namespace to work. I do not know 
+    //           what is different. And the value of quote isn't yet clear to me.
+    //member _.Quote() = ()
     member this.Combine (item: 'T, item2: 'T) : 'T = this.InternalCombine item item2
+    member _.Delay(f: unit -> 'T) : 'T = f()
     member this.For(items, f) : 'T = 
         let itemList = Seq.toList items
         match itemList with 
@@ -52,14 +47,13 @@ type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
  
 
 type Namespace(name: string) =
+    inherit BuilderBase<NamespaceModel>()
 
-    member _.Yield (_) =  NamespaceModel.Create name
-    member this.Zero(_) = this.Yield()
-    //member _.Quote() = ()
-
-    [<CustomOperation("Usings", MaintainsVariableSpace = true)>]
-    member _.addUsings (nspace: NamespaceModel, usings): NamespaceModel =
-        nspace.AddUsings usings
+    override _.EmptyItem() =  NamespaceModel.Create name
+    override _.InternalCombine nspace nspace2 =
+        { nspace with 
+            Usings =  List.append nspace.Usings nspace2.Usings
+            Classes = List.append nspace.Classes nspace2.Classes }  
 
     [<CustomOperation("Using", MaintainsVariableSpace = true)>]
     member _.addUsing (nspace: NamespaceModel, name: string, _:AliasWord, alias: string): NamespaceModel =
@@ -80,28 +74,21 @@ type Namespace(name: string) =
 
 
 type Class(name: string) =
-      
-    let updateModifiers (cls: ClassModel) scope staticOrInstance isAsync isPartial =
-        { cls with Scope = scope; StaticOrInstance = staticOrInstance; IsAsync = isAsync; IsPartial = isPartial}
-        
-    member _.Yield (_) = ClassModel.Create(name, Public, [])
-    member this.Zero() = this.Yield()
+    inherit BuilderBase<ClassModel>()
 
-    //// TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
-    //[<CustomOperation("Name", MaintainsVariableSpace = true)>]
-    //member _.name (cls: ClassModel, name: string, _: OfWord, generics: NamedItem list) =
-    //    let generics =
-    //        match generics with 
-    //        | [] -> SimpleNamedItem name
-    //        | GenericNamedItem (n, _ ) -> n
-    //    { cls with ClassName = NamedItem.Create currentName generics }
+    let updateModifiers (cls: ClassModel) scope modifiers =
+        { cls with 
+            Scope = scope; 
+            StaticOrInstance = modifiers.StaticOrInstance
+            IsAbstract = modifiers.IsAbstract
+            IsAsync = modifiers.IsAsync
+            IsPartial = modifiers.IsPartial
+            IsSealed = modifiers.IsSealed}
 
-    //// TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
-    //[<CustomOperation("Name", MaintainsVariableSpace = true)>]
-    //member _.name (cls: ClassModel, name: string) =
-    //    SimpleNamedItem name
+    override _.EmptyItem() =  ClassModel.Create name
+    override _.InternalCombine cls cls2 =
+        { cls with Members =  List.append cls.Members cls2.Members }  
 
-    // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
     [<CustomOperation("Generics", MaintainsVariableSpace = true)>]
     member _.generics (cls: ClassModel, generics: NamedItem list) =
         let currentName =
@@ -110,27 +97,26 @@ type Class(name: string) =
             | GenericNamedItem (n, _ ) -> n
         { cls with ClassName = NamedItem.Create currentName generics }
 
-    // TODO: Add seale and abstract to class model and here
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.publicWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
         // KAD-Don: Is there a better way to upcast the members of an array or list?
         let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
-        updateModifiers cls Public modifiers.StaticOrInstance modifiers.IsAsync modifiers.IsPartial
+        updateModifiers cls Public modifiers
 
     [<CustomOperation("Private", MaintainsVariableSpace = true)>]
     member _.privateWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
         let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
-        updateModifiers cls Public modifiers.StaticOrInstance modifiers.IsAsync modifiers.IsPartial
+        updateModifiers cls Private modifiers
 
     [<CustomOperation("Internal", MaintainsVariableSpace = true)>]
     member _.internalWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
         let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
-        updateModifiers cls Public modifiers.StaticOrInstance modifiers.IsAsync modifiers.IsPartial
+        updateModifiers cls Internal modifiers
 
     [<CustomOperation("Protected", MaintainsVariableSpace = true)>]
     member _.protectedWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: IClassModifierWord[]) =
         let modifiers = Modifiers.Evaluate (modifiers.OfType<IModifierWord>())
-        updateModifiers cls Public modifiers.StaticOrInstance modifiers.IsAsync modifiers.IsPartial
+        updateModifiers cls Protected modifiers
 
     // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
     [<CustomOperation("InheritedFrom", MaintainsVariableSpace = true)>]
@@ -195,6 +181,7 @@ type Method(name: NamedItem, returnType: ReturnType) =
     member _.modifiers (method: MethodModel) =
         updateModifiers method Public Instance
 
+    // KAD-Chet: I do notunderstand how adding the statements here and in combine don't double them
     [<CustomOperation("Return", MaintainsVariableSpace = true)>]
     member _.addReturn (method: MethodModel) =
         { method with Statements =  List.append method.Statements [ {ReturnModel.Expression = None} ] }

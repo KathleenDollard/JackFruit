@@ -284,8 +284,10 @@ type ClassModel =
     { ClassName: NamedItem
       Scope: Scope
       StaticOrInstance: StaticOrInstance
+      IsAbstract: bool
       IsAsync: bool
       IsPartial: bool
+      IsSealed: bool
       InheritedFrom: NamedItem option
       ImplementedInterfaces: NamedItem list
       Members: IMember list}
@@ -293,8 +295,10 @@ type ClassModel =
         { ClassName = className
           Scope = scope
           StaticOrInstance = Instance
+          IsAbstract = false
           IsAsync = false
           IsPartial = false
+          IsSealed = false
           InheritedFrom = None
           ImplementedInterfaces = []
           Members = members }
@@ -319,9 +323,9 @@ type NamespaceModel =
     static member Create(name: string) =
         { NamespaceName = name
           Usings = []
-          Classes = [] }    member this.AddUsings (usings: UsingModel list) =
+          Classes = [] }    
+    member this.AddUsings (usings: UsingModel list) =
         { this with Usings = List.append this.Usings usings }
-    static member Default() = NamespaceModel.Create ""
     member this.AddClasses (classes: ClassModel list) =
         { this with Classes = List.append this.Classes classes }
 
