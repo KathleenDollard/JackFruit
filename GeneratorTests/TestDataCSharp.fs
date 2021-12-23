@@ -4,6 +4,9 @@ module Generator.Tests.TestData
 
 open Generator.Language
 open Common
+open Generator.LanguageExpressions
+open Generator.LanguageStatements
+
 
 type TestData<'T> = { Data: 'T; CSharp: string list } // Add VB later
 

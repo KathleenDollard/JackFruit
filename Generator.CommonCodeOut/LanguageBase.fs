@@ -2,6 +2,8 @@
 
 open System
 open Generator.Language
+open Generator.LanguageStatements
+open Generator.LanguageExpressions
 open Common
 
 [<AbstractClass>]

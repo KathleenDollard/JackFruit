@@ -8,6 +8,10 @@ open Generator
 open Generator.Tests.TestData
 open Generator.Language
 open Common
+open Generator.LanguageExpressions
+open Generator.LanguageStatements
+open Generator.LanguageRoslynOut
+
 
 type ``When working with language parts`` () =
     let cSharp = LanguageCSharp() :> ILanguage

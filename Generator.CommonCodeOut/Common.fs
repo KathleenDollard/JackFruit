@@ -3,6 +3,23 @@
 //open Generator.GeneralUtils 
 open System
 
+type Scope =
+    | Public
+    | Private
+    | Internal
+    | Protected
+
+type StaticOrInstance =
+    | Static
+    | Instance
+
+type Operator =
+    | Equals
+    | NotEquals
+    | GreaterThan
+    | LessThan
+    | GreaterThanOrEqualTo
+    | LessThanOrEqualTo
 
 type NamedItem =
     | GenericNamedItem of Name: string * GenericTypes: NamedItem list

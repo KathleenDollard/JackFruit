@@ -3,9 +3,10 @@
 open Generator.Language
 open Generator.Models
 open Common
-open Generator.LanguageExpression
+open Generator.LanguageExpressions
 open Generator.GeneralUtils
 open DslCodeBuilder
+open Generator.LanguageRoslynOut
 
 let private operationName = "operation"
 let private operationFieldName = "_operation"

@@ -2,12 +2,11 @@
 
 
 open System
-open Generator.Language
-open Common
-open type Generator.Language.Statements
-open System.Linq
-open System.Collections.Generic
 open DslKeywords
+open Generator.Language
+open Generator.LanguageStatements
+open Generator.LanguageExpressions
+open Common
 
 
 [<AbstractClass>]
@@ -37,9 +36,30 @@ type BuilderBase<'T>() =
 type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
     inherit BuilderBase<'T>()
 
+    // KAD-Chet: I do notunderstand how adding the statements here and in combine don't double them
     [<CustomOperation("Return", MaintainsVariableSpace = true)>]
-    member _.addReturn (container: 'T) =
-        container.AddStatements [ {ReturnModel.Expression = None} ]
+    member _.addReturn (method: MethodModel) =
+        method.AddStatements [ {ReturnModel.Expression = None} ] 
+
+    [<CustomOperation("Return", MaintainsVariableSpace = true)>]
+    member _.addReturn (method: MethodModel, expression: obj) =
+        let expr: IExpression = 
+            match expression with 
+            | :? IExpression as x -> x
+            | :? string as x -> StringLiteralModel.Create x
+            | _ -> NonStringLiteralModel.Create (expression.ToString())
+
+        method.AddStatements [ {ReturnModel.Expression = Some expr} ] 
+
+    [<CustomOperation("SimpleCall", MaintainsVariableSpace = true)>]
+    member _.addSimpleCall (method: MethodModel, expression: obj) =
+        let expr: IExpression = 
+            match expression with 
+            | :? IExpression as x -> x
+            | :? string as x -> StringLiteralModel.Create x
+            | _ -> NonStringLiteralModel.Create (expression.ToString())
+
+        method.AddStatements [ {SimpleCallModel.Expression = expr} ] 
  
 
 type Namespace(name: string) =
@@ -70,7 +90,7 @@ type Namespace(name: string) =
 type Class(name: string) =
     inherit BuilderBase<ClassModel>()
 
-    let updateModifiers (cls: ClassModel) scope modifiers =
+    let updateModifiers (cls: ClassModel) scope (modifiers: Modifiers) =
         { cls with 
             Scope = scope; 
             StaticOrInstance = modifiers.StaticOrInstance
@@ -138,7 +158,7 @@ type Class(name: string) =
 type Field(name: string, typeName: NamedItem) =
     inherit BuilderBase<FieldModel>()
 
-    let updateModifiers (field: FieldModel) scope modifiers  =
+    let updateModifiers (field: FieldModel) scope (modifiers: Modifiers)  =
         { field with 
             Scope = scope
             StaticOrInstance = modifiers.StaticOrInstance }
@@ -171,7 +191,7 @@ type Field(name: string, typeName: NamedItem) =
 type Method(name: NamedItem, returnType: ReturnType) =
     inherit StatementBuilderBase<MethodModel>()
 
-    let updateModifiers (method: MethodModel) scope modifiers =
+    let updateModifiers (method: MethodModel) scope (modifiers: Modifiers) =
         { method with 
             Scope = scope; 
             StaticOrInstance = modifiers.StaticOrInstance
@@ -203,30 +223,6 @@ type Method(name: NamedItem, returnType: ReturnType) =
         let modifiers = Modifiers.Evaluate modifiers
         updateModifiers method Protected modifiers
 
-    // KAD-Chet: I do notunderstand how adding the statements here and in combine don't double them
-    [<CustomOperation("Return", MaintainsVariableSpace = true)>]
-    member _.addReturn (method: MethodModel) =
-        method.AddStatements [ {ReturnModel.Expression = None} ] 
-
-    [<CustomOperation("Return", MaintainsVariableSpace = true)>]
-    member _.addReturn (method: MethodModel, expression: obj) =
-        let expr: IExpression = 
-            match expression with 
-            | :? IExpression as x -> x
-            | :? string as x -> StringLiteralModel.Create x
-            | _ -> NonStringLiteralModel.Create (expression.ToString())
-
-        method.AddStatements [ {ReturnModel.Expression = Some expr} ] 
-
-    [<CustomOperation("SimpleCall", MaintainsVariableSpace = true)>]
-    member _.addSimpleCall (method: MethodModel, expression: obj) =
-        let expr: IExpression = 
-            match expression with 
-            | :? IExpression as x -> x
-            | :? string as x -> StringLiteralModel.Create x
-            | _ -> NonStringLiteralModel.Create (expression.ToString())
-
-        method.AddStatements [ {SimpleCallModel.Expression = expr} ] 
 
 type Property(name: string, typeName: NamedItem) =
     let updateModifiers (property: PropertyModel) scope staticOrInstance  =

@@ -4,6 +4,7 @@ open System
 open Generator.Language
 open Common
 open Utilities
+open Generator.LanguageRoslynOut
 
 type LanguageVisualBasic() =
     inherit LanguageBase()

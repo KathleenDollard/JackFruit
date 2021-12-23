@@ -12,6 +12,7 @@ open ApprovalTests
 open ApprovalTests.Reporters
 open Generator.Transforms
 open UtilsForTests
+open Generator.LanguageRoslynOut
 
 // I'm not sure what we should be testing first
 //  * Creating CommandDef from random method (per most APpModels) : ``When building CommandDefs``

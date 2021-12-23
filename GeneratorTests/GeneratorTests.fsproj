@@ -18,7 +18,9 @@
 		<Compile Include="CommandDefMappingTests.fs" />
 		<Compile Include="SourceGeneratorTests.fs" />
 		<Compile Include="RoslynUtilsTests.fs" />
-		<Compile Include="DslPlaygroundTests.fs" />
+		<Compile Include="DslExpressionTests.fs" />
+		<Compile Include="DslStatementTests.fs" />
+		<Compile Include="DslStructuralTests.fs" />
 	</ItemGroup>
 
 	<ItemGroup>
