@@ -4,50 +4,94 @@
 open Xunit
 open Generator.Language
 open Common
-open DslKeywords
-open DslCodeBuilder
 open Generator.LanguageExpressions
-open Generator.LanguageStatements
+open Generator.LanguageExpressions.ExpressionHelpers
 
 
-type ``When creating Invocation expressions``() =
+type ``When creating expressions``() =
     [<Fact>]
-    member _.``Can create a SimpleCall``() =
-        let methodName = "A"
+    member _.``Can create an Invocation``() =
         let instance = "B"
         let method = "C"
-        let expected: IExpression = (InvocationModel.Create instance method [])
-        let codeModel = 
-            Method(methodName, Void) {
-                Public
-                SimpleCall (InvocationModel.Create instance method [])
-                // We may want to make Invoke both a statement and a expression. I'm not sure what
-                // other expressions can also be statements, thus SimpleCall and Invoke may collapse
-                // together
-                //SimpleCall Invoke
-                }
+        let expectedModel = 
+            { Instance = instance
+              MethodName = method
+              ShouldAwait = false
+              Arguments = [] }
 
-        Assert.Equal(1, codeModel.Statements.Length)
-        match codeModel.Statements[0] with 
-        | :? SimpleCallModel as actualCall -> Assert.Equal(expected, actualCall.Expression)
-        | _ -> Assert.Fail("Statement not of expected SimpleCallModel type")
+        let actualModel = InvokeExpression instance method []
 
-        //type InvocationModel =
-        //    { Instance: NamedItem // Named item for invoking static methods on generic types
-        //      MethodName: NamedItem // For generic methods
-        //      ShouldAwait: bool
-        //      Arguments: IExpression list}
-        //    interface IExpression
-        //    static member Create instance methodName arguments =
-        //        { Instance = instance // Named item for invoking static methods on generic types
-        //          MethodName = methodName // For generic methods
-        //          ShouldAwait = false
-        //          Arguments = arguments }
-        
-        //type InstantiationModel =
-        //    { TypeName: NamedItem
-        //      Arguments: IExpression list}
-        //    interface IExpression
-        //    static member Create typeName arguments =
-        //        { TypeName = typeName
-        //          Arguments = arguments}
+        Assert.Equal(expectedModel, actualModel)
+    
+
+    [<Fact>]
+    member _.``Can create an New/Instantiation``() =
+        let className = "B"
+        let expectedModel = 
+            { TypeName = className
+              Arguments = []}
+
+        let actualModel = New className []
+
+        Assert.Equal(expectedModel, actualModel)
+
+    [<Fact>]
+    member _.``Can create a Comparison``() =
+        let left = OtherLiteralModel.Create "42"
+        let right = OtherLiteralModel.Create "1"
+        let expectedModel = 
+            { Left = left
+              Right = right
+              Operator = NotEquals }
+
+        let actualModel = Compare left NotEquals right
+
+        Assert.Equal(expectedModel, actualModel)
+
+    [<Fact>]
+    member _.``Can create a String Literal``() =
+        let value = "George"
+        let expectedModel: IExpression = 
+            { StringLiteralModel.Value = value }
+
+        let actualModel = Literal value
+
+        Assert.Equal(expectedModel, actualModel)
+
+    [<Fact>]
+    member _.``Can create a non-String Literal``() =
+        let value = 42
+        let stringValue = "42"
+        let expectedModel: IExpression = 
+            { OtherLiteralModel.Value = stringValue }
+
+        let actualModel = Literal value
+
+        Assert.Equal(expectedModel, actualModel)
+
+
+    [<Fact>]
+    member _.``Can create a Symbol``() =
+        let name = "George"
+        let expectedModel = 
+            { SymbolModel.Name = name }
+
+        let actualModel = Symbol name
+
+        Assert.Equal(expectedModel, actualModel)
+
+
+    [<Fact>]
+    member _.``Can create a Null``() =
+        let value = "George"
+        let expectedModel = { NullModel.Dummy = "" }
+
+        let actualModel = Null
+
+        Assert.Equal(expectedModel, actualModel)
+
+
+    [<Fact>]
+    member _.``New test``() =
+        ()
+

@@ -29,7 +29,11 @@ type ILanguage =
 
     // Statements
     abstract member IfOpen: IfModel -> string list
+    abstract member ElseIfOpen: ElseIfModel -> string list // this gets the ElseIf's IfModel
+    abstract member ElseOpen: ElseModel -> string list
     abstract member IfClose: IfModel -> string list
+    abstract member ElseIfClose: ElseIfModel -> string list
+    abstract member ElseClose: ElseModel -> string list
     abstract member ForEachOpen: ForEachModel -> string list
     abstract member ForEachClose: ForEachModel -> string list
 
@@ -37,8 +41,8 @@ type ILanguage =
     abstract member AssignWithDeclare: AssignWithDeclareModel -> string list
     abstract member Return: ReturnModel -> string list
     abstract member SimpleCall: SimpleCallModel -> string list
-    abstract member Comment: IExpression -> string list
-    abstract member Pragma: IExpression -> string list
+    abstract member Comment: CommentModel -> string list
+    abstract member CompilerDirective: CompilerDirectiveModel -> string list
 
     abstract member Invocation: InvocationModel -> string
     abstract member Comparison: ComparisonModel -> string

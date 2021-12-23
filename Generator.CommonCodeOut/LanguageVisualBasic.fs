@@ -5,6 +5,7 @@ open Generator.Language
 open Common
 open Utilities
 open Generator.LanguageRoslynOut
+open Generator.LanguageStatements
 
 type LanguageVisualBasic() =
     inherit LanguageBase()
@@ -79,7 +80,11 @@ type LanguageVisualBasic() =
         // TODO: Intial value. Put conditional in base?
 
     override this.IfOpen ifInfo  = 
-        [$"If {this.OutputExpression ifInfo.Condition} Then"]
+        [$"If {this.OutputExpression ifInfo.IfCondition} Then"]
+    override this.ElseIfOpen ifInfo  = 
+        [$"ElseIf {this.OutputExpression ifInfo.ElseIfCondition} Then"]
+    override _.ElseOpen _  = 
+        [$"Else"]
 
     override _.ForEachOpen forEach  = 
         [$"For Each (var {forEach.LoopVar} In {forEach.LoopOver})"]
@@ -93,3 +98,29 @@ type LanguageVisualBasic() =
             | None -> "var"
         [$"Dim {assign.Variable} {t} = {this.OutputExpression assign.Value}"]
 
+    override this.CompilerDirective directive =
+         let resolveTriState action =
+             match action with 
+             | Disable -> "disable"
+             | Enable -> "enable"
+             | Restore -> "restore"
+
+         let commaDelimit (list: int list) =
+             String.Join (", ", list)
+
+         match directive.CompilerDirectiveType with
+         | CompilerDirectiveType.IfDef symbol -> [ $"#If {symbol}" ]
+         | ElIfDef symbol -> [ $"#ElseIf {symbol}" ]
+         | ElseDef -> [ "#Else" ]
+         | EndIfDef -> [ "#End If" ]
+         | Nullable (_, _) -> [ $"" ]
+         | Define symbol -> [ $"#def {symbol}" ]
+         | UnDefine symbol -> [ $"#undef {symbol}" ]
+         | Region name -> [ $"#Region {name}" ]
+         | EndRegion -> [ $"#End Region" ]
+         | CompilerError message -> [ $"#error message" ]
+         | CompilerWarning message -> [ $"#warning message" ]
+         | Line (lineNumber, fileNameOverride) -> [ $"#line {lineNumber} {fileNameOverride}" ]
+         | PragmaWarning (action, warnings) -> [ $"#pragma {resolveTriState action} {commaDelimit warnings}" ]
+         // If people actually use the following, give some Guid and CheckSum help
+         | PragmaCheckSum (filename, guid, checksumBytes) -> [ $"" ]

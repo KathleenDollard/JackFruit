@@ -38,6 +38,20 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         writer.DecreaseIndent()
         writer.AddLines (language.IfClose ifInfo)
 
+    member this.OutputElseIf (ifInfo: ElseIfModel) = 
+        writer.AddLines (language.ElseIfOpen ifInfo)
+        writer.IncreaseIndent()
+        this.OutputStatements ifInfo.Statements
+        writer.DecreaseIndent()
+        writer.AddLines (language.ElseIfClose ifInfo)
+
+    member this.OutputElse (elseInfo: ElseModel) = 
+        writer.AddLines (language.ElseOpen elseInfo)
+        writer.IncreaseIndent()
+        this.OutputStatements elseInfo.ElseStatements
+        writer.DecreaseIndent()
+        writer.AddLines (language.ElseClose elseInfo)
+
     member _.OutputAssignWithDeclare assign =
         writer.AddLines (language.AssignWithDeclare assign)
 
@@ -60,8 +74,8 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
     member _.OutputComment comment =
         writer.AddLines (language.Comment comment)
 
-    member _.OutputPragma pragma =
-        writer.AddLines (language.Pragma pragma)
+    member _.OutputCompilerDirective pragma =
+        writer.AddLines (language.CompilerDirective pragma)
 
     member this.OutputMethod (method: MethodModel) =
         writer.AddLines (language.MethodOpen method) 

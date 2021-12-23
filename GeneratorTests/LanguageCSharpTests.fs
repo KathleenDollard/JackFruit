@@ -173,7 +173,7 @@ type ``When outputting code`` () =
         let outPutter = RoslynOut(LanguageCSharp(),writer)
         let expected = 
             [ (0,"return 42;") ]
-        let data =  { ReturnModel.Expression = Some (NonStringLiteralModel.Create "42") }
+        let data =  { ReturnModel.Expression = Some (OtherLiteralModel.Create "42") }
 
         outPutter.OutputReturn data
         let actual = writer.LinePairs()

@@ -7,6 +7,7 @@ open Generator.Language
 open Generator.LanguageStatements
 open Generator.LanguageExpressions
 open Common
+open Generator.LanguageExpressions.ExpressionHelpers
 
 
 [<AbstractClass>]
@@ -36,6 +37,9 @@ type BuilderBase<'T>() =
 type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
     inherit BuilderBase<'T>()
 
+    member this.Yield (statement: IStatement) : 'T = 
+        this.Zero().AddStatements [ statement ]
+
     // KAD-Chet: I do notunderstand how adding the statements here and in combine don't double them
     [<CustomOperation("Return", MaintainsVariableSpace = true)>]
     member _.addReturn (method: MethodModel) =
@@ -47,7 +51,7 @@ type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
             match expression with 
             | :? IExpression as x -> x
             | :? string as x -> StringLiteralModel.Create x
-            | _ -> NonStringLiteralModel.Create (expression.ToString())
+            | _ -> OtherLiteralModel.Create (expression.ToString())
 
         method.AddStatements [ {ReturnModel.Expression = Some expr} ] 
 
@@ -57,10 +61,32 @@ type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
             match expression with 
             | :? IExpression as x -> x
             | :? string as x -> StringLiteralModel.Create x
-            | _ -> NonStringLiteralModel.Create (expression.ToString())
+            | _ -> OtherLiteralModel.Create (expression.ToString())
 
         method.AddStatements [ {SimpleCallModel.Expression = expr} ] 
  
+    [<CustomOperation("Invoke", MaintainsVariableSpace = true)>]
+    member _.addInvoke (method: MethodModel, instance: NamedItem, methodToCall: NamedItem, [<ParamArray>] args: IExpression[]) =
+        let expr = InvokeExpression instance methodToCall (List.ofArray args)
+        method.AddStatements [ {SimpleCallModel.Expression = expr} ] 
+
+    [<CustomOperation("Invoke", MaintainsVariableSpace = true)>]
+    member _.addInvoke (method: MethodModel, instance: string, methodToCall: string, [<ParamArray>] args: IExpression[]) =
+        let expr = InvokeExpression instance methodToCall (List.ofArray args)
+        method.AddStatements [ {SimpleCallModel.Expression = expr} ] 
+
+    [<CustomOperation("If", MaintainsVariableSpace = true)>]
+    member _.addIf (method: MethodModel, condition: ICompareExpression, statements: IStatement list) =
+        method.AddStatements [ IfModel.Create condition statements ] 
+
+type If(condition: ICompareExpression) =
+    inherit StatementBuilderBase<IfModel>()
+
+    override _.EmptyItem() : NamespaceModel =  NamespaceModel.Create name
+    override _.InternalCombine nspace nspace2 : NamespaceModel =
+        { nspace with 
+            Usings =  List.append nspace.Usings nspace2.Usings
+            Classes = List.append nspace.Classes nspace2.Classes }  
 
 type Namespace(name: string) =
     inherit BuilderBase<NamespaceModel>()
@@ -200,8 +226,6 @@ type Method(name: NamedItem, returnType: ReturnType) =
     override _.EmptyItem() : MethodModel =  MethodModel.Create name returnType
     override _.InternalCombine (method: MethodModel) (method2: MethodModel) =
         { method with Statements =  List.append method.Statements method2.Statements }
-    member this.Yield (statement: IStatement) : MethodModel = 
-        { this.Zero() with Statements = [ statement ] }
 
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.publicWithModifiers (method: MethodModel, [<ParamArray>] modifiers: IMethodModifierWord[]) =

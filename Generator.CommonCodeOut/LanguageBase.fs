@@ -45,10 +45,13 @@ type LanguageBase() =
     abstract member Field: FieldModel -> string list
 
     abstract member IfOpen: IfModel -> string list
+    abstract member ElseIfOpen: ElseIfModel -> string list
+    abstract member ElseOpen: ElseModel -> string list
     abstract member ForEachOpen: ForEachModel -> string list
     abstract member ForEachClose : ForEachModel -> string list 
 
     abstract member AssignWithDeclare: AssignWithDeclareModel -> string list
+    abstract member CompilerDirective: CompilerDirectiveModel -> string list
 
 
     interface ILanguage with 
@@ -89,7 +92,11 @@ type LanguageBase() =
         member this.Field (field: FieldModel) = this.Field field
 
         member this.IfOpen ifInfo = this.IfOpen ifInfo
+        member this.ElseIfOpen ifInfo = this.ElseIfOpen ifInfo
+        member this.ElseOpen ifInfo = this.ElseOpen ifInfo
         member this.IfClose _ = [this.BlockClose "If"]
+        member this.ElseIfClose _ = [this.BlockClose "ElseIf"]
+        member this.ElseClose _ = [this.BlockClose "Else"]
 
         member this.ForEachOpen forEach = this.ForEachOpen forEach
         member this.ForEachClose forEach = this.ForEachClose forEach
@@ -105,9 +112,9 @@ type LanguageBase() =
         member this.SimpleCall simple =
             [$"{this.OutputExpression simple.Expression}{this.EndOfStatement}"]
         member this.Comment comment =
-            [$"{this.OutputExpression comment}"]
-        member this.Pragma pragma =
-            [$"#{pragma}"]
+            [$"{this.CommentPrefix} {comment.Text}"]
+        member this.CompilerDirective directive = this.CompilerDirective directive
+
 
 
         member this.Invocation invocation =
@@ -192,11 +199,9 @@ type LanguageBase() =
         | :? InvocationModel as x -> this.OutputInvocation x
         | :? ComparisonModel as x -> this.OutputComparison x
         | :? InstantiationModel as x -> this.OutputInstantiation x
-        | :? StringLiteralModel as x -> "\"" + x.Expression + "\""
-        | :? NonStringLiteralModel as x -> x.Expression
-        | :? SymbolModel as x -> x.Expression
-        | :? CommentModel as x -> $"{this.CommentPrefix} {x.Expression}"
-        | :? PragmaModel as x -> $"# {x.Expression}"
+        | :? StringLiteralModel as x -> "\"" + x.Value + "\""
+        | :? OtherLiteralModel as x -> x.Value
+        | :? SymbolModel as x -> x.Name
         | :? NullModel as _ -> this.NullKeyword // TODO: Watch for issues with this. Comparisons with Null from Nullable can be flipped from C#
     
     member this.OutputAssignment assignment =

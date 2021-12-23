@@ -3,7 +3,7 @@
 open Generator.Language
 open Generator.Models
 open Common
-open Generator.LanguageExpressions
+open Generator.LanguageStatements
 open Generator.GeneralUtils
 open DslCodeBuilder
 open Generator.LanguageRoslynOut
@@ -20,7 +20,7 @@ let private OutputHeader (outputter: RoslynOut) =
 
     outputter.BlankLine()
 
-    outputter.OutputPragma(PragmaModel.Create "warning disable")
+    outputter.OutputCompilerDirective(CompilerDirectiveModel.Create (CompilerWarning ""))
     ()
     
 let private methodSigFromCommandDef (commandDef: CommandDef) =

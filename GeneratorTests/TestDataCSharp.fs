@@ -56,12 +56,11 @@ type ComparisonModel with
 type IfModel with
     static member ForTesting =
         let data =
-            { Condition =
+            { IfCondition =
                 { Left = SymbolModel.Create "A"
-                  Right = NonStringLiteralModel.Create "42"
+                  Right = OtherLiteralModel.Create "42"
                   Operator = Operator.Equals }
-              Statements = []
-              Elses = [] }
+              Statements = [] }
 
         { Data = data
           CSharpOpen = [ "if (A == 42)"; "{" ]

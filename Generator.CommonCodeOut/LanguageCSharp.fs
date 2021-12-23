@@ -5,6 +5,7 @@ open Generator.Language
 open Common
 open Utilities
 open Generator.LanguageRoslynOut
+open Generator.LanguageStatements
 
 type LanguageCSharp() =
     inherit LanguageBase()
@@ -82,7 +83,11 @@ type LanguageCSharp() =
         [$"{this.ScopeOutput field.Scope}{this.StaticOutput field.StaticOrInstance} {this.OutputNamedItem field.FieldType} {field.FieldName}"]
 
     override this.IfOpen ifInfo  = 
-        [$"if ({this.OutputExpression ifInfo.Condition})"; "{"]
+        [$"if ({this.OutputExpression ifInfo.IfCondition})"; "{"]
+    override this.ElseIfOpen ifInfo  = 
+        [$"else if ({this.OutputExpression ifInfo.ElseIfCondition})"; "{"]
+    override _.ElseOpen _  = 
+        [$"else"; "{"]
 
     override _.ForEachOpen forEach  = 
         [$"foreach (var {forEach.LoopVar} in {forEach.LoopOver})"; "{"]
@@ -95,3 +100,29 @@ type LanguageCSharp() =
             | None -> "var"
         [$"{t} {assign.Variable} = {this.OutputExpression assign.Value};"]
 
+    override this.CompilerDirective directive =
+        let resolveTriState action =
+            match action with 
+            | Disable -> "disable"
+            | Enable -> "enable"
+            | Restore -> "restore"
+
+        let commaDelimit (list: int list) =
+            String.Join (", ", list)
+
+        match directive.CompilerDirectiveType with
+        | CompilerDirectiveType.IfDef symbol -> [ $"#if {symbol}" ]
+        | ElIfDef symbol -> [ $"#elif {symbol}" ]
+        | ElseDef -> [ "#else" ]
+        | EndIfDef -> [ "#endif" ]
+        | Nullable (action, setting) -> [ $"" ]
+        | Define symbol -> [ $"#def {symbol}" ]
+        | UnDefine symbol -> [ $"#undef {symbol}" ]
+        | Region name -> [ $"#region {name}" ]
+        | EndRegion -> [ $"#endregion" ]
+        | CompilerError message -> [ $"#error message" ]
+        | CompilerWarning message -> [ $"#warning message" ]
+        | Line (lineNumber, fileNameOverride) -> [ $"#line {lineNumber} {fileNameOverride}" ]
+        | PragmaWarning (action, warnings) -> [ $"#pragma {resolveTriState action} {commaDelimit warnings}" ]
+        // If people actually use the following, give some Guid and CheckSum help
+        | PragmaCheckSum (filename, guid, checksumBytes) -> [ $"" ]
