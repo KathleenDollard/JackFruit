@@ -5,6 +5,7 @@ open Generator.Language
 open Common
 open DslKeywords
 open DslCodeBuilder
+open Generator.Language
 open Generator.LanguageExpressions
 open Generator.LanguageExpressions.ExpressionHelpers
 open Generator.LanguageStatements
@@ -130,23 +131,66 @@ type ``When creating Return statements to test all expressions``() =
 type ``When creating If statements``() =
 
     [<Fact>]
-    member _.``Can  create if without else``() =
+    member _.``Can  create If without Else``() =
         let outerMethodName = "A"
         let returnIfTrue = "Fred"
+        let returnStatement = { ReturnModel.Expression = Some (Literal returnIfTrue) }
+        let expectedModel = { IfCondition = True; Statements = [ returnStatement ] }
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
                 If (True) {
                     Return returnIfTrue }
 
-                }
+                }           
 
-        Assert.Equal(1, codeModel.Statements.Length)
-        match codeModel.Statements[0] with 
-        | :? ReturnModel as exp -> 
-            match exp.Expression with 
-            | None -> ()
-            | Some x -> Assert.Fail("Return is not void return")
-        | _ -> Assert.Fail("Statement not of expected ReturnModel type")   
+        let actualModel = codeModel.Statements[0] :?> IfModel
+        Assert.Equal(expectedModel, actualModel)
+
+    
+    [<Fact>]
+    member _.``Can  create if with Else``() =
+        let outerMethodName = "A"
+        let returnIfTrue = "Fred"
+        let returnStatementIfTrue = { ReturnModel.Expression = Some (Literal returnIfTrue) }
+        let returnIfFalse = "George"
+        let returnStatementIfFalse = { ReturnModel.Expression = Some (Literal returnIfFalse) }
+        let expectedModelIfTrue= { IfCondition = True; Statements = [ returnStatementIfTrue ] }
+        let expectedModelIfFalse= { ElseStatements = [ returnStatementIfFalse ] }
+        let codeModel = 
+            Method(SimpleNamedItem outerMethodName, Void) {
+                If (True) {
+                    Return returnIfTrue }
+                Else() {
+                    Return returnIfFalse }
+                }           
+
+        let actualModelIfTrue = codeModel.Statements[0] :?> IfModel
+        let actualModelIfFalse = codeModel.Statements[1] :?> ElseModel
+        Assert.Equal(expectedModelIfTrue, actualModelIfTrue)
+        Assert.Equal(expectedModelIfFalse, actualModelIfFalse)
+
+    
+    [<Fact>]
+    member _.``Can  create if without ElseIf``() =
+        let outerMethodName = "A"
+        let returnIfTrue = "Fred"
+        let returnStatementIfTrue = { ReturnModel.Expression = Some (Literal returnIfTrue) }
+        let returnIfFalse = "George"
+        let returnStatementIfFalse = { ReturnModel.Expression = Some (Literal returnIfFalse) }
+        let expectedModelIfTrue= { IfCondition = True; Statements = [ returnStatementIfTrue ] }
+        let expectedModelIfFalse= { ElseIfCondition = True; Statements = [ returnStatementIfFalse ] }
+        let codeModel = 
+            Method(SimpleNamedItem outerMethodName, Void) {
+                If (True) {
+                    Return returnIfTrue }
+                ElseIf (False) {
+                    Return returnIfFalse }
+                }           
+
+        let actualModelIfTrue = codeModel.Statements[0] :?> IfModel
+        let actualModelIfFalse = codeModel.Statements[1] :?> ElseIfModel
+        Assert.Equal(expectedModelIfTrue, actualModelIfTrue)
+        Assert.Equal(expectedModelIfFalse, actualModelIfFalse)
         
 type ``When creating ForEach statements``() =
     [<Fact>]

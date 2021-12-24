@@ -101,12 +101,12 @@ type FieldModel =
     interface IMember
       
 
-type Member =
-    | Method of MethodModel
-    | Property of PropertyModel
-    | Field of FieldModel
-    | Constructor of ConstructorModel
-    | Class of ClassModel
+//type Member =
+//    | Method of MethodModel
+//    | Property of PropertyModel
+//    | Field of FieldModel
+//    | Constructor of ConstructorModel
+//    | Class of ClassModel
 
 
 type ClassModel = 

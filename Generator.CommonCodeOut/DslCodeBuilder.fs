@@ -42,11 +42,11 @@ type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
 
     // KAD-Chet: I do notunderstand how adding the statements here and in combine don't double them
     [<CustomOperation("Return", MaintainsVariableSpace = true)>]
-    member _.addReturn (method: MethodModel) =
+    member _.addReturn (method: 'T) =
         method.AddStatements [ {ReturnModel.Expression = None} ] 
 
     [<CustomOperation("Return", MaintainsVariableSpace = true)>]
-    member _.addReturn (method: MethodModel, expression: obj) =
+    member _.addReturn (method: 'T, expression: obj) =
         let expr: IExpression = 
             match expression with 
             | :? IExpression as x -> x
@@ -56,7 +56,7 @@ type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
         method.AddStatements [ {ReturnModel.Expression = Some expr} ] 
 
     [<CustomOperation("SimpleCall", MaintainsVariableSpace = true)>]
-    member _.addSimpleCall (method: MethodModel, expression: obj) =
+    member _.addSimpleCall (method: 'T, expression: obj) =
         let expr: IExpression = 
             match expression with 
             | :? IExpression as x -> x
@@ -66,27 +66,41 @@ type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
         method.AddStatements [ {SimpleCallModel.Expression = expr} ] 
  
     [<CustomOperation("Invoke", MaintainsVariableSpace = true)>]
-    member _.addInvoke (method: MethodModel, instance: NamedItem, methodToCall: NamedItem, [<ParamArray>] args: IExpression[]) =
+    member _.addInvoke (method: 'T, instance: NamedItem, methodToCall: NamedItem, [<ParamArray>] args: IExpression[]) =
         let expr = InvokeExpression instance methodToCall (List.ofArray args)
         method.AddStatements [ {SimpleCallModel.Expression = expr} ] 
 
     [<CustomOperation("Invoke", MaintainsVariableSpace = true)>]
-    member _.addInvoke (method: MethodModel, instance: string, methodToCall: string, [<ParamArray>] args: IExpression[]) =
+    member _.addInvoke (method: 'T, instance: string, methodToCall: string, [<ParamArray>] args: IExpression[]) =
         let expr = InvokeExpression instance methodToCall (List.ofArray args)
         method.AddStatements [ {SimpleCallModel.Expression = expr} ] 
 
-    [<CustomOperation("If", MaintainsVariableSpace = true)>]
-    member _.addIf (method: MethodModel, condition: ICompareExpression, statements: IStatement list) =
-        method.AddStatements [ IfModel.Create condition statements ] 
+    //[<CustomOperation("If", MaintainsVariableSpace = true)>]
+    //member _.addIf (method: 'T, condition: ICompareExpression, statements: IStatement list) =
+    //    method.AddStatements [ IfModel.Create condition statements ] 
 
 type If(condition: ICompareExpression) =
     inherit StatementBuilderBase<IfModel>()
 
-    override _.EmptyItem() : NamespaceModel =  NamespaceModel.Create name
-    override _.InternalCombine nspace nspace2 : NamespaceModel =
-        { nspace with 
-            Usings =  List.append nspace.Usings nspace2.Usings
-            Classes = List.append nspace.Classes nspace2.Classes }  
+    override _.EmptyItem() : IfModel =  IfModel.Create condition []
+    override _.InternalCombine if1 if2 : IfModel =
+        if1.AddStatements if2.Statements
+
+type ElseIf(condition: ICompareExpression) =
+    inherit StatementBuilderBase<ElseIfModel>()
+
+    override _.EmptyItem() : ElseIfModel =  ElseIfModel.Create condition []
+    override _.InternalCombine if1 if2 : ElseIfModel =
+        if1.AddStatements if2.Statements
+
+type Else() =
+    inherit StatementBuilderBase<ElseModel>()
+
+    override _.EmptyItem() : ElseModel =  ElseModel.Create []
+    override _.InternalCombine if1 if2 : ElseModel =
+        if1.AddStatements if2.ElseStatements
+
+
 
 type Namespace(name: string) =
     inherit BuilderBase<NamespaceModel>()

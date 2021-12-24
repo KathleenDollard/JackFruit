@@ -10,33 +10,43 @@ open Generator.Language
 // not help at all if you get goofy with placement. Let's see whether this flies
 // TODO: *** This approach will not work for VB. The Else and ElseIf's must be interleaved
 // I will return to this when I am smarter about the state of CE's
-//  If condition Then
-//  Else
-//  End If
+//     If condition Then
+//     Else
+//     End If
+// The approach I am considering is using the easy model for creation, and then 
+// switching to the complex model prior to generation. Alternatively, for If, the 
+// next statement could also be passed, which should be the next part of the If it exists.
 type IfModel =
     { IfCondition: ICompareExpression
       Statements: IStatement list }
-    interface IStatement
-    interface IStatementContainer
     static member Create condition statements =
         { IfCondition = condition; Statements = statements }
-    interface IStatementContainer with
-        member this.AddStatements statements =
-            { this with Statements = List.append this.Statements statements}
-        
+    member this.AddStatements statements =
+        { this with Statements = List.append this.Statements statements}
+    interface IStatement
+    interface IStatementContainer<IfModel> with
+        member this.AddStatements statements = this.AddStatements statements
 
 type ElseIfModel =
     { ElseIfCondition: ICompareExpression
       Statements: IStatement list }
-    interface IStatement
     static member Create condition statements =
         { ElseIfCondition = condition; Statements = statements }
-   
+    member this.AddStatements statements =
+        { this with Statements = List.append this.Statements statements}
+    interface IStatement
+    interface IStatementContainer<ElseIfModel> with
+        member this.AddStatements statements = this.AddStatements statements
+  
 type ElseModel =
     { ElseStatements: IStatement list }
-    interface IStatement
     static member Create elseStatements =
         { ElseStatements = elseStatements }
+    member this.AddStatements statements =
+        { this with ElseStatements = List.append this.ElseStatements statements}
+    interface IStatement
+    interface IStatementContainer<ElseModel> with
+        member this.AddStatements statements = this.AddStatements statements
 
 type ForEachModel =
     { LoopVar: string

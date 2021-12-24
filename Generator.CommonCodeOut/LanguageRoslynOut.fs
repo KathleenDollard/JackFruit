@@ -115,13 +115,13 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
     member this.OutputField (field: FieldModel) =
         writer.AddLines (language.Field field)
 
-     member this.OutputMember mbr =
-        match mbr with 
-        | Method m -> this.OutputMethod m
-        | Property p -> this.OutputProperty p
-        | Class c -> this.OutputClass c
-        | Field f -> this.OutputField f
-        | Constructor c -> this.OutputConstructor c
+     //member this.OutputMember mbr =
+     //   match mbr with 
+     //   | Method m -> this.OutputMethod m
+     //   | Property p -> this.OutputProperty p
+     //   | Class c -> this.OutputClass c
+     //   | Field f -> this.OutputField f
+     //   | Constructor c -> this.OutputConstructor c
 
     member this.OutputMembers (members: IMember list) =
         for mbr in members do 
