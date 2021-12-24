@@ -2,7 +2,6 @@
 
 open System.Collections.Generic
 open System.Linq
-open Generator.Language
 open Common
 
 type AliasWord =

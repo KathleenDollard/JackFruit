@@ -7,6 +7,7 @@ open Common
 open DslKeywords
 open DslCodeBuilder
 open FSharp.Linq.RuntimeHelpers.LeafExpressionConverter
+open type Generator.Language.LanguageHelpers
 
 let NameFromSimpleName (namedItem: NamedItem) =
     match namedItem with
@@ -59,10 +60,10 @@ type ``When creating a namespace``() =
         let nspace = "George"
         let usingName = "Fred"
         let alias = "F"
-        let expected = { Namespace = usingName; Alias = Some alias }
+        let expected = { UsingNamespace = usingName; Alias = Some alias }
         let codeModel = 
              Namespace(nspace) {
-                Using usingName Alias alias
+                Using (usingName, Alias, alias)
                 }
 
         Assert.Equal(nspace, codeModel.NamespaceName)
@@ -78,13 +79,13 @@ type ``When creating a namespace``() =
         let usingAlias1 = "S"
         let usingName2 = "Sue"
         let expected0 = UsingModel.Create usingName0
-        let expected1 = { Namespace = usingName1; Alias = Some usingAlias1 }
+        let expected1 = { UsingNamespace = usingName1; Alias = Some usingAlias1 }
         let expected2 = UsingModel.Create usingName2
         let codeModel = 
             Namespace(nspace) 
                 {
                     Using usingName0
-                    Using usingName1 Alias usingAlias1
+                    Using (usingName1, alias = usingAlias1)
                     Using usingName2
                 }
 
@@ -120,9 +121,10 @@ type ``When creating a namespace``() =
         let expectedUsing = UsingModel.Create(usingName)
         let codeModel = 
             Namespace(nspace) {
-                Using usingName
+                className
                 Class(className) {
-                        Public }
+                    Public }
+                UsingModel.Create usingName
 
                 }
 
@@ -130,6 +132,7 @@ type ``When creating a namespace``() =
         let actualUsing = codeModel.Usings[0]
         Assert.Equal(expectedClass, actualClass)
         Assert.Equal(expectedUsing, actualUsing)
+
 
 type ``When creating a class``() =
 

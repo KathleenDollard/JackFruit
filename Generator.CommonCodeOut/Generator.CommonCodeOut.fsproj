@@ -11,12 +11,12 @@
 		<Compile Include="Utilities.fs" />
 		<Compile Include="Common.fs" />
 		<Compile Include="IWriter.fs" />
+		<Compile Include="DslKeywords.fs" />
 		<Compile Include="Language.fs" />
 		<Compile Include="LanguageExpressions.fs" />
 		<Compile Include="LanguageStatements.fs" />
 		<Compile Include="ILanguage.fs" />
 		<Compile Include="LanguageRoslynOut.fs" />
-		<Compile Include="DslKeywords.fs" />
 		<Compile Include="DslCodeBuilder.fs" />
 		<Compile Include="CSharpLanguageExtensions.fs" />
 		<Compile Include="LanguageBase.fs" />

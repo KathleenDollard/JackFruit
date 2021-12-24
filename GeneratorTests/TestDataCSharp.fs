@@ -149,7 +149,7 @@ type ClassModel with
 
 type UsingModel with
     static member ForTesting =
-        let data = { Namespace = "System"; Alias = None }
+        let data = { UsingNamespace = "System"; Alias = None }
 
         { Data = data
           CSharp = [ "using System;" ]}

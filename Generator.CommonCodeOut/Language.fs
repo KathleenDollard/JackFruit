@@ -2,7 +2,8 @@
 
 open Generator
 open Common
-
+open DslKeywords
+open System
 
 type IMember = interface end
 type IStatement = interface end
@@ -139,10 +140,10 @@ type ClassModel =
 
 
 type UsingModel = 
-    { Namespace: string
+    { UsingNamespace: string
       Alias: string option }
     static member Create nspace =
-        { Namespace = nspace
+        { UsingNamespace = nspace
           Alias = None }
 
 
@@ -159,5 +160,14 @@ type NamespaceModel =
     member this.AddClasses (classes: ClassModel list) =
         { this with Classes = List.append this.Classes classes }
 
-
-
+type LanguageHelpers =
+    static member Using (usingName: string) =
+        UsingModel.Create usingName
+    static member Using (usingName: string, ?w:AliasWord, ?alias: string) =
+        match alias with 
+        | None -> UsingModel.Create usingName
+        | Some a ->
+            if String.IsNullOrEmpty a then
+                UsingModel.Create usingName
+            else
+                { UsingNamespace = usingName; Alias = Some a }

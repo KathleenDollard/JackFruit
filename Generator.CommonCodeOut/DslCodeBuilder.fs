@@ -32,6 +32,27 @@ type BuilderBase<'T>() =
                 headResult <- this.Combine(headResult, f(x))
             headResult
 
+            
+[<AbstractClass>]
+type BuilderBase2<'M, 'T>() =
+             
+    abstract member EmptyItem: unit -> 'M
+    abstract member InternalCombine: 'M -> 'M -> 'M
+            
+    member this.Zero() : 'M = this.EmptyItem()
+    member this.Combine (item: 'M, item2: 'M) : 'M=
+        this.InternalCombine item item2
+    member _.Delay(f) : 'M = f()
+    member this.For(methods, f) :'M = 
+        let methodList = Seq.toList methods
+        match methodList with 
+        | [] -> this.Zero()
+        | [x] -> f(x)
+        | head::tail ->
+            let mutable headResult = f(head)
+            for x in tail do 
+                headResult <- this.Combine(headResult, f(x))
+            headResult
 
 [<AbstractClass>]
 type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
@@ -103,28 +124,25 @@ type Else() =
 
 
 type Namespace(name: string) =
-    inherit BuilderBase<NamespaceModel>()
+    inherit BuilderBase2<NamespaceModel, ClassModel>()
 
     override _.EmptyItem() : NamespaceModel =  NamespaceModel.Create name
     override _.InternalCombine nspace nspace2 : NamespaceModel =
         { nspace with 
             Usings =  List.append nspace.Usings nspace2.Usings
             Classes = List.append nspace.Classes nspace2.Classes }  
+    member this.Yield () : NamespaceModel = this.Zero()
+    member this.Yield (a) : NamespaceModel = this.Zero()
+    member this.Yield (_: unit) : NamespaceModel = this.Zero()
+    member this.Yield (usingModel: UsingModel) : NamespaceModel = 
+        { this.Zero() with Usings = [ usingModel ] }
     member this.Yield (classModel: ClassModel) : NamespaceModel = 
         { this.Zero() with Classes = [ classModel ] }
- 
-    [<CustomOperation("Using", MaintainsVariableSpace = true)>]
-    member _.addUsing (nspace: NamespaceModel, name: string, _:AliasWord, alias: string): NamespaceModel =
-        let newUsing =
-            if String.IsNullOrWhiteSpace alias then
-                { Namespace = name; Alias = None } 
-            else
-                { Namespace = name; Alias = Some alias } 
-        nspace.AddUsings [ newUsing ]
-        
-    [<CustomOperation("Using", MaintainsVariableSpace = true)>]
-    member this.addUsing (nspace: NamespaceModel, name: string): NamespaceModel =
-        this.addUsing(nspace, name, Alias, "")
+    member this.Yield (className: string) : NamespaceModel = 
+        { this.Zero() with Classes = [ ClassModel.Create className ] }
+    member _.Bind(nspace: NamespaceModel, f): NamespaceModel =
+        f nspace
+    member this.Return(classModel) = this.Zero().AddUsings classModel
   
 
 type Class(name: string) =

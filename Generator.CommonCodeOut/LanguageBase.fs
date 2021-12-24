@@ -61,7 +61,7 @@ type LanguageBase() =
                 match using.Alias with 
                 | Some a -> $"{a} = "
                 | None -> ""
-            [ $"{this.UsingKeyword} {alias}{using.Namespace}{this.EndOfStatement}" ]
+            [ $"{this.UsingKeyword} {alias}{using.UsingNamespace}{this.EndOfStatement}" ]
 
         member this.NamespaceOpen nspace = 
             [$"{this.NamespaceKeyword} {nspace.NamespaceName}"; this.BlockOpen]
