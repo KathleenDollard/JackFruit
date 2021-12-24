@@ -98,20 +98,38 @@ type ``When creating a namespace``() =
     [<Fact>]
     member _.``Can add class to namespace``() =
         let nspace = "George"
-        let className = ["Fred"; "Bill"]
+        let className = "Fred"
+        let expectedClass = ClassModel.Create(className)
         let codeModel = 
             Namespace(nspace) {
                 let x = 42
-                Class(className[0]) {
+                Class(className) {
                         Public }
 
                 }
 
-        Assert.Equal(nspace, codeModel.NamespaceName)
-        Assert.Empty(codeModel.Usings)
-        Assert.Equal(1, codeModel.Classes.Length)
-        Assert.Equal(ClassModel.Create className[0], codeModel.Classes[0])
+        let actualClass = codeModel.Classes[0]
+        Assert.Equal(expectedClass, actualClass)
+        
+    [<Fact>]
+    member _.``Can add class and using to namespace``() =
+        let nspace = "George"
+        let className = "Fred"
+        let usingName = "Bill"
+        let expectedClass = ClassModel.Create(className)
+        let expectedUsing = UsingModel.Create(usingName)
+        let codeModel = 
+            Namespace(nspace) {
+                Using usingName
+                Class(className) {
+                        Public }
 
+                }
+
+        let actualClass = codeModel.Classes[0]
+        let actualUsing = codeModel.Usings[0]
+        Assert.Equal(expectedClass, actualClass)
+        Assert.Equal(expectedUsing, actualUsing)
 
 type ``When creating a class``() =
 
