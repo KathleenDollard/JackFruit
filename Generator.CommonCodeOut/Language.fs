@@ -15,6 +15,16 @@ type ICompareExpression =
 type IStatementContainer<'T> = 
     abstract member AddStatements: IStatement list -> 'T
 
+type Modifier =
+    | Static
+    | Async
+    | Extension
+    | Partial
+    | Abstract
+    | Sealed
+    | Readonly
+    static member Contains modifier list =
+        List.exists (fun x -> x = modifier) list
 
 type ParameterModel =
     { ParameterName: string
@@ -32,18 +42,14 @@ type MethodModel =
     { MethodName: NamedItem
       ReturnType: ReturnType
       Scope: Scope
-      StaticOrInstance: StaticOrInstance
-      IsAsync: bool
-      IsExtension: bool
+      Modifiers: Modifier list
       Parameters: ParameterModel list
       Statements: IStatement list}
     static member Create methodName returnType =
         { MethodName = methodName
           ReturnType = returnType
-          StaticOrInstance = Instance
-          IsExtension = false
-          IsAsync = false
           Scope = Public
+          Modifiers = []
           Parameters = []
           Statements = [] }
     interface IMember
@@ -55,14 +61,14 @@ type MethodModel =
  
 type ConstructorModel =
     { ClassName: string
-      StaticOrInstance: StaticOrInstance
       Scope: Scope
+      Modifiers: Modifier list
       Parameters: ParameterModel list
       Statements: IStatement list}
     static member Create className =
         { ClassName =  className
-          StaticOrInstance = Instance
           Scope = Public
+          Modifiers = []
           Parameters = []
           Statements = [] }
     interface IMember
@@ -71,55 +77,45 @@ type ConstructorModel =
 type PropertyModel =
     { PropertyName: string
       Type: NamedItem
-      StaticOrInstance: StaticOrInstance
       Scope: Scope
+      Modifiers: Modifier list
       GetStatements: IStatement list
       SetStatements: IStatement list}
     static member Create propertyName propertyType =
-      { PropertyName = propertyName
-        Type = propertyType
-        StaticOrInstance = Instance
-        Scope = Public
-        GetStatements = []
-        SetStatements = [] }
+        { PropertyName = propertyName
+          Type = propertyType
+          Scope = Public
+          Modifiers = []
+          GetStatements = []
+          SetStatements = [] }
     interface IMember
 
 
 type FieldModel =
     { FieldName: string
       FieldType: NamedItem
-      IsReadonly: bool
-      StaticOrInstance: StaticOrInstance
       Scope: Scope
+      Modifiers: Modifier list
       InitialValue: IExpression option}
     static member Create fieldName fieldType =
-      { FieldName = fieldName
-        FieldType = fieldType
-        IsReadonly = false
-        StaticOrInstance = Instance
-        Scope = Private
-        InitialValue = None }
+        { FieldName = fieldName
+          FieldType = fieldType
+          Scope = Private
+          Modifiers = []
+          InitialValue = None }
     interface IMember
  
 type ClassModel = 
     { ClassName: NamedItem
       Scope: Scope
-      StaticOrInstance: StaticOrInstance
-      IsAbstract: bool
-      IsAsync: bool
-      IsPartial: bool
-      IsSealed: bool
+      Modifiers: Modifier list
       InheritedFrom: NamedItem option
       ImplementedInterfaces: NamedItem list
       Members: IMember list}
     static member Create(className, scope) =
         { ClassName = className
           Scope = scope
-          StaticOrInstance = Instance
-          IsAbstract = false
-          IsAsync = false
-          IsPartial = false
-          IsSealed = false
+          Modifiers = []
           InheritedFrom = None
           ImplementedInterfaces = []
           Members = [] }

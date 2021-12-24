@@ -13,8 +13,13 @@ type LanguageBase() =
     abstract PublicKeyword: string with get
     abstract InternalKeyword: string with get
     abstract ProtectedKeyword: string with get
+
     abstract StaticKeyword: string with get
     abstract AsyncKeyword: string with get
+    abstract PartialKeyword: string with get
+    abstract AbstractKeyword: string with get
+    abstract ReadonlyKeyword: string with get
+
     abstract UsingKeyword: string with get
     abstract NamespaceKeyword: string with get
     abstract ClassKeyword: string with get
@@ -38,7 +43,7 @@ type LanguageBase() =
 
     abstract member Generic: typeNames: NamedItem list -> string
     abstract member ClassOpen: ClassModel -> string list
-    abstract member MethodOpen: MethodModel -> string list
+    abstract member MethodOpen: MethodModel -> string list // Extension is not currently supported
     abstract member MethodClose: MethodModel -> string list
     abstract member AutoProperty: PropertyModel -> string list
     abstract member PropertyOpen: PropertyModel -> string list
@@ -73,7 +78,7 @@ type LanguageBase() =
             [this.BlockClose this.ClassKeyword ]
 
         member this.ConstructorOpen(ctor: ConstructorModel) =
-            [ $"{this.ScopeOutput ctor.Scope}{this.StaticOutput ctor.StaticOrInstance} {this.ConstructorName ctor}({this.OutputParameters ctor.Parameters})"
+            [ $"{this.ScopeOutput ctor.Scope}{this.OutputModifiers ctor.Modifiers} {this.ConstructorName ctor}({this.OutputParameters ctor.Parameters})"
               this.BlockOpen]
         member this.ConstructorClose _ =
             [this.BlockClose "Sub"]
@@ -132,16 +137,17 @@ type LanguageBase() =
             $"{this.OutputNamedItem namedItem}"
 
     
-        
-
-    member this.AsyncOutput isAsync =
-        if isAsync then $"{this.AsyncKeyword} "
-        else ""
-
-    member this.StaticOutput staticOrInstance =
-        match staticOrInstance with 
-        | Static -> $"{this.StaticKeyword} "
-        | _ -> ""
+    member this.OutputModifiers (modifiers: Modifier list) =
+        let modifierList =
+            [ for m in modifiers do
+                match m with 
+                | Modifier.Static -> this.StaticKeyword
+                | Async -> this.AsyncKeyword
+                | Partial -> this.PartialKeyword
+                | Abstract -> this.AbstractKeyword
+                | Readonly -> this.ReadonlyKeyword
+            ] 
+        String.Join(", ", modifierList)
 
     member this.ScopeOutput scope =
         match scope with 

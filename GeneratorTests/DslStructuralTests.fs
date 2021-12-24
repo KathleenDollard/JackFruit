@@ -109,11 +109,7 @@ type ``When creating a namespace``() =
               Classes = [
                 { ClassName = className
                   Scope = Public
-                  StaticOrInstance = Instance
-                  IsAbstract = false
-                  IsAsync = false
-                  IsPartial = false
-                  IsSealed = false
+                  Modifiers = []
                   InheritedFrom = None
                   ImplementedInterfaces = []
                   Members = [] }] }
@@ -139,11 +135,7 @@ type ``When creating a namespace``() =
               Classes = [
                 { ClassName = className
                   Scope = Public
-                  StaticOrInstance = Instance
-                  IsAbstract = false
-                  IsAsync = false
-                  IsPartial = false
-                  IsSealed = false
+                  Modifiers = []
                   InheritedFrom = None
                   ImplementedInterfaces = []
                   Members = [] }] }
@@ -167,11 +159,7 @@ type ``When creating a class``() =
         let expected =
             { ClassName = className
               Scope = Public
-              StaticOrInstance = Instance
-              IsAbstract = false
-              IsAsync = false
-              IsPartial = false
-              IsSealed = false
+              Modifiers = []
               InheritedFrom = None
               ImplementedInterfaces = []
               Members = [] }
@@ -189,16 +177,12 @@ type ``When creating a class``() =
         let expected =
             { ClassName = className
               Scope = Public
-              StaticOrInstance = StaticOrInstance.Static
-              IsAbstract = false
-              IsAsync = true
-              IsPartial = true
-              IsSealed = false
+              Modifiers = [Modifier.Static; Async; Partial]
               InheritedFrom = None
               ImplementedInterfaces = []
               Members = [] }
         let actual = Class(className) { 
-                Public Static Async Partial
+                Public Modifier.Static Async Partial
                 }
 
         Assert.Equal(expected, actual)
@@ -218,18 +202,18 @@ type ``When creating a class``() =
     [<InlineData(9)>]
     member _.``Can create different scopes and modifiers``(pos: int) =
         let tupleFromCodeModel (codeModel: ClassModel) = 
-            codeModel.Scope, codeModel.StaticOrInstance, codeModel.IsAbstract, codeModel.IsAsync, codeModel.IsPartial, codeModel.IsSealed
+            codeModel.Scope, codeModel.Modifiers
         let data = 
-            [ (Public, Instance, false, false, false, false), Class("A") { Public }
-              (Public, Instance, false, true, false, false), Class("A") { Public Async }
-              (Public, Instance, true, false, false, false), Class("A") { Public Abstract }
-              (Public, StaticOrInstance.Static, true, false, true, false), Class("A") { Public Static Abstract Partial}
-              (Public, Instance, true, true, true, true), Class("A") { Public Abstract Async Partial Sealed}
-              (Private, Instance, false, false, false, false), Class("A") { Private }
-              (Internal, Instance, false, true, false, false), Class("A") { Internal Async }
-              (Protected, Instance, true, false, false, false), Class("A") { Protected Abstract }
-              (Private, StaticOrInstance.Static, true, false, true, false), Class("A") { Private Static Abstract Partial}
-              (Protected, Instance, true, true, true, true), Class("A") { Protected Abstract Async Partial Sealed}
+            [ (Public, []), Class("A") { Public }
+              (Public, [Modifier.Async]), Class("A") { Public Async }
+              (Public, [Modifier.Abstract]), Class("A") { Public Abstract }
+              (Public, [Modifier.Static; Abstract; Partial]), Class("A") { Public Modifier.Static Abstract Partial}
+              (Public, [Modifier.Abstract; Async; Partial; Sealed]), Class("A") { Public Abstract Async Partial Sealed}
+              (Private, []), Class("A") { Private }
+              (Internal, [Modifier.Async]), Class("A") { Internal Async }
+              (Protected, [Modifier.Abstract]), Class("A") { Protected Abstract }
+              (Private, [Modifier.Static; Abstract; Partial]), Class("A") { Private Modifier.Static Abstract Partial}
+              (Protected, [Modifier.Abstract; Async; Partial; Sealed]), Class("A") { Protected Abstract Async Partial Sealed}
             ]
 
         match data[pos] with 
@@ -245,11 +229,7 @@ type ``When creating a class``() =
         let expected =
             { ClassName = NamedItem.Create className genericNamedItems
               Scope = Public
-              StaticOrInstance = Instance
-              IsAbstract = false
-              IsAsync = false
-              IsPartial = false
-              IsSealed = false
+              Modifiers = []
               InheritedFrom = None
               ImplementedInterfaces = []
               Members = [] }
@@ -267,11 +247,7 @@ type ``When creating a class``() =
         let expected =
             { ClassName = className
               Scope = Public
-              StaticOrInstance = Instance
-              IsAbstract = false
-              IsAsync = false
-              IsPartial = false
-              IsSealed = false
+              Modifiers = []
               InheritedFrom = Some genericName
               ImplementedInterfaces = []
               Members = [] }
@@ -292,11 +268,7 @@ type ``When creating a class``() =
         let expected =
             { ClassName = className
               Scope = Public
-              StaticOrInstance = Instance
-              IsAbstract = false
-              IsAsync = false
-              IsPartial = false
-              IsSealed = false
+              Modifiers = []
               InheritedFrom = None
               ImplementedInterfaces = expectedInterfaces
               Members = [] }
@@ -315,18 +287,13 @@ type ``When creating a class``() =
         let fieldType = SimpleNamedItem "int"
         let expectedField = { FieldName = fieldName
                               FieldType = fieldType
-                              IsReadonly = false
-                              StaticOrInstance = Instance
+                              Modifiers = []
                               Scope = Private
                               InitialValue = None}
         let expected =
             { ClassName = className
               Scope = Public
-              StaticOrInstance = Instance
-              IsAbstract = false
-              IsAsync = false
-              IsPartial = false
-              IsSealed = false
+              Modifiers = []
               InheritedFrom = None
               ImplementedInterfaces = []
               Members = [ expectedField ] }

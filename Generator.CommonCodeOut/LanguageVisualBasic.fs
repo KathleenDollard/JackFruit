@@ -16,6 +16,9 @@ type LanguageVisualBasic() =
     override _.ProtectedKeyword = "Protected"
     override _.StaticKeyword = "Shared"
     override _.AsyncKeyword = "Async"
+    override _.PartialKeyword = "Partial"
+    override _.AbstractKeyword = "MustInherit"
+    override _.ReadonlyKeyword = "Readonly"
     override _.UsingKeyword = "Imports"
     override _.NamespaceKeyword = "Namespace"
     override _.ClassKeyword = "Class"
@@ -47,7 +50,7 @@ type LanguageVisualBasic() =
             $"(Of {generics})"
 
     override this.ClassOpen cls  =           
-        [ $"{this.ScopeOutput cls.Scope}{this.StaticOutput cls.StaticOrInstance} Class {this.OutputNamedItem cls.ClassName}"
+        [ $"{this.ScopeOutput cls.Scope}{this.OutputModifiers cls.Modifiers} Class {this.OutputNamedItem cls.ClassName}"
 
           match cls.InheritedFrom with 
           | Some t -> this.OutputNamedItem t
@@ -58,7 +61,7 @@ type LanguageVisualBasic() =
 
 
     override this.MethodOpen  method  = 
-        let modifiers = $"{this.ScopeOutput method.Scope}{this.StaticOutput method.StaticOrInstance}{this.AsyncOutput method.IsAsync}"
+        let modifiers = $"{this.ScopeOutput method.Scope}{this.OutputModifiers method.Modifiers}"
         [ match method.ReturnType with 
             | Void -> $" Sub {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters})"
             | _ -> $" Function {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters}) As {method.ReturnType}" ]
@@ -70,13 +73,13 @@ type LanguageVisualBasic() =
              | _ -> "End Function" ]
 
     override this.AutoProperty property  = 
-        [$"{this.ScopeOutput property.Scope}{this.StaticOutput property.StaticOrInstance} Property {property.PropertyName} As  {this.OutputNamedItem property.Type}"]
+        [$"{this.ScopeOutput property.Scope}{this.OutputModifiers property.Modifiers} Property {property.PropertyName} As  {this.OutputNamedItem property.Type}"]
 
     override this.PropertyOpen property  = 
-        [$"{this.ScopeOutput property.Scope}{this.StaticOutput property.StaticOrInstance} Property {property.PropertyName} As  {this.OutputNamedItem property.Type}"]
+        [$"{this.ScopeOutput property.Scope}{this.OutputModifiers property.Modifiers} Property {property.PropertyName} As  {this.OutputNamedItem property.Type}"]
 
     override this.Field field  = 
-        [$"{this.ScopeOutput field.Scope}{this.StaticOutput field.StaticOrInstance} {field.FieldName} As {this.OutputNamedItem field.FieldType}"]
+        [$"{this.ScopeOutput field.Scope}{this.OutputModifiers field.Modifiers} {field.FieldName} As {this.OutputNamedItem field.FieldType}"]
         // TODO: Intial value. Put conditional in base?
 
     override this.IfOpen ifInfo  = 

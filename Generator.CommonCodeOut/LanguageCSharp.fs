@@ -16,6 +16,9 @@ type LanguageCSharp() =
     override _.ProtectedKeyword = "protected"
     override _.StaticKeyword = "static"
     override _.AsyncKeyword = "async"
+    override _.PartialKeyword = "partial"
+    override _.AbstractKeyword = "abstract"
+    override _.ReadonlyKeyword = "readonly"
     override _.UsingKeyword = "using"
     override _.NamespaceKeyword = "namespace"
     override _.ClassKeyword = "class"
@@ -62,7 +65,7 @@ type LanguageCSharp() =
               |> addColonIfNeeded
               |> String.concat ", " 
 
-        [ $"{this.ScopeOutput cls.Scope}{this.StaticOutput cls.StaticOrInstance} class {this.OutputNamedItem cls.ClassName}{baseAndInterfaces}"; 
+        [ $"{this.ScopeOutput cls.Scope}{this.OutputModifiers cls.Modifiers} class {this.OutputNamedItem cls.ClassName}{baseAndInterfaces}"; 
           "{"]
 
     override this.MethodOpen method  = 
@@ -70,17 +73,17 @@ type LanguageCSharp() =
             match method.ReturnType with 
             | Type t -> this.OutputNamedItem t
             | Void -> "void"
-       [$"{this.ScopeOutput method.Scope}{this.StaticOutput method.StaticOrInstance}{this.AsyncOutput method.IsAsync} {returnType} {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters})"; "{"]
+       [$"{this.ScopeOutput method.Scope}{this.OutputModifiers method.Modifiers} {returnType} {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters})"; "{"]
     override _.MethodClose _ = [ "}" ]
 
     override this.AutoProperty property  = 
-        [$"{this.ScopeOutput property.Scope}{this.StaticOutput property.StaticOrInstance} {this.OutputNamedItem property.Type} {property.PropertyName} {{get; set;}}"]
+        [$"{this.ScopeOutput property.Scope}{this.OutputModifiers property.Modifiers} {this.OutputNamedItem property.Type} {property.PropertyName} {{get; set;}}"]
 
     override this.PropertyOpen property  = 
-        [$"{this.ScopeOutput property.Scope}{this.StaticOutput property.StaticOrInstance} {this.OutputNamedItem property.Type} {property.PropertyName}"; "{"]
+        [$"{this.ScopeOutput property.Scope}{this.OutputModifiers property.Modifiers} {this.OutputNamedItem property.Type} {property.PropertyName}"; "{"]
 
     override this.Field field  = 
-        [$"{this.ScopeOutput field.Scope}{this.StaticOutput field.StaticOrInstance} {this.OutputNamedItem field.FieldType} {field.FieldName}"]
+        [$"{this.ScopeOutput field.Scope}{this.OutputModifiers field.Modifiers} {this.OutputNamedItem field.FieldType} {field.FieldName}"]
 
     override this.IfOpen ifInfo  = 
         [$"if ({this.OutputExpression ifInfo.IfCondition})"; "{"]

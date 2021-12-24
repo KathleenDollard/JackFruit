@@ -126,8 +126,8 @@ type PropertyModel with
         let data =
             { PropertyName = "MyProperty"
               Type = NamedItem.Create "MyReturnType"  []
-              StaticOrInstance = Instance
               Scope = Public
+              Modifiers = []
               GetStatements = []
               SetStatements = [] }
 

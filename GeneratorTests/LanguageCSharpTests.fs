@@ -219,6 +219,8 @@ type ``When outputting code`` () =
         outPutter.OutputProperty data
         let actual = writer.LinePairs()
 
+        Assert.Equal(expected[0], actual[0])
+
         actual |> should equal expected
 
 
