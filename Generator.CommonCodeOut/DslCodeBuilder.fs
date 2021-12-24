@@ -131,17 +131,13 @@ type Namespace(name: string) =
         { nspace with 
             Usings =  List.append nspace.Usings nspace2.Usings
             Classes = List.append nspace.Classes nspace2.Classes }  
+
     member this.Yield () : NamespaceModel = this.Zero()
-    member this.Yield (a) : NamespaceModel = this.Zero()
     member this.Yield (_: unit) : NamespaceModel = this.Zero()
     member this.Yield (usingModel: UsingModel) : NamespaceModel = 
-        { this.Zero() with Usings = [ usingModel ] }
+        this.Zero().AddUsings [usingModel]
     member this.Yield (classModel: ClassModel) : NamespaceModel = 
-        { this.Zero() with Classes = [ classModel ] }
-    member this.Yield (className: string) : NamespaceModel = 
-        { this.Zero() with Classes = [ ClassModel.Create className ] }
-    member _.Bind(nspace: NamespaceModel, f): NamespaceModel =
-        f nspace
+        this.Zero().AddClasses [classModel]
     member this.Return(classModel) = this.Zero().AddUsings classModel
   
 

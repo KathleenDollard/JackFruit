@@ -100,16 +100,7 @@ type FieldModel =
         Scope = Private
         InitialValue = None }
     interface IMember
-      
-
-//type Member =
-//    | Method of MethodModel
-//    | Property of PropertyModel
-//    | Field of FieldModel
-//    | Constructor of ConstructorModel
-//    | Class of ClassModel
-
-
+ 
 type ClassModel = 
     { ClassName: NamedItem
       Scope: Scope
@@ -132,8 +123,6 @@ type ClassModel =
           InheritedFrom = None
           ImplementedInterfaces = []
           Members = [] }
-    //static member Create(className: string, scope: Scope, members: IMember list) =
-    //    ClassModel.Create((SimpleNamedItem className), scope, members)
     static member Create(className) =
         ClassModel.Create((SimpleNamedItem className), Public)
     interface IMember
@@ -156,7 +145,11 @@ type NamespaceModel =
           Usings = []
           Classes = [] }    
     member this.AddUsings (usings: UsingModel list) =
-        { this with Usings = List.append this.Usings usings }
+        // Ignore usings with empty strings. They would be an error later
+        let newUsings =
+            [ for u in usings do
+                if not (String.IsNullOrWhiteSpace u.UsingNamespace) then u ]
+        { this with Usings = List.append this.Usings newUsings }
     member this.AddClasses (classes: ClassModel list) =
         { this with Classes = List.append this.Classes classes }
 
