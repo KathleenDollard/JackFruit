@@ -1,6 +1,5 @@
 ﻿module Common
 
-//open Generator.GeneralUtils 
 open System
 
 type Scope =
@@ -8,10 +7,6 @@ type Scope =
     | Private
     | Internal
     | Protected
-
-type StaticOrInstance =
-    | Static
-    | Instance
 
 type Operator =
     | Equals
@@ -111,34 +106,44 @@ let TreeFromDelimitedString (openChar: char) (closeChar: char) (separator: char)
     // , MyType<List<bool>>>
     // >
 
+    let maxRecursion = 15 // Stack overflow is a PITB exception to resolve, so forcing to a real exception
 
-    let rec splitOne (input: string) : TreeNodeType<string> * string =
-        let (nextPunctChar, nextPunctPos) = 
-            let pos = input.IndexOfAny([| openChar; closeChar; separator |])
-            if pos < 0 then ("", input.Length)
-            else (input[pos].ToString(), pos)
-
-        let currentData = input[0..nextPunctPos - 1].Trim()
-        let remaining = input[nextPunctPos..]
-
-        if nextPunctChar = openChar.ToString() then
-            let trees, rem = splitMany remaining
-            ( { Data = currentData; Children = trees}, rem)
+    let rec splitOne (input: string) (depth: int): TreeNodeType<string> * string =
+        if depth > maxRecursion then invalidOp "May be in infite recursion in splitOne, or you made want a algorithm that supports tail call optimiation"
+        if String.IsNullOrWhiteSpace(input) then
+            ({Data = ""; Children = []}, "")
         else
-            ( { Data = currentData; Children = [] }, remaining)
 
-    and splitMany (inputWithPrefix: string) : TreeNodeType<string> list * string =
+            let (nextPunctChar, nextPunctPos, currentData, remaining) = 
+                let input = input.Trim()
+                let pos = input.IndexOfAny([| openChar; closeChar; separator |])
+                match pos with 
+                | _ when pos < 0 -> ("", input.Length, input.Trim(), "")
+                | 0 -> (input[pos].ToString(), pos, "", input[pos..]) 
+                | _ -> (input[pos].ToString(), pos, input[0..pos - 1].Trim(), input[pos..]) 
+
+            if nextPunctChar = openChar.ToString() then
+                let trees, rem = splitMany remaining (depth + 1)
+                ( { Data = currentData; Children = trees}, rem)
+            else
+                ( { Data = currentData; Children = [] }, remaining)
+
+    and splitMany (inputWithPrefix: string) (depth: int): TreeNodeType<string> list * string =
+        if depth > maxRecursion then invalidOp "May be in infite recursion in splitMany, or you made want a algorithm that supports tail call optimiation"
         if inputWithPrefix.StartsWith(closeChar) then
             [], inputWithPrefix[1..]
         else
             let input = inputWithPrefix[1..]
 
-            let (tree, rem) = splitOne input
-            let (childTrees, rem2) = splitMany rem
-            (tree::childTrees, rem2)
+            let (tree, rem) = splitOne input (depth + 1)
+            if String.IsNullOrWhiteSpace(rem) then
+                ([tree], "")
+            else
+                let (childTrees, rem2) = splitMany rem (depth + 1)
+                (tree::childTrees, rem2)
 
     if input.Length = 0 then 
         {Data = ""; Children = []}
     else
-        let (tree, s) = splitOne input
+        let (tree, s) = splitOne input 0
         tree

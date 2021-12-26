@@ -81,56 +81,21 @@ type ``I can create a type name ``() =
         Assert.Equal(typeName, actual.TypeName)     
         Assert.Equal(genericTypeName, actual.GenericTypes.First().TypeName)     
 
-    [<Fact(Skip = "Not yet implemented")>]
+    [<Fact(Skip = "To demonstrate why infix style didn't wor out. Text would not be much better")>]
     member _.``with generics infix``() =
         let typeName = "A"
         let genericTypeName = "B"
 
         //!, %, &, *, +, -, ., /, <, =, >, ?, @, ^, |,
         // Remove misleading ideas: %, &, *, +, -, ., /, <, =, >, ^, |,
-        //let actual = typeName &<= [genericTypeName]
+        //let actual = typeName &<= [genericTypeName ]
 
         //Assert.IsType<Generic>(actual)
         //Assert.Equal(1, actual.GenericTypes.Count())
         //Assert.Equal(typeName, actual.TypeName)     
         //Assert.Equal(genericTypeName, actual.GenericTypes.First().TypeName)  
         ()
-type ``When parsing delimited strings``() =
-    let ParseDelimtedString input = TreeFromDelimitedString '(' ')' ';' input
 
-    [<Fact>]
-    member _.``simple string is parsed``() =
-        let input = "int"
-        let actual = ParseDelimtedString input
-        let expected = "int"
-
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected, actual.Data)
-
-    [<Fact>]
-    member _.``single string is parsed``() =
-        let input = "List(int)"
-        let actual = ParseDelimtedString input
-        let expected1 = "List"
-        let expected2 = "int"
-
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected1, actual.Data)
-        Assert.Equal(1, actual.Children.Length)
-        Assert.Equal(expected2, actual.Children[0].Data)
-
-    [<Fact>]
-    member _.``complex string is parsed``() =
-        let input = "className (string; List(int); int; float; MyType(List(bool)))"
-        let actual = ParseDelimtedString input
-        let expected1 = "className"
-        let expected2 = "MyType"
-
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected1, actual.Data)
-        Assert.Equal(5, actual.Children.Length)
-        Assert.Equal(1, actual.Children[4].Children.Length)
-        Assert.Equal(expected2, actual.Children[4].Data)    
 
 type ``When parsing generic strings``() =
     let ParseGenericString input = TreeFromDelimitedString '<' '>' ',' input
@@ -139,148 +104,217 @@ type ``When parsing generic strings``() =
     member _.``simple type is parsed``() =
         let input = "int"
         let actual = ParseGenericString input
-        let expected = "int"
+        let expected = { Data = input; Children = []}
 
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected, actual.Data)
+        Assert.Equal(expected, actual)
+
 
     [<Fact>]
     member _.``single generic type is parsed``() =
         let input = "List<int>"
         let actual = ParseGenericString input
-        let expected1 = "List"
-        let expected2 = "int"
+        let expected = 
+            { Data = "List"
+              Children = 
+                [ { Data = "int"; Children = [] } ] }
 
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected1, actual.Data)
-        Assert.Equal(1, actual.Children.Length)
-        Assert.Equal(expected2, actual.Children[0].Data)
+        Assert.Equal(expected, actual)
+
 
     [<Fact>]
     member _.``complex generic type is parsed``() =
         let input = "className <string, List<int>, int, float, MyType<List<bool>>>"
         let actual = ParseGenericString input
-        let expected1 = "className"
-        let expected2 = "MyType"
+        let expected = 
+            { Data = "className"
+              Children = 
+                [ { Data = "string"; Children = [] } 
+                  { Data = "List"
+                    Children = 
+                        [ { Data = "int"; Children = [] } ] }
+                  { Data = "int"; Children = [] } 
+                  { Data = "float"; Children = [] } 
+                  { Data = "MyType"
+                    Children = 
+                        [ { Data = "List"
+                            Children = 
+                                [ { Data = "bool"; Children = [] } ] }
+                        ] }
+                 ] }
 
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected1, actual.Data)
-        Assert.Equal(5, actual.Children.Length)
-        Assert.Equal(1, actual.Children[4].Children.Length)
-        Assert.Equal(expected2, actual.Children[4].Data)    
+        Assert.Equal(expected, actual)
 
-    [<Fact(Skip="Causing infinite loop")>]
+
+    [<Fact>]
     member _.``missing close bracket does not throw``() =
         let input = "className <string, List<int>, int, float, MyType<List<bool>>"
         let actual = ParseGenericString input
-        let expected1 = "className"
-        let expected2 = "MyType"
+        let expected = 
+            { Data = "className"
+              Children = 
+                [ { Data = "string"; Children = [] } 
+                  { Data = "List"
+                    Children = 
+                        [ { Data = "int"; Children = [] } ] }
+                  { Data = "int"; Children = [] } 
+                  { Data = "float"; Children = [] } 
+                  { Data = "MyType"
+                    Children = 
+                        [ { Data = "List"
+                            Children = 
+                                [ { Data = "bool"; Children = [] } ] }
+                        ] }
+                 ] }
 
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected1, actual.Data)
-        Assert.Equal(5, actual.Children.Length)
-        Assert.Equal(1, actual.Children[4].Children.Length)
-        Assert.Equal(expected2, actual.Children[4].Data)    
+        Assert.Equal(expected, actual) 
         
         
-    [<Fact(Skip="Causing infinite loop")>]
-    member _.``no close brackets does not throw``() =
+    [<Fact>]
+    member _.``no close brackets gives same result (and doesn't throw)``() =
         let input = "className <string, List<int>, int, float, MyType<List<bool"
         let actual = ParseGenericString input
-        let expected1 = "className"
-        let expected2 = "MyType"
+        let expected = 
+            { Data = "className"
+              Children = 
+                [ { Data = "string"; Children = [] } 
+                  { Data = "List"
+                    Children = 
+                        [ { Data = "int"; Children = [] } ] }
+                  { Data = "int"; Children = [] } 
+                  { Data = "float"; Children = [] } 
+                  { Data = "MyType"
+                    Children = 
+                        [ { Data = "List"
+                            Children = 
+                                [ { Data = "bool"; Children = [] } ] }
+                        ] }
+                 ] }
 
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected1, actual.Data)
-        Assert.Equal(5, actual.Children.Length)
-        Assert.Equal(1, actual.Children[4].Children.Length)
-        Assert.Equal(expected2, actual.Children[4].Data)    
-        
-        
+        Assert.Equal(expected, actual)        
+ 
+ 
     [<Fact>]
-    member _.``extra close bracket does not throw``() =
+    member _.``extra close bracket gives same result (and doesn't throw)``() =
         let input = "className <string, List<int>, int, float, MyType<List<bool>>>>"
         let actual = ParseGenericString input
-        let expected1 = "className"
-        let expected2 = "MyType"
+        let expected = 
+            { Data = "className"
+              Children = 
+                [ { Data = "string"; Children = [] } 
+                  { Data = "List"
+                    Children = 
+                        [ { Data = "int"; Children = [] } ] }
+                  { Data = "int"; Children = [] } 
+                  { Data = "float"; Children = [] } 
+                  { Data = "MyType"
+                    Children = 
+                        [ { Data = "List"
+                            Children = 
+                                [ { Data = "bool"; Children = [] } ] }
+                        ] }
+                 ] }
 
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected1, actual.Data)
-        Assert.Equal(5, actual.Children.Length)
-        Assert.Equal(1, actual.Children[4].Children.Length)
-        Assert.Equal(expected2, actual.Children[4].Data)   
+        Assert.Equal(expected, actual)
+
         
     [<Fact>]
-    member _.``early close bracket does not throw``() =
+    member _.``early close bracket ignores rest (and  does not throw)``() =
         let input = "className <string, List<int>>, int, float>"
         let actual = ParseGenericString input
-        let expected1 = "className"
-        let expected2 = "List"
+        let expected = 
+            { Data = "className"
+              Children = 
+                [ { Data = "string"; Children = [] } 
+                  { Data = "List"
+                    Children = 
+                        [ { Data = "int"; Children = [] } ] }
+                 ] }
 
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected1, actual.Data)
-        Assert.Equal(2, actual.Children.Length)
-        Assert.Equal(1, actual.Children[1].Children.Length)
-        Assert.Equal(expected2, actual.Children[1].Data)    
+        Assert.Equal(expected, actual)
 
 
-    [<Fact(Skip="Causing infinite loop")>]
-    member _.``double brackets does not throw``() =
-        let input = "className <string, List<<int>, int, float, MyType<List<bool>>>"
+    [<Fact>]
+    member _.``double brackets gives node with empty string (and  does not throw)``() =
+        let input = "className <string, List<<int>, int, float>>"
         let actual = ParseGenericString input
-        let expected1 = "className"
-        let expected2 = ""
-        let expected3 = "float"
+        let expected = 
+            { Data = "className"
+              Children = 
+                [ { Data = "string"; Children = [] } 
+                  { Data = "List"
+                    Children = 
+                        [ { Data = ""
+                            Children = 
+                                [ { Data = "int"; Children = [] } ] }
+                                   
+                          { Data = "int"; Children = [] } 
+                          { Data = "float"; Children = [] } 
+                               
+                        ] }
+                 ] }
 
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected1, actual.Data) 
-        Assert.Equal(6, actual.Children.Length)
-        Assert.Equal(0, actual.Children[4].Children.Length)
-        Assert.Equal(expected2, actual.Children[2].Data)   
-        Assert.Equal(expected2, actual.Children[5].Data)   
-      
-    [<Fact(Skip="Throws out of bounds")>]
-    member _.``missing open bracket does not throw``() =
+        Assert.Equal(expected, actual)
+
+
+    [<Fact>]
+    member _.``missing open bracket ignores rest (does not throw)``() =
         let input = "className <string, List int>, int, float, MyType<List<bool>>>"
         let actual = ParseGenericString input
-        let expected1 = "className"
-        let expected2 = "List int"
+        let expected = 
+            { Data = "className"
+              Children = 
+                [ { Data = "string"; Children = [] } 
+                  { Data = "List int"; Children = [] } ] }
 
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected1, actual.Data)
-        Assert.Equal(2, actual.Children.Length)
-        Assert.Equal(1, actual.Children[4].Children.Length)
-        Assert.Equal(expected2, actual.Children[1].Data)    
+        Assert.Equal(expected, actual)
 
     
     [<Fact>]
-    member _.``missing comma does not throw``() =
+    member _.``missing comma does not throw, uses string as is (doesn't throw, this is a general parser, validate later)``() =
         let input = "className <string, List<int>, int float, MyType<List<bool>>>"
         let actual = ParseGenericString input
-        let expected1 = "className"
-        let expected2 = "int float"
+        let expected = 
+            { Data = "className"
+              Children = 
+                [ { Data = "string"; Children = [] } 
+                  { Data = "List"
+                    Children = 
+                        [ { Data = "int"; Children = [] } ] }
+                  { Data = "int float"; Children = [] } 
+                  { Data = "MyType"
+                    Children = 
+                        [ { Data = "List"
+                            Children = 
+                                [ { Data = "bool"; Children = [] } ] }
+                        ] }
+                 ] }
 
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected1, actual.Data)
-        Assert.Equal(4, actual.Children.Length)
-        Assert.Equal(1, actual.Children[3].Children.Length)
-        Assert.Equal(expected2, actual.Children[2].Data)    
+        Assert.Equal(expected, actual)
 
  
     [<Fact>]
-    member _.``double comma does not throw``() =
+    member _.``double comma does not throw gives empty name (and does not throw)``() =
         let input = "className <string, List<int>, , int, float, MyType<List<bool>>>"
         let actual = ParseGenericString input
-        let expected1 = "className"
-        let expected2 = "MyType"
-        let expected3 = ""
+        let expected = 
+            { Data = "className"
+              Children = 
+                [ { Data = "string"; Children = [] } 
+                  { Data = "List"
+                    Children = 
+                        [ { Data = "int"; Children = [] } ] }
+                  { Data = ""; Children = [] } 
+                  { Data = "int"; Children = [] } 
+                  { Data = "float"; Children = [] } 
+                  { Data = "MyType"
+                    Children = 
+                        [ { Data = "List"
+                            Children = 
+                                [ { Data = "bool"; Children = [] } ] }
+                        ] }
+                 ] }
 
-        Assert.IsType<TreeNodeType<string>>(actual)
-        Assert.Equal(expected1, actual.Data)
-        Assert.Equal(6, actual.Children.Length)
-        Assert.Equal(1, actual.Children[5].Children.Length)
-        Assert.Equal(expected2, actual.Children[5].Data) 
-        Assert.Equal(expected3, actual.Children[2].Data)
+        Assert.Equal(expected, actual)
         
         
         // Save the following as a Playground about why I used strings for generics. 

@@ -221,9 +221,29 @@ type ``When creating a class``() =
   
   
     [<Fact>]
-    member _.``Can create class with generic types``() =
+    member _.``Can create class with explicit generic types``() =
         let className = "George"
         let genericNames = ["string"; "int"]
+        let genericNamedItems = 
+            [ for n in genericNames do NamedItem.Create n [] ]
+        let expected =
+            { ClassName = NamedItem.Create className genericNamedItems
+              Scope = Public
+              Modifiers = []
+              InheritedFrom = None
+              ImplementedInterfaces = []
+              Members = [] }
+        let actual = Class(className) {
+                Generics [ SimpleNamedItem genericNames[0]; SimpleNamedItem genericNames[1] ]
+                }
+
+        Assert.Equal(expected, actual)
+
+    [<Fact>]
+    member _.``Can create class with stringified generic types``() =
+        let className = "George"
+        let genericNames = ["string"; "int"]
+        let genericName = $"{className}<{genericNames[0]}, {genericNames[1]}>"
         let genericNamedItems = 
             [ for n in genericNames do NamedItem.Create n [] ]
         let expected =
