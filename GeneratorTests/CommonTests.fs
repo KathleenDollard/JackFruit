@@ -97,6 +97,8 @@ type ``I can create a type name ``() =
         ()
 
 
+/// The generic parsing uses a generic parser so validation is not done at this point. Instead 
+/// it's done as code is output or during a validation pass, neither is written yet. 
 type ``When parsing generic strings``() =
     let ParseGenericString input = TreeFromDelimitedString '<' '>' ',' input
 
