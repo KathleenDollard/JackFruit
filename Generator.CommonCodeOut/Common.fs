@@ -3,6 +3,7 @@
 open System
 
 type Scope =
+    | Unknown
     | Public
     | Private
     | Internal

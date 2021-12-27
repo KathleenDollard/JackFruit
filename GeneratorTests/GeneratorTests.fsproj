@@ -21,6 +21,7 @@
 		<Compile Include="DslExpressionTests.fs" />
 		<Compile Include="DslStatementTests.fs" />
 		<Compile Include="DslStructuralTests.fs" />
+		<Compile Include="Prototype.fs" />
 	</ItemGroup>
 
 	<ItemGroup>

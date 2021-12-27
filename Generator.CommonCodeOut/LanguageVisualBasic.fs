@@ -53,8 +53,8 @@ type LanguageVisualBasic() =
         [ $"{this.ScopeOutput cls.Scope}{this.OutputModifiers cls.Modifiers} Class {this.OutputNamedItem cls.ClassName}"
 
           match cls.InheritedFrom with 
-          | Some t -> this.OutputNamedItem t
-          | None -> ()
+          | SomeBase t -> this.OutputNamedItem t
+          | NoBase -> ()
 
           for inter in cls.ImplementedInterfaces do 
             $"Implements {inter}" ]

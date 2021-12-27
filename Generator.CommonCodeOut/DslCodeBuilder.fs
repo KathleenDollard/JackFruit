@@ -151,12 +151,34 @@ type Class(name: string) =
        }
 
     override _.EmptyItem() =  ClassModel.Create name
-    override _.InternalCombine cls cls2 =
-        { cls with Members =  List.append cls.Members cls2.Members }  
-    member this.Yield (memberModel: IMember) : ClassModel = 
-        { this.Zero() with Members = [ memberModel ] }
+    override _.InternalCombine cls1 cls2 =
+        let newScope = 
+            match (cls1.Scope, cls2.Scope) with
+            | (Unknown, Unknown) -> Unknown
+            | (scope, Unknown) -> scope
+            | (Unknown, scope) -> scope
+            | (_, scope2) -> scope2
+        let newInheritedFrom =
+            match (cls1.InheritedFrom, cls2.InheritedFrom) with
+            | (NoBase, NoBase) -> NoBase
+            | (SomeBase baseClass, NoBase) -> SomeBase baseClass
+            | (NoBase, SomeBase baseClass) -> SomeBase baseClass
+            | (_, SomeBase baseClass) -> SomeBase baseClass
 
-    //member _.Quote() = ()
+        { cls1 with 
+            Scope = newScope
+            Modifiers = List.append cls1.Modifiers cls2.Modifiers
+            InheritedFrom = newInheritedFrom
+            ImplementedInterfaces = List.append cls1.ImplementedInterfaces cls2.ImplementedInterfaces
+            Members =  List.append cls1.Members cls2.Members }  
+    //member this.Yield (memberModel: IMember) : ClassModel = 
+    //    { this.Zero() with Members = [ memberModel ] }
+    //member this.Yield (modifiers: ScopeAndModifiers) : ClassModel = 
+    //    { this.Zero() with Scope = modifiers.Scope; Modifiers = modifiers.Modifiers }
+    //member this.Yield (inheritedFrom: InheritedFrom) : ClassModel = 
+    //    { this.Zero() with InheritedFrom = inheritedFrom }
+    //member this.Yield (implementedInterfaces: ImplementedInterface list) : ClassModel = 
+    //    { this.Zero() with ImplementedInterfaces = implementedInterfaces }
 
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
     member _.publicWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: Modifier[]) =
@@ -178,12 +200,12 @@ type Class(name: string) =
     [<CustomOperation("InheritedFrom", MaintainsVariableSpace = true)>]
     member _.inheritedFrom (cls: ClassModel, inheritedFrom: NamedItem) =
         // Consider whether resetting this to None is a valid scenario
-        { cls with InheritedFrom = Some inheritedFrom }
+        { cls with InheritedFrom = SomeBase inheritedFrom }
 
     // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
     [<CustomOperation("ImplementedInterfaces", MaintainsVariableSpace = true)>]
-    member _.interfaces (cls: ClassModel, [<ParamArray>]interfaces: NamedItem list) =
-        { cls with ImplementedInterfaces = interfaces }
+    member _.interfaces (cls: ClassModel, [<ParamArray>]interfaces: ImplementedInterface[]) =
+        { cls with ImplementedInterfaces = List.ofArray interfaces }
 
     [<CustomOperation("Generics", MaintainsVariableSpace = true)>]
     member _.generics (cls: ClassModel, generics: NamedItem list) =

@@ -57,11 +57,12 @@ type LanguageCSharp() =
 
         let baseAndInterfaces = 
             [ match cls.InheritedFrom with 
-              | Some t -> this.OutputNamedItem t
-              | None -> () 
+              | SomeBase t -> this.OutputNamedItem t
+              | NoBase -> () 
                     
               for i in cls.ImplementedInterfaces do
-                    this.OutputNamedItem i ]
+                let (ImplementedInterface name) = i
+                this.OutputNamedItem name ]
               |> addColonIfNeeded
               |> String.concat ", " 
 

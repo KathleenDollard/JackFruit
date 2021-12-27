@@ -110,7 +110,7 @@ type ``When creating a namespace``() =
                 { ClassName = className
                   Scope = Public
                   Modifiers = []
-                  InheritedFrom = None
+                  InheritedFrom = NoBase
                   ImplementedInterfaces = []
                   Members = [] }] }
 
@@ -136,7 +136,7 @@ type ``When creating a namespace``() =
                 { ClassName = className
                   Scope = Public
                   Modifiers = []
-                  InheritedFrom = None
+                  InheritedFrom = NoBase
                   ImplementedInterfaces = []
                   Members = [] }] }
 
@@ -144,7 +144,7 @@ type ``When creating a namespace``() =
             Namespace(nspace) {
                 Class(className) {
                     Public }
-                UsingModel.Create usingName
+                Using usingName
 
                 }
 
@@ -160,7 +160,7 @@ type ``When creating a class``() =
             { ClassName = className
               Scope = Public
               Modifiers = []
-              InheritedFrom = None
+              InheritedFrom = NoBase
               ImplementedInterfaces = []
               Members = [] }
         let actual = 
@@ -178,7 +178,7 @@ type ``When creating a class``() =
             { ClassName = className
               Scope = Public
               Modifiers = [Modifier.Static; Async; Partial]
-              InheritedFrom = None
+              InheritedFrom = NoBase
               ImplementedInterfaces = []
               Members = [] }
         let actual = Class(className) { 
@@ -228,9 +228,9 @@ type ``When creating a class``() =
             [ for n in genericNames do NamedItem.Create n [] ]
         let expected =
             { ClassName = NamedItem.Create className genericNamedItems
-              Scope = Public
+              Scope = Unknown
               Modifiers = []
-              InheritedFrom = None
+              InheritedFrom = NoBase
               ImplementedInterfaces = []
               Members = [] }
         let actual = Class(className) {
@@ -248,9 +248,9 @@ type ``When creating a class``() =
             [ for n in genericNames do NamedItem.Create n [] ]
         let expected =
             { ClassName = NamedItem.Create className genericNamedItems
-              Scope = Public
+              Scope = Unknown
               Modifiers = []
-              InheritedFrom = None
+              InheritedFrom = NoBase
               ImplementedInterfaces = []
               Members = [] }
         let actual = Class(className) {
@@ -266,9 +266,9 @@ type ``When creating a class``() =
         let genericName = "Bart"
         let expected =
             { ClassName = className
-              Scope = Public
+              Scope = Unknown
               Modifiers = []
-              InheritedFrom = Some genericName
+              InheritedFrom = SomeBase genericName
               ImplementedInterfaces = []
               Members = [] }
         let actual = 
@@ -284,17 +284,17 @@ type ``When creating a class``() =
         let className = "George"
         let interfaceNames = ["A"; "B"]
         let expectedInterfaces = 
-            [ for n in interfaceNames do NamedItem.Create n [] ]
+            [ for n in interfaceNames do ImplementedInterface (NamedItem.Create n []) ]
         let expected =
             { ClassName = className
-              Scope = Public
+              Scope = Unknown
               Modifiers = []
-              InheritedFrom = None
+              InheritedFrom = NoBase
               ImplementedInterfaces = expectedInterfaces
               Members = [] }
         let actual = 
             Class(className) {
-                ImplementedInterfaces [for i in interfaceNames do NamedItem.Create i []]
+                ImplementedInterfaces [| for i in interfaceNames do ImplementedInterface (NamedItem.Create i [])|]
                 }
 
         Assert.Equal(expected, actual)
@@ -314,7 +314,7 @@ type ``When creating a class``() =
             { ClassName = className
               Scope = Public
               Modifiers = []
-              InheritedFrom = None
+              InheritedFrom = NoBase
               ImplementedInterfaces = []
               Members = [ expectedField ] }
         let actual = 
@@ -325,13 +325,13 @@ type ``When creating a class``() =
                         Private
                         }]
                 }
-        let codeModelDesired =
-            Class(className) {
-                //Public  // KAD-Chet-Don: Uncommenting this shows current issue
-                Field(fieldName, fieldType) {
-                    Public
-                    }
-                }
+        //let codeModelDesired =
+        //    Class(className) {
+        //        Public  // KAD-Chet-Don: Uncommenting this shows current issue
+        //        Field(fieldName, fieldType) {
+        //            Public
+        //            }
+        //        }
 
         Assert.Equal(expected, actual)
 

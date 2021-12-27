@@ -104,23 +104,32 @@ type FieldModel =
           Modifiers = []
           InitialValue = None }
     interface IMember
+
+
+type InheritedFrom =
+    | SomeBase of BaseClass: NamedItem
+    | NoBase
+
+type ImplementedInterface =
+    | ImplementedInterface of Name: NamedItem
+        
  
 type ClassModel = 
     { ClassName: NamedItem
       Scope: Scope
       Modifiers: Modifier list
-      InheritedFrom: NamedItem option
-      ImplementedInterfaces: NamedItem list
+      InheritedFrom: InheritedFrom
+      ImplementedInterfaces: ImplementedInterface list
       Members: IMember list}
     static member Create(className, scope) =
         { ClassName = className
           Scope = scope
           Modifiers = []
-          InheritedFrom = None
+          InheritedFrom = NoBase
           ImplementedInterfaces = []
           Members = [] }
     static member Create(className) =
-        ClassModel.Create((SimpleNamedItem className), Public)
+        ClassModel.Create((SimpleNamedItem className), Unknown)
     interface IMember
 
 
@@ -149,6 +158,10 @@ type NamespaceModel =
     member this.AddClasses (classes: ClassModel list) =
         { this with Classes = List.append this.Classes classes }
 
+type ScopeAndModifiers =
+    { Scope: Scope
+      Modifiers: Modifier list }
+
 type LanguageHelpers =
     static member Using (usingName: string) =
         UsingModel.Create usingName
@@ -160,3 +173,11 @@ type LanguageHelpers =
                 UsingModel.Create usingName
             else
                 { UsingNamespace = usingName; Alias = Some a }
+    //static member Public ([<ParamArray>] modifiers: Modifier[]) =
+    //    { Scope = Scope.Public; Modifiers = List.ofArray modifiers }
+    //static member Private ([<ParamArray>] modifiers: Modifier[]) =
+    //    { Scope = Scope.Public; Modifiers = List.ofArray modifiers }
+    //static member Internal ([<ParamArray>] modifiers: Modifier[]) =
+    //    { Scope = Scope.Public; Modifiers = List.ofArray modifiers }
+    //static member Protected ([<ParamArray>] modifiers: Modifier[]) =
+    //    { Scope = Scope.Public; Modifiers = List.ofArray modifiers }

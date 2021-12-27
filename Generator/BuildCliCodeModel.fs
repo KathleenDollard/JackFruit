@@ -62,30 +62,32 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel
         let className = commandClassName commandDef
         Class (className)
             {
-                // KAD-Chet: Why does this give an error, while Return seemed to work. 
-                //Public
-                Field ("operation", GenericNamedItem ("Action", [SimpleNamedItem "int"]))
-                    {
-                        // TODO: Make private the default and support Zero so body can be empty
-                        Public // TODO: Add private support
-                    }
-                Constructor(className) 
-                    {
-                        Public
-                    }
-                // TODO: Add singleton support for the following two members
-                Field ("command", SimpleNamedItem "Command")
-                    {
-                        Public // TODO: Add private support
-                    }
-                Property("Command", SimpleNamedItem "Command")
-                    {
-                        Public
-                    }
-                Class("GeneratedHandler")
-                    {
-                        Public
-                    }
+                Members [
+                    // KAD-Chet: Why does this give an error, while Return seemed to work. 
+                    //Public
+                    Field ("operation", GenericNamedItem ("Action", [SimpleNamedItem "int"]))
+                        {
+                            // TODO: Make private the default and support Zero so body can be empty
+                            Public // TODO: Add private support
+                        }
+                    Constructor(className) 
+                        {
+                            Public
+                        }
+                    // TODO: Add singleton support for the following two members
+                    Field ("command", SimpleNamedItem "Command")
+                        {
+                            Public // TODO: Add private support
+                        }
+                    Property("Command", SimpleNamedItem "Command")
+                        {
+                            Public
+                        }
+                    //Class("GeneratedHandler")
+                    //    {
+                    //        Public
+                    //    }
+                ]
             }
 
     let classForCommandDef (commandDef: CommandDef) = ()
