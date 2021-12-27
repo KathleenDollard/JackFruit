@@ -370,13 +370,13 @@ type ``When creating a constructor``() =
 
     [<Fact>]
     member _.``Can create a ctor``() =
-        let className = "A"
-        let codeModel = 
-            Constructor(className) {
+        let expected = { ConstructorModel.Scope = Public; Modifiers = []; Parameters = []; Statements = [] }
+        let actual = 
+            Constructor() {
                 Public
                 }
 
-        Assert.Equal(className, codeModel.ClassName)
+        Assert.Equal(expected, actual)
 
         
 type ``When creating a method``() =

@@ -5,16 +5,6 @@ open Common
 open DslKeywords
 open System
 
-type IMember = interface end
-type IStatement = interface end
-type IExpression = interface end
-type ICompareExpression = 
-    interface 
-    inherit IExpression
-    end
-type IStatementContainer<'T> = 
-    abstract member AddStatements: IStatement list -> 'T
-
 type Modifier =
     | Static
     | Async
@@ -25,6 +15,20 @@ type Modifier =
     | Readonly
     static member Contains modifier list =
         List.exists (fun x -> x = modifier) list
+
+type IMember = interface end
+type IStatement = interface end
+type IExpression = interface end
+type ICompareExpression = 
+    interface 
+    inherit IExpression
+    end
+type IStatementContainer<'T> = 
+    abstract member AddStatements: IStatement list -> 'T
+
+type IMethodLike<'T when 'T:> IMethodLike<'T>> =
+    inherit IStatementContainer<'T>
+    abstract member AddScopeAndModifiers: Scope -> Modifier list -> 'T
 
 type ParameterModel =
     { ParameterName: string
@@ -55,24 +59,31 @@ type MethodModel =
     interface IMember
     member this.AddStatements statements =
         { this with Statements = statements }
-    interface IStatementContainer<MethodModel> with
+    member this.AddScopeAndModifiers scope modifiers = 
+        { this with Scope = scope; Modifiers = modifiers }
+    interface IMethodLike<MethodModel> with
         member this.AddStatements statements = this.AddStatements statements
+        member this.AddScopeAndModifiers scope modifiers = this.AddScopeAndModifiers scope modifiers
      
  
 type ConstructorModel =
-    { ClassName: string
-      Scope: Scope
+    { Scope: Scope
       Modifiers: Modifier list
       Parameters: ParameterModel list
       Statements: IStatement list}
     static member Create className =
-        { ClassName =  className
-          Scope = Public
+        { Scope = Public
           Modifiers = []
           Parameters = []
           Statements = [] }
     interface IMember
-
+    member this.AddStatements statements =
+        { this with Statements = statements }
+    member this.AddScopeAndModifiers scope modifiers = 
+        { this with Scope = scope; Modifiers = modifiers }
+    interface IMethodLike<ConstructorModel> with
+        member this.AddStatements statements = this.AddStatements statements
+        member this.AddScopeAndModifiers scope modifiers = this.AddScopeAndModifiers scope modifiers
 
 type PropertyModel =
     { PropertyName: string

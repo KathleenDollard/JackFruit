@@ -63,14 +63,13 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel
         Class (className)
             {
                 Members [
-                    // KAD-Chet: Why does this give an error, while Return seemed to work. 
                     //Public
                     Field ("operation", GenericNamedItem ("Action", [SimpleNamedItem "int"]))
                         {
                             // TODO: Make private the default and support Zero so body can be empty
-                            Public // TODO: Add private support
+                            Public 
                         }
-                    Constructor(className) 
+                    Constructor()
                         {
                             Public
                         }

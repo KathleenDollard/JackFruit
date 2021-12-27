@@ -252,34 +252,33 @@ type Field(name: string, typeName: NamedItem) =
     member _.protectedWithModifiers (field: FieldModel, [<ParamArray>] modifiers: Modifier[]) =
         updateModifiers field Protected modifiers
 
+[< AbstractClass >]
+type MethodBase<'T when 'T :> IMethodLike<'T>>() =
+    inherit StatementBuilderBase<'T>()
+
+    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
+    member _.publicWithModifiers (method: 'T, [<ParamArray>] modifiers: Modifier[]) =
+        (method :> IMethodLike<'T>).AddScopeAndModifiers Public (List.ofArray modifiers)
+
+    [<CustomOperation("Private", MaintainsVariableSpace = true)>]
+    member _.privateWithModifiers (method: 'T, [<ParamArray>] modifiers: Modifier[]) =
+         (method :> IMethodLike<'T>).AddScopeAndModifiers Private (List.ofArray modifiers)
+
+    [<CustomOperation("Internal", MaintainsVariableSpace = true)>]
+    member _.internalWithModifiers (method: 'T, [<ParamArray>] modifiers: Modifier[]) =
+         (method :> IMethodLike<'T>).AddScopeAndModifiers Internal (List.ofArray modifiers)
+
+    [<CustomOperation("Protected", MaintainsVariableSpace = true)>]
+    member _.protectedWithModifiers (method: 'T, [<ParamArray>] modifiers: Modifier[]) =
+         (method :> IMethodLike<'T>).AddScopeAndModifiers Protected (List.ofArray modifiers)
+
 
 type Method(name: NamedItem, returnType: ReturnType) =
-    inherit StatementBuilderBase<MethodModel>()
+    inherit MethodBase<MethodModel>()
 
-    let updateModifiers (method: MethodModel) scope (modifiers: Modifier[]) =
-        { method with 
-            Scope = scope
-            Modifiers = List.ofArray modifiers }        
- 
     override _.EmptyItem (): MethodModel =  MethodModel.Create name returnType
     override _.InternalCombine (method: MethodModel) (method2: MethodModel) =
         { method with Statements =  List.append method.Statements method2.Statements }
-
-    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
-    member _.publicWithModifiers (method: MethodModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers method Public modifiers
-
-    [<CustomOperation("Private", MaintainsVariableSpace = true)>]
-    member _.privateWithModifiers (method: MethodModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers method Private modifiers
-
-    [<CustomOperation("Internal", MaintainsVariableSpace = true)>]
-    member _.internalWithModifiers (method: MethodModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers method Internal modifiers
-
-    [<CustomOperation("Protected", MaintainsVariableSpace = true)>]
-    member _.protectedWithModifiers (method: MethodModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers method Protected modifiers
 
 
 type Property(name: string, typeName: NamedItem) =
@@ -310,31 +309,13 @@ type Property(name: string, typeName: NamedItem) =
         updateModifiers property Public modifiers
 
 
-type Constructor(className: string) =
-    let updateModifiers (ctor: ConstructorModel) scope (modifiers: Modifier[]) =
-        { ctor with 
-            Scope = scope
-            Modifiers = List.ofArray modifiers }        
-  
+type Constructor() =
+    inherit MethodBase<ConstructorModel>()
         
-    member _.Yield (_) = ConstructorModel.Create className
-    member this.Zero() = this.Yield()
+    override _.EmptyItem (): ConstructorModel =  ConstructorModel.Create()
+    override _.InternalCombine (ctor: ConstructorModel) (ctor2: ConstructorModel) =
+        { ctor with Statements =  List.append ctor.Statements ctor2.Statements }
 
-    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
-    member _.publicWithModifiers (ctor: ConstructorModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers ctor Public modifiers
-
-    [<CustomOperation("Private", MaintainsVariableSpace = true)>]
-    member _.privateWithModifiers (ctor: ConstructorModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers ctor Public modifiers
-
-    [<CustomOperation("Internal", MaintainsVariableSpace = true)>]
-    member _.internalWithModifiers (ctor: ConstructorModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers ctor Public modifiers
-
-    [<CustomOperation("Protected", MaintainsVariableSpace = true)>]
-    member _.protectedWithModifiers (ctor: ConstructorModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers ctor Public modifiers
 
 
 

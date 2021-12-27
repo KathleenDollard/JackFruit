@@ -7,8 +7,8 @@ open Common
 type AliasWord =
 | Alias
 
-type OfWord =
-    | Of
+type AsWord =
+    | As
 
 
 type IModifierWord = interface end
