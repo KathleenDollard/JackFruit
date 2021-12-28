@@ -104,11 +104,29 @@ type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
     member _.addAssign (item: 'T, symbol: string, value: obj) =
         let expression = GetLiteral value
         item.AddStatements [ {AssignmentModel.Item = symbol; Value = expression} ] 
+    
+    [<CustomOperation("AssignWithDeclare", MaintainsVariableSpace = true)>]
+    member _.addAssignWithDeclare (item: 'T, symbol: string, typeName: NamedItem option, value: IExpression) =
+        item.AddStatements [ {AssignWithDeclareModel.Variable = symbol; TypeName = typeName; Value = value} ] 
 
+    [<CustomOperation("AssignWithDeclare", MaintainsVariableSpace = true)>]
+    member _.addAssignWithDeclare (item: 'T, symbol: string, typeName: NamedItem option, value: obj) =
+        let expression = GetLiteral value
+        item.AddStatements [ {AssignWithDeclareModel.Variable = symbol; TypeName = typeName; Value = expression} ] 
 
-    //[<CustomOperation("If", MaintainsVariableSpace = true)>]
-    //member _.addIf (item: 'T, condition: ICompareExpression, statements: IStatement list) =
-    //    item.AddStatements [ IfModel.Create condition statements ] 
+    [<CustomOperation("AssignWithVar", MaintainsVariableSpace = true)>]
+    member _.addAssignWithDeclare (item: 'T, symbol: string, value: IExpression) =
+        item.AddStatements [ {AssignWithDeclareModel.Variable = symbol; TypeName = None; Value = value} ] 
+
+    [<CustomOperation("AssignWithVar", MaintainsVariableSpace = true)>]
+    member _.addAssignWithDeclare (item: 'T, symbol: string, value: obj) =
+        let expression = GetLiteral value
+        item.AddStatements [ {AssignWithDeclareModel.Variable = symbol; TypeName = None; Value = expression} ] 
+        2
+    [<CustomOperation("If2", MaintainsVariableSpace = true)>]
+    member _.addIf (item: 'T, condition: IExpression, statements: IStatement list) =
+        item.AddStatements [ IfModel.Create condition statements ] 
+
 
 type If(condition: ICompareExpression) =
     inherit StatementBuilderBase<IfModel>()

@@ -17,7 +17,7 @@ open Generator.Language
 // switching to the complex model prior to generation. Alternatively, for If, the 
 // next statement could also be passed, which should be the next part of the If it exists.
 type IfModel =
-    { IfCondition: ICompareExpression
+    { IfCondition: IExpression
       Statements: IStatement list }
     static member Create condition statements =
         { IfCondition = condition; Statements = statements }

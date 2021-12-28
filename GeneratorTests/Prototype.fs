@@ -8,6 +8,8 @@ open Common
 open DslKeywords
 open DslCodeBuilder
 open type Generator.Language.LanguageHelpers
+open Generator.LanguageExpressions.ExpressionHelpers
+open Generator.LanguageHelpers
 
 type System.String with 
     member this.AsFieldName() =
@@ -24,7 +26,8 @@ type ``When creating simple code``() =
         let propertyName = "Prop1"
         let propertyType = "string"
         let paramName = propertyName.AsParamName()
-        let method = "MethodA"
+        let methodName = "MethodA"
+        let methodReturn = "int"
         let code = 
             Namespace(nspaceName) {
                 Using "System"
@@ -38,16 +41,55 @@ type ``When creating simple code``() =
 
                         Constructor() 
                             { Public 
-                              //Parameter paramName propertyType
+                              Parameter paramName propertyType
                               Assign propertyName paramName
                             }
 
-
                         Property(propertyName, "int") { Public }
 
+                        Method(methodName, (Type methodReturn))
+                            { Public
+                              //AssignWithVar "x" "0" 
+                              //If2 (Compare (InvokeExpression propertyName "Length" []) Equals (GetLiteral 0)) [
+                              //      Return 0
+                              //      ]
+
+                              
+                            }
                     
                     ]
 
                 }
             }
+
+        let code2 = 
+            Namespace(nspaceName) {
+                Using "System"
+                Using "System.Linq"
+
+                Class(className) {
+                    Public ()
+                        Field("A", "string") { Private }
+
+                    Constructor() 
+                        { Public 
+                        }
+
+                    Property(propertyName, "int") { Public }
+
+                    Method(methodName, (Type methodReturn))
+                            { Public
+                                //AssignWithVar "x" "0" 
+                                //If2 (Compare (InvokeExpression propertyName "Length" []) Equals (GetLiteral 0)) [
+                                //      Return 0
+                                //      ]
+
+                                  
+                            }
+                        
+                    ]
+
+                }
+            }
+
         ()
