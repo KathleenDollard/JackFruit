@@ -157,13 +157,14 @@ type LanguageBase() =
         | Protected -> this.ProtectedKeyword
 
     member this.OutputParameters (parameters: ParameterModel list) = 
-        let getDefault parameter =
-            match parameter.Default with 
-                | None -> ""
-                | Some def -> $" = {this.OutputExpression def}"
+        let getParameter (param:ParameterModel) =
+            let nameAndType =  $"{this.TypeAndName param.Type param.ParameterName}"
+            match param.Style with 
+                | Normal -> nameAndType
+                | DefaultValue def -> $"{nameAndType} = {this.OutputExpression def}"
+                | IsParamArray -> $"params {nameAndType}[]"
         
-        let s = [ for param in parameters do
-                    $"{this.TypeAndName param.Type param.ParameterName}{getDefault param}"]
+        let s = [ for param in parameters do getParameter param ]
         String.Join(", ", s)
     
     member this.OutputOperator operator =

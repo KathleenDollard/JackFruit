@@ -37,14 +37,20 @@ type ComparisonModel =
           Operator = operator }
     interface ICompareExpression
 
-
 type StringLiteralModel =
     { Value: string}
     interface IExpression
     static member Create value =
         { Value = value }
 
+// Keeping this as string means testing the model tests the value actually output. BUT, this isn't consistent with null/bool as those differ by language
 type OtherLiteralModel =
+    { Value: string}
+    interface IExpression
+    static member Create value =
+        { Value = value }
+
+type UnknownLiteralModel =
     { Value: string}
     interface IExpression
     static member Create value =

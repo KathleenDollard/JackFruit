@@ -8,6 +8,7 @@ open Generator.LanguageStatements
 open Generator.LanguageExpressions
 open Common
 open Generator.LanguageExpressions.ExpressionHelpers
+open Generator.LanguageHelpers
 
 
 [<AbstractClass>]
@@ -18,12 +19,12 @@ type BuilderBase<'T>() =
 
     member this.Yield (()) : 'T = this.EmptyItem()
     member this.Zero() : 'T = this.Yield(())
-    member this.Combine (method: 'T, method2: 'T) : 'T=
-        this.InternalCombine method method2
+    member this.Combine (item: 'T, item2: 'T) : 'T=
+        this.InternalCombine item item2
     member _.Delay(f: unit -> 'T) : 'T = f()
-    member this.For(methods, f) :'T = 
-        let methodList = Seq.toList methods
-        match methodList with 
+    member this.For(items, f) :'T = 
+        let itemList = Seq.toList items
+        match itemList with 
         | [] -> this.Zero()
         | [x] -> f(x)
         | head::tail ->
@@ -43,9 +44,9 @@ type BuilderBase2<'M, 'T>() =
     member this.Combine (item: 'M, item2: 'M) : 'M=
         this.InternalCombine item item2
     member _.Delay(f) : 'M = f()
-    member this.For(methods, f) :'M = 
-        let methodList = Seq.toList methods
-        match methodList with 
+    member this.For(items, f) :'M = 
+        let itemList = Seq.toList items
+        match itemList with 
         | [] -> this.Zero()
         | [x] -> f(x)
         | head::tail ->
@@ -63,42 +64,52 @@ type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
 
     // KAD-Chet: I do notunderstand how adding the statements here and in combine don't double them
     [<CustomOperation("Return", MaintainsVariableSpace = true)>]
-    member _.addReturn (method: 'T) =
-        method.AddStatements [ {ReturnModel.Expression = None} ] 
+    member _.addReturn (item: 'T) =
+        item.AddStatements [ {ReturnModel.Expression = None} ] 
 
     [<CustomOperation("Return", MaintainsVariableSpace = true)>]
-    member _.addReturn (method: 'T, expression: obj) =
+    member _.addReturn (item: 'T, expression: obj) =
         let expr: IExpression = 
             match expression with 
             | :? IExpression as x -> x
             | :? string as x -> StringLiteralModel.Create x
             | _ -> OtherLiteralModel.Create (expression.ToString())
 
-        method.AddStatements [ {ReturnModel.Expression = Some expr} ] 
+        item.AddStatements [ {ReturnModel.Expression = Some expr} ] 
 
     [<CustomOperation("SimpleCall", MaintainsVariableSpace = true)>]
-    member _.addSimpleCall (method: 'T, expression: obj) =
+    member _.addSimpleCall (item: 'T, expression: obj) =
         let expr: IExpression = 
             match expression with 
             | :? IExpression as x -> x
             | :? string as x -> StringLiteralModel.Create x
             | _ -> OtherLiteralModel.Create (expression.ToString())
 
-        method.AddStatements [ {SimpleCallModel.Expression = expr} ] 
+        item.AddStatements [ {SimpleCallModel.Expression = expr} ] 
  
     [<CustomOperation("Invoke", MaintainsVariableSpace = true)>]
-    member _.addInvoke (method: 'T, instance: NamedItem, methodToCall: NamedItem, [<ParamArray>] args: IExpression[]) =
-        let expr = InvokeExpression instance methodToCall (List.ofArray args)
-        method.AddStatements [ {SimpleCallModel.Expression = expr} ] 
+    member _.addInvoke (item: 'T, instance: NamedItem, itemToCall: NamedItem, [<ParamArray>] args: IExpression[]) =
+        let expr = InvokeExpression instance itemToCall (List.ofArray args)
+        item.AddStatements [ {SimpleCallModel.Expression = expr} ] 
 
     [<CustomOperation("Invoke", MaintainsVariableSpace = true)>]
-    member _.addInvoke (method: 'T, instance: string, methodToCall: string, [<ParamArray>] args: IExpression[]) =
-        let expr = InvokeExpression instance methodToCall (List.ofArray args)
-        method.AddStatements [ {SimpleCallModel.Expression = expr} ] 
+    member _.addInvoke (item: 'T, instance: string, itemToCall: string, [<ParamArray>] args: IExpression[]) =
+        let expr = InvokeExpression instance itemToCall (List.ofArray args)
+        item.AddStatements [ {SimpleCallModel.Expression = expr} ] 
+
+    [<CustomOperation("Assign", MaintainsVariableSpace = true)>]
+    member _.addAssign (item: 'T, symbol: string, value: IExpression) =
+        item.AddStatements [ {AssignmentModel.Item = symbol; Value = value} ] 
+
+    [<CustomOperation("Assign", MaintainsVariableSpace = true)>]
+    member _.addAssign (item: 'T, symbol: string, value: obj) =
+        let expression = GetLiteral value
+        item.AddStatements [ {AssignmentModel.Item = symbol; Value = expression} ] 
+
 
     //[<CustomOperation("If", MaintainsVariableSpace = true)>]
-    //member _.addIf (method: 'T, condition: ICompareExpression, statements: IStatement list) =
-    //    method.AddStatements [ IfModel.Create condition statements ] 
+    //member _.addIf (item: 'T, condition: ICompareExpression, statements: IStatement list) =
+    //    item.AddStatements [ IfModel.Create condition statements ] 
 
 type If(condition: ICompareExpression) =
     inherit StatementBuilderBase<IfModel>()
@@ -257,20 +268,24 @@ type MethodBase<'T when 'T :> IMethodLike<'T>>() =
     inherit StatementBuilderBase<'T>()
 
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]
-    member _.publicWithModifiers (method: 'T, [<ParamArray>] modifiers: Modifier[]) =
-        (method :> IMethodLike<'T>).AddScopeAndModifiers Public (List.ofArray modifiers)
+    member _.publicWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
+        (item :> IMethodLike<'T>).AddScopeAndModifiers Public (List.ofArray modifiers)
 
     [<CustomOperation("Private", MaintainsVariableSpace = true)>]
-    member _.privateWithModifiers (method: 'T, [<ParamArray>] modifiers: Modifier[]) =
-         (method :> IMethodLike<'T>).AddScopeAndModifiers Private (List.ofArray modifiers)
+    member _.privateWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
+         (item :> IMethodLike<'T>).AddScopeAndModifiers Private (List.ofArray modifiers)
 
     [<CustomOperation("Internal", MaintainsVariableSpace = true)>]
-    member _.internalWithModifiers (method: 'T, [<ParamArray>] modifiers: Modifier[]) =
-         (method :> IMethodLike<'T>).AddScopeAndModifiers Internal (List.ofArray modifiers)
+    member _.internalWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
+         (item :> IMethodLike<'T>).AddScopeAndModifiers Internal (List.ofArray modifiers)
 
     [<CustomOperation("Protected", MaintainsVariableSpace = true)>]
-    member _.protectedWithModifiers (method: 'T, [<ParamArray>] modifiers: Modifier[]) =
-         (method :> IMethodLike<'T>).AddScopeAndModifiers Protected (List.ofArray modifiers)
+    member _.protectedWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
+         (item :> IMethodLike<'T>).AddScopeAndModifiers Protected (List.ofArray modifiers)
+
+    [<CustomOperation("Parameter", MaintainsVariableSpace = true)>]
+    member _.addParmaeter (item: 'T, parameterName: string, parameterType: NamedItem) =
+        (item :> IMethodLike<'T>).AddParameter parameterName parameterType Normal
 
 
 type Method(name: NamedItem, returnType: ReturnType) =

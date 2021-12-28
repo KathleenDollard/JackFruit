@@ -8,6 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Include="GeneralUtils.fs" />
 		<Compile Include="Utilities.fs" />
 		<Compile Include="Common.fs" />
 		<Compile Include="IWriter.fs" />
@@ -15,6 +16,7 @@
 		<Compile Include="Language.fs" />
 		<Compile Include="LanguageExpressions.fs" />
 		<Compile Include="LanguageStatements.fs" />
+		<Compile Include="LanguageHelpers.fs" />
 		<Compile Include="ILanguage.fs" />
 		<Compile Include="LanguageRoslynOut.fs" />
 		<Compile Include="DslCodeBuilder.fs" />

@@ -3,7 +3,9 @@
 open Generator
 open Common
 open DslKeywords
+open Generator.GeneralUtils
 open System
+
 
 type Modifier =
     | Static
@@ -16,6 +18,7 @@ type Modifier =
     static member Contains modifier list =
         List.exists (fun x -> x = modifier) list
 
+
 type IMember = interface end
 type IStatement = interface end
 type IExpression = interface end
@@ -26,20 +29,26 @@ type ICompareExpression =
 type IStatementContainer<'T> = 
     abstract member AddStatements: IStatement list -> 'T
 
+
 type IMethodLike<'T when 'T:> IMethodLike<'T>> =
     inherit IStatementContainer<'T>
     abstract member AddScopeAndModifiers: Scope -> Modifier list -> 'T
+    abstract member AddParameter: string -> NamedItem -> ParameterStyle -> 'T
+  
+
+type ParameterStyle =
+    | Normal
+    | DefaultValue of IExpression
+    | IsParamArray
 
 type ParameterModel =
     { ParameterName: string
       Type: NamedItem
-      Default: IExpression option
-      IsParams: bool}
+      Style: ParameterStyle }
     static member Create name paramType =
         { ParameterName = name
           Type = paramType
-          Default = None
-          IsParams = false }
+          Style = Normal }
 
 
 type MethodModel =
@@ -61,9 +70,13 @@ type MethodModel =
         { this with Statements = statements }
     member this.AddScopeAndModifiers scope modifiers = 
         { this with Scope = scope; Modifiers = modifiers }
+    member this.AddParameter parameterName parameterType style = 
+        { this with Parameters = List.append this.Parameters [{ ParameterName = parameterName; Type = parameterType; Style = style} ] }
     interface IMethodLike<MethodModel> with
         member this.AddStatements statements = this.AddStatements statements
         member this.AddScopeAndModifiers scope modifiers = this.AddScopeAndModifiers scope modifiers
+        member this.AddParameter parameterName parameterType style = 
+            this.AddParameter parameterName parameterType style
      
  
 type ConstructorModel =
@@ -81,9 +94,14 @@ type ConstructorModel =
         { this with Statements = statements }
     member this.AddScopeAndModifiers scope modifiers = 
         { this with Scope = scope; Modifiers = modifiers }
+    member this.AddParameter parameterName parameterType style = 
+        { this with Parameters = List.append this.Parameters [{ ParameterName = parameterName; Type = parameterType; Style = style} ] }
     interface IMethodLike<ConstructorModel> with
         member this.AddStatements statements = this.AddStatements statements
         member this.AddScopeAndModifiers scope modifiers = this.AddScopeAndModifiers scope modifiers
+        member this.AddParameter parameterName parameterType style = 
+            this.AddParameter parameterName parameterType style
+
 
 type PropertyModel =
     { PropertyName: string
@@ -192,3 +210,10 @@ type LanguageHelpers =
     //    { Scope = Scope.Public; Modifiers = List.ofArray modifiers }
     //static member Protected ([<ParamArray>] modifiers: Modifier[]) =
     //    { Scope = Scope.Public; Modifiers = List.ofArray modifiers }
+
+type System.String with 
+    member this.AsFieldName() =
+        ToCamel(this)
+    member this.AsParamName() =
+        ToCamel(this)
+        

@@ -106,8 +106,7 @@ type ParameterModel with
         let data =
             { ParameterName = "param1"
               Type = NamedItem.Create "string"  []
-              Default = None
-              IsParams = false }
+              Style = Normal }
 
         { Data = data
           CSharp = [ "string param1" ] }
