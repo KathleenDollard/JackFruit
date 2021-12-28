@@ -132,18 +132,13 @@ type ``When creating If statements``() =
 
     [<Fact>]
     member _.``Can  create If without Else``() =
-        let outerMethodName = "A"
         let returnIfTrue = "Fred"
         let returnStatement = { ReturnModel.Expression = Some (Literal returnIfTrue) }
         let expectedModel = { IfCondition = True; Statements = [ returnStatement ] }
-        let codeModel = 
-            Method(SimpleNamedItem outerMethodName, Void) {
-                If (True) {
-                    Return returnIfTrue }
+        let actualModel = 
+            If (True) {
+                Return returnIfTrue }
 
-                }           
-
-        let actualModel = codeModel.Statements[0] :?> IfModel
         Assert.Equal(expectedModel, actualModel)
 
     
@@ -183,14 +178,10 @@ type ``When creating If statements``() =
             Method(SimpleNamedItem outerMethodName, Void) {
                 If (True) {
                     Return returnIfTrue }
-                ElseIf (False) {
-                    Return returnIfFalse }
                 }           
 
         let actualModelIfTrue = codeModel.Statements[0] :?> IfModel
-        let actualModelIfFalse = codeModel.Statements[1] :?> ElseIfModel
         Assert.Equal(expectedModelIfTrue, actualModelIfTrue)
-        Assert.Equal(expectedModelIfFalse, actualModelIfFalse)
         
 type ``When creating ForEach statements``() =
     [<Fact>]
