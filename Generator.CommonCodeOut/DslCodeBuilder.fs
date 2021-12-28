@@ -62,7 +62,6 @@ type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
     member this.Yield (statement: IStatement) : 'T = 
         this.Zero().AddStatements [ statement ]
 
-    // KAD-Chet: I do notunderstand how adding the statements here and in combine don't double them
     [<CustomOperation("Return", MaintainsVariableSpace = true)>]
     member _.addReturn (item: 'T) =
         item.AddStatements [ {ReturnModel.Expression = None} ] 
@@ -231,7 +230,7 @@ type Class(name: string) =
         { cls with Members =  List.append cls.Members memberModels }
  
 
-// KAD-Don: I have not been able to create a CE that supports an empty body. Is it possible?
+// Don: I have not been able to create a CE that supports an empty body. Is it possible?
 //          I want to allow: 
 //            Field(n, t) { }
 //            Field(n, t) { Public Static }
@@ -244,7 +243,7 @@ type Field(name: string, typeName: NamedItem) =
             Modifiers = List.ofArray modifiers }
         
     override _.EmptyItem() =  FieldModel.Create name typeName
-    // KAD-Chet: This is goofy
+    // KAD: Clean this up. Either put a default in the base or combine the modifier comparison as elsewhere
     override _.InternalCombine cls cls2 = cls
 
     [<CustomOperation("Public", MaintainsVariableSpace = true)>]

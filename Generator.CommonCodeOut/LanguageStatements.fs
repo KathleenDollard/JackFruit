@@ -99,8 +99,7 @@ type CompilerNullableAction =
     | Annotations
     | Warnings
 
-// KAD-Chet: Here and elsewhere, I could use a type that required legal 
-// symbols (and this one spot Guid). Can I do that?
+// KAD: Make a single member DU for Symbole which will allow validation at hte right time
 type CompilerDirectiveType =
     | IfDef of symbol: string
     | ElIfDef of symbol: string

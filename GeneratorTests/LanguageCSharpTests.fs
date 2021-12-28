@@ -228,7 +228,7 @@ type ``When outputting code`` () =
     member _.``Expanded properties output correctly``() =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        //// KAD-Don: This is the issue from VS
+        //// Don: This is the issue from VS
         //let issue = 
         //  [ "public MyReturnType MyProperty "
         //    "{"

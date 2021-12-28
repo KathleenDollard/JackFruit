@@ -22,10 +22,10 @@ type Modifier =
 type IMember = interface end
 type IStatement = interface end
 type IExpression = interface end
+
 type ICompareExpression = 
-    interface 
     inherit IExpression
-    end
+
 type IStatementContainer<'T> = 
     abstract member AddStatements: IStatement list -> 'T
 

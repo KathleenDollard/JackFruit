@@ -170,10 +170,7 @@ type ``When creating If statements``() =
         let outerMethodName = "A"
         let returnIfTrue = "Fred"
         let returnStatementIfTrue = { ReturnModel.Expression = Some (Literal returnIfTrue) }
-        let returnIfFalse = "George"
-        let returnStatementIfFalse = { ReturnModel.Expression = Some (Literal returnIfFalse) }
         let expectedModelIfTrue= { IfCondition = True; Statements = [ returnStatementIfTrue ] }
-        let expectedModelIfFalse= { ElseIfCondition = True; Statements = [ returnStatementIfFalse ] }
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
                 If (True) {

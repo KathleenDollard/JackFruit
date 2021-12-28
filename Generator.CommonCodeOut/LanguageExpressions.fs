@@ -69,14 +69,13 @@ type SymbolModel =
     static member Create name =
         { Name = name }
 
-// KAD-Chet: This seems pretty dumb, but I need something that implements the interface.
-type NullModel =
-    { Dummy: string} // not sure how to manage this
+type NullModel() = class
     interface IExpression
-    static member Create() = { Dummy = "" }
+    static member Create() = NullModel()
+    end
 
 module ExpressionHelpers =
-    // KAD-Chet: Do you see another way to differentiate this from the statement Invoke? 
+    // KAD: Do you see another way to differentiate this from the statement Invoke? Reconsider once E@E is working
     //           I wonder which is more common in C#. If we had Invoke and Invocation, which 
     //           would be the statement and which the expression?
     let InvokeExpression

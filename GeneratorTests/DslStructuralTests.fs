@@ -26,13 +26,11 @@ let NameAndGenericsFromName (namedItem: NamedItem) =
 type ``When creating a namespace``() =
     let namespaces: Namespace list = []
 
-    // KAD-Don-Chet: It appears that we don't support the empty case.
     [<Fact(Skip="Can't create an empty thing yet. May drop requirement.")>]
     member _.``Can create a namespace``() =
         let nspace = "George"
         let expected = { NamespaceModel.NamespaceName = nspace; Usings = []; Classes = [] }
 
-        // KAD-Don-Chet: I thought when I created a Zero method, I'd be able to remove the body of these expressions if they were empty.
         let actual = 
              Namespace(nspace) {
                 Using ""
@@ -325,13 +323,6 @@ type ``When creating a class``() =
                         Private
                         }]
                 }
-        //let codeModelDesired =
-        //    Class(className) {
-        //        Public  // KAD-Chet-Don: Uncommenting this shows current issue
-        //        Field(fieldName, fieldType) {
-        //            Public
-        //            }
-        //        }
 
         Assert.Equal(expected, actual)
 

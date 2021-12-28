@@ -84,7 +84,7 @@ type ``When creating expressions``() =
     [<Fact>]
     member _.``Can create a Null``() =
         let value = "George"
-        let expectedModel = { NullModel.Dummy = "" }
+        let expectedModel = NullModel()
 
         let actualModel = Null
 
