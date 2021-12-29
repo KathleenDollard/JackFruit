@@ -1,8 +1,12 @@
 ﻿module  Generator.LanguageHelpers
 
+
 open Generator.LanguageExpressions
+open Generator.LanguageStatements
 open System
 open Generator.Language
+open Common
+open DslKeywords
 
 let (|NullLiteral|_|)  (value: obj) =
     match value with 
@@ -66,7 +70,7 @@ let (|SymbolLiteral|_|) (value: obj) =
     match value with 
     | null -> None
     | :? string as s -> // probably unnecessary optimization
-        if String.IsNullOrWhiteSpace(s) then 
+        if not (String.IsNullOrWhiteSpace(s)) then 
             match s with 
             | NullLiteral _ 
             | BoolLiteral _
@@ -78,8 +82,10 @@ let (|SymbolLiteral|_|) (value: obj) =
         else None
     | _ -> None
 
-let GetLiteral (value: obj) : IExpression =
+let GetExpression (value: obj) : IExpression =
     match value with 
+    | null -> UnknownLiteralModel.Create("<Error: Actual Null>")
+    | :? IExpression as exp -> exp
     | NullLiteral x -> x
     | BoolLiteral x -> x
     | StringLiteral x -> x
@@ -87,3 +93,73 @@ let GetLiteral (value: obj) : IExpression =
     | DoubleLiteral x -> x
     | SymbolLiteral x -> x
     | _ -> UnknownLiteralModel.Create (value.ToString())
+
+
+type Structural =
+    static member Using (usingName: string) =
+        UsingModel.Create usingName
+    static member Using (usingName: string, ?w:AliasWord, ?alias: string) =
+        match alias with 
+        | None -> UsingModel.Create usingName
+        | Some a ->
+            if String.IsNullOrEmpty a then
+                UsingModel.Create usingName
+            else
+                { UsingNamespace = usingName; Alias = Some a }
+
+    static member Public ([<ParamArray>] modifiers: Modifier[]) =
+        { Scope = Scope.Public; Modifiers = List.ofArray modifiers }
+    static member Private ([<ParamArray>] modifiers: Modifier[]) =
+        { Scope = Scope.Private; Modifiers = List.ofArray modifiers }
+    static member Internal ([<ParamArray>] modifiers: Modifier[]) =
+        { Scope = Scope.Internal; Modifiers = List.ofArray modifiers }
+    static member Protected ([<ParamArray>] modifiers: Modifier[]) =
+        { Scope = Scope.Protected; Modifiers = List.ofArray modifiers }
+
+    static member InheritsFrom (baseClass: NamedItem) = 
+        SomeBase baseClass
+    static member ImplementsInterfaces ([<ParamArray>] interfaces: NamedItem[]) = 
+        [ for i in interfaces do ImplementedInterface i ]
+       
+
+    static member Parameter(name: string, typeName: NamedItem, ?style: ParameterStyle) =
+        let newStyle =
+            match style with 
+            | Some s -> s
+            | _ -> Normal
+        { ParameterName = name; Type = typeName; Style = newStyle }
+
+module Statements =
+    // Since these contain statements, they are Computation Expressions in DslCodeBuilder
+    //    * Creating IfModel, ElseIfModel, and ElseModel
+    //    * Creating ForEachModel
+
+    let Assign(variable: string) (value: obj) =
+        let expression = GetExpression value
+        AssignmentModel.Create variable expression
+
+    let AssignWithDeclare (variable: string) (typeName: NamedItem) (value: obj) =
+        let expression = GetExpression value
+        AssignWithDeclareModel.Create variable (Some typeName) expression
+
+    let AssignWithVar (variable: string) (value: obj) =
+        let expression = GetExpression value
+        AssignWithDeclareModel.Create variable None expression
+
+    let SimpleCall (expression: IExpression) =
+        SimpleCallModel.Create expression
+
+    let Comment (text: string) =
+        CommentModel.Create text
+
+    let CompilerDirective (directive: CompilerDirectiveType) =
+        CompilerDirectiveModel.Create directive
+
+    let Return (returnValue: IExpression) =
+        ReturnModel.Create (Some returnValue)
+
+    let ReturnVoid () =
+        ReturnModel.Create None
+
+    let Invoke instance methodName arguments =
+        InvocationModel.Create  instance methodName arguments

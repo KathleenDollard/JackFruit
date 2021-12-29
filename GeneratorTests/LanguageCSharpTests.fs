@@ -257,7 +257,7 @@ type ``When outputting code`` () =
         let data = 
             { PropertyModel.ForTesting.Data with 
                 GetStatements = [ { ReturnModel.Expression = Some (SymbolModel.Create "x") } ]
-                SetStatements = [  { AssignmentModel.Item = "value"; Value = SymbolModel.Create "x"}] }
+                SetStatements = [  { AssignmentModel.Variable = "value"; Value = SymbolModel.Create "x"}] }
 
         outPutter.OutputProperty data
         let actual = writer.LinePairs()

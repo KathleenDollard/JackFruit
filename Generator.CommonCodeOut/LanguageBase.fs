@@ -107,7 +107,7 @@ type LanguageBase() =
         member this.ForEachClose forEach = this.ForEachClose forEach
 
         member this.Assignment assignment =
-            [$"{assignment.Item} = {this.OutputExpression assignment.Value}{this.EndOfStatement}"]
+            [$"{assignment.Variable} = {this.OutputExpression assignment.Value}{this.EndOfStatement}"]
         member this.AssignWithDeclare assign = this.AssignWithDeclare assign
       
         member this.Return ret =
@@ -210,8 +210,9 @@ type LanguageBase() =
         | :? OtherLiteralModel as x -> x.Value
         | :? SymbolModel as x -> x.Name
         | :? NullModel as _ -> this.NullKeyword // TODO: Watch for issues with this. Comparisons with Null from Nullable can be flipped from C#
+        | a -> invalidOp $"Unexpected expression type in output. Type **{a}**"
     
     member this.OutputAssignment assignment =
-        $"{assignment.Item} = {assignment.Value}"
+        $"{assignment.Variable} = {assignment.Value}"
 
 

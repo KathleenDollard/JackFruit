@@ -84,7 +84,7 @@ type ForEachModel with
 type AssignmentModel with
     static member ForTesting =
         let data =
-            { Item = "item"
+            { Variable = "item"
               Value = StringLiteralModel.Create "boo!" }
 
         { Data = data
@@ -113,7 +113,7 @@ type ParameterModel with
 
 type MethodModel with
     static member ForTesting =
-        let data = MethodModel.Create (SimpleNamedItem "MyMethod") (Type (NamedItem.Create "string"  []))
+        let data = MethodModel.Create (SimpleNamedItem "MyMethod") (ReturnType (NamedItem.Create "string"  []))
 
         { Data = data
           CSharpOpen = [ "public string MyMethod()"; "{" ]

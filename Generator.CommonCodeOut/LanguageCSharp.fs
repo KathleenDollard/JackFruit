@@ -72,7 +72,7 @@ type LanguageCSharp() =
     override this.MethodOpen method  = 
        let returnType =
             match method.ReturnType with 
-            | Type t -> this.OutputNamedItem t
+            | ReturnType t -> this.OutputNamedItem t
             | Void -> "void"
        [$"{this.ScopeOutput method.Scope}{this.OutputModifiers method.Modifiers} {returnType} {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters})"; "{"]
     override _.MethodClose _ = [ "}" ]

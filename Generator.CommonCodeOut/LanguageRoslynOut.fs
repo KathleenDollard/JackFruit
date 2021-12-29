@@ -74,8 +74,8 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
     member _.OutputComment comment =
         writer.AddLines (language.Comment comment)
 
-    member _.OutputCompilerDirective pragma =
-        writer.AddLines (language.CompilerDirective pragma)
+    member _.OutputCompilerDirective directive =
+        writer.AddLines (language.CompilerDirective directive)
 
     member this.OutputMethod (method: MethodModel) =
         writer.AddLines (language.MethodOpen method) 
@@ -115,18 +115,14 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
     member this.OutputField (field: FieldModel) =
         writer.AddLines (language.Field field)
 
-     //member this.OutputMember mbr =
-     //   match mbr with 
-     //   | Method m -> this.OutputMethod m
-     //   | Property p -> this.OutputProperty p
-     //   | Class c -> this.OutputClass c
-     //   | Field f -> this.OutputField f
-     //   | Constructor c -> this.OutputConstructor c
-
     member this.OutputMembers (members: IMember list) =
         for mbr in members do 
-            ()
-            //this.OutputMember mbr
+            match mbr with 
+            | :? FieldModel as x -> this.OutputField x
+            | :? ConstructorModel as x -> this.OutputConstructor x
+            | :? MethodModel as x -> this.OutputMethod x
+            | :? PropertyModel as x -> this.OutputProperty x
+            | a -> invalidOp $"Unexpected member type during output. Type: {a}"
 
     member this.OutputClass cls =
         writer.AddLines (language.ClassOpen cls)

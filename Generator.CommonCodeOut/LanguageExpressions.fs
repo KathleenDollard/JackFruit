@@ -12,6 +12,7 @@ type InvocationModel =
       ShouldAwait: bool
       Arguments: IExpression list}
     interface IExpression
+    interface IStatement
     static member Create instance methodName arguments =
         { Instance = instance // Named item for invoking static methods on generic types
           MethodName = methodName // For generic methods
@@ -22,6 +23,7 @@ type InstantiationModel =
     { TypeName: NamedItem
       Arguments: IExpression list}
     interface IExpression
+    interface IStatement
     static member Create typeName arguments =
         { TypeName = typeName
           Arguments = arguments}
@@ -72,6 +74,11 @@ type SymbolModel =
 type NullModel() = class
     interface IExpression
     static member Create() = NullModel()
+    end
+
+type VoidModel() = class // Just for method return
+    interface IExpression
+    static member Create() = VoidModel()
     end
 
 module ExpressionHelpers =

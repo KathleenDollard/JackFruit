@@ -6,7 +6,9 @@ open Generator.Language
 open Common
 open DslKeywords
 open DslCodeBuilder
-open type Generator.Language.LanguageHelpers
+open Generator.LanguageHelpers
+open Generator.LanguageHelpers.Statements
+open type Generator.LanguageHelpers.Structural
 
 let NameFromSimpleName (namedItem: NamedItem) =
     match namedItem with
@@ -106,7 +108,7 @@ type ``When creating a namespace``() =
               Usings = []
               Classes = [
                 { ClassName = className
-                  Scope = Public
+                  Scope = Scope.Public
                   Modifiers = []
                   InheritedFrom = NoBase
                   ImplementedInterfaces = []
@@ -116,7 +118,7 @@ type ``When creating a namespace``() =
             Namespace(nspace) {
                 let x = 42
                 Class(className) {
-                        Public }
+                        Public() }
                 }
 
         Assert.Equal(expected, actual)
@@ -132,7 +134,7 @@ type ``When creating a namespace``() =
               Usings = [{ UsingModel.UsingNamespace = usingName; Alias = None }]
               Classes = [
                 { ClassName = className
-                  Scope = Public
+                  Scope = Scope.Public
                   Modifiers = []
                   InheritedFrom = NoBase
                   ImplementedInterfaces = []
@@ -141,7 +143,7 @@ type ``When creating a namespace``() =
         let actual = 
             Namespace(nspace) {
                 Class(className) {
-                    Public }
+                    Public() }
                 Using usingName
 
                 }
@@ -156,14 +158,14 @@ type ``When creating a class``() =
         let className = "George"
         let expected =
             { ClassName = className
-              Scope = Public
+              Scope = Scope.Public
               Modifiers = []
               InheritedFrom = NoBase
               ImplementedInterfaces = []
               Members = [] }
         let actual = 
             Class(className) { 
-                Public
+                Public()
                 }
 
         Assert.Equal(expected, actual)
@@ -174,13 +176,13 @@ type ``When creating a class``() =
         let className = "George"
         let expected =
             { ClassName = className
-              Scope = Public
+              Scope = Scope.Public
               Modifiers = [Modifier.Static; Async; Partial]
               InheritedFrom = NoBase
               ImplementedInterfaces = []
               Members = [] }
         let actual = Class(className) { 
-                Public Modifier.Static Async Partial
+                Public(Static ,Async, Partial)
                 }
 
         Assert.Equal(expected, actual)
@@ -202,16 +204,16 @@ type ``When creating a class``() =
         let tupleFromCodeModel (codeModel: ClassModel) = 
             codeModel.Scope, codeModel.Modifiers
         let data = 
-            [ (Public, []), Class("A") { Public }
-              (Public, [Modifier.Async]), Class("A") { Public Async }
-              (Public, [Modifier.Abstract]), Class("A") { Public Abstract }
-              (Public, [Modifier.Static; Abstract; Partial]), Class("A") { Public Modifier.Static Abstract Partial}
-              (Public, [Modifier.Abstract; Async; Partial; Sealed]), Class("A") { Public Abstract Async Partial Sealed}
-              (Private, []), Class("A") { Private }
-              (Internal, [Modifier.Async]), Class("A") { Internal Async }
-              (Protected, [Modifier.Abstract]), Class("A") { Protected Abstract }
-              (Private, [Modifier.Static; Abstract; Partial]), Class("A") { Private Modifier.Static Abstract Partial}
-              (Protected, [Modifier.Abstract; Async; Partial; Sealed]), Class("A") { Protected Abstract Async Partial Sealed}
+            [ (Scope.Public, []), Class("A") { Public() }
+              (Scope.Public, [Modifier.Async]), Class("A") { Public (Async) }
+              (Scope.Public, [Modifier.Abstract]), Class("A") { Public (Abstract) }
+              (Scope.Public, [Modifier.Static; Abstract; Partial]), Class("A") { Public(Static, Abstract, Partial)}
+              (Scope.Public, [Modifier.Abstract; Async; Partial; Sealed]), Class("A") { Public(Abstract, Async, Partial, Sealed)}
+              (Scope.Private, []), Class("A") { Private() }
+              (Scope.Internal, [Modifier.Async]), Class("A") { Internal(Async) }
+              (Scope.Protected, [Modifier.Abstract]), Class("A") { Protected(Abstract) }
+              (Scope.Private, [Modifier.Static; Abstract; Partial]), Class("A") { Private(Static, Abstract, Partial)}
+              (Scope.Protected, [Modifier.Abstract; Async; Partial; Sealed]), Class("A") { Protected (Abstract, Async, Partial, Sealed)}
             ]
 
         match data[pos] with 
@@ -221,9 +223,10 @@ type ``When creating a class``() =
     [<Fact>]
     member _.``Can create class with explicit generic types``() =
         let className = "George"
-        let genericNames = ["string"; "int"]
+        let generics = ["string"; "int"]
+        let genericName = $"{className}<{generics[0]}, {generics[1]}>"
         let genericNamedItems = 
-            [ for n in genericNames do NamedItem.Create n [] ]
+            [ for n in generics do NamedItem.Create n [] ]
         let expected =
             { ClassName = NamedItem.Create className genericNamedItems
               Scope = Unknown
@@ -231,8 +234,8 @@ type ``When creating a class``() =
               InheritedFrom = NoBase
               ImplementedInterfaces = []
               Members = [] }
-        let actual = Class(className) {
-                Generics [ SimpleNamedItem genericNames[0]; SimpleNamedItem genericNames[1] ]
+        let actual = Class(genericName) {
+                    Public()
                 }
 
         Assert.Equal(expected, actual)
@@ -251,8 +254,8 @@ type ``When creating a class``() =
               InheritedFrom = NoBase
               ImplementedInterfaces = []
               Members = [] }
-        let actual = Class(className) {
-                Generics [ SimpleNamedItem genericNames[0]; SimpleNamedItem genericNames[1] ]
+        let actual = Class(genericName) {
+                    Public()
                 }
 
         Assert.Equal(expected, actual)
@@ -271,7 +274,7 @@ type ``When creating a class``() =
               Members = [] }
         let actual = 
             Class(className) {
-                InheritedFrom (SimpleNamedItem genericName)
+                InheritsFrom (SimpleNamedItem genericName)
                 }
 
         Assert.Equal(expected, actual)
@@ -292,7 +295,7 @@ type ``When creating a class``() =
               Members = [] }
         let actual = 
             Class(className) {
-                ImplementedInterfaces [| for i in interfaceNames do ImplementedInterface (NamedItem.Create i [])|]
+                ImplementsInterfaces [| for i in interfaceNames do NamedItem.Create i [] |]
                 }
 
         Assert.Equal(expected, actual)
@@ -306,22 +309,21 @@ type ``When creating a class``() =
         let expectedField = { FieldName = fieldName
                               FieldType = fieldType
                               Modifiers = []
-                              Scope = Private
+                              Scope = Scope.Private
                               InitialValue = None}
         let expected =
             { ClassName = className
-              Scope = Public
+              Scope = Scope.Public
               Modifiers = []
               InheritedFrom = NoBase
               ImplementedInterfaces = []
               Members = [ expectedField ] }
         let actual = 
             Class(className) {
-                Public  
-                Members [
-                    Field(fieldName, fieldType) {
+                Public()  
+                Field(fieldName, fieldType) {
                         Private
-                        }]
+                        }
                 }
 
         Assert.Equal(expected, actual)
@@ -361,10 +363,10 @@ type ``When creating a constructor``() =
 
     [<Fact>]
     member _.``Can create a ctor``() =
-        let expected = { ConstructorModel.Scope = Public; Modifiers = []; Parameters = []; Statements = [] }
+        let expected = { ConstructorModel.Scope = Scope.Private; Modifiers = []; Parameters = []; Statements = [] }
         let actual = 
             Constructor() {
-                Public
+                Private()
                 }
 
         Assert.Equal(expected, actual)
@@ -378,7 +380,7 @@ type ``When creating a method``() =
         let returnType = Void
         let codeModel = 
             Method(SimpleNamedItem name, returnType) {
-                Public
+                Public()
                 }
         
         Assert.Equal(name, NameFromSimpleName codeModel.MethodName)

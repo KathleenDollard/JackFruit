@@ -1,13 +1,16 @@
 ﻿module DslStatementTests
 
 open Xunit
-open Generator.Language
 open Common
+open Generator.Language
 open DslKeywords
 open DslCodeBuilder
 open Generator.Language
 open Generator.LanguageExpressions
 open Generator.LanguageExpressions.ExpressionHelpers
+open Generator.LanguageHelpers
+open Generator.LanguageHelpers.Statements
+open type Generator.LanguageHelpers.Structural
 open Generator.LanguageStatements
 
 
@@ -27,8 +30,7 @@ type ``When creating Return statements to test all expressions``() =
         let expectedModel = None
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
-                Public
-                Return
+                ReturnVoid()
                 }
 
         checkResult expectedModel codeModel
@@ -137,7 +139,7 @@ type ``When creating If statements``() =
         let expectedModel = { IfCondition = True; Statements = [ returnStatement ] }
         let actualModel = 
             If (True) {
-                Return returnIfTrue }
+                Return (GetExpression returnIfTrue) }
 
         Assert.Equal(expectedModel, actualModel)
 
@@ -154,9 +156,9 @@ type ``When creating If statements``() =
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
                 If (True) {
-                    Return returnIfTrue }
+                    Return (GetExpression returnIfTrue) }
                 Else() {
-                    Return returnIfFalse }
+                    Return (GetExpression returnIfFalse) }
                 }           
 
         let actualModelIfTrue = codeModel.Statements[0] :?> IfModel
@@ -174,7 +176,7 @@ type ``When creating If statements``() =
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
                 If (True) {
-                    Return returnIfTrue }
+                    Return (GetExpression returnIfTrue) }
                 }           
 
         let actualModelIfTrue = codeModel.Statements[0] :?> IfModel
@@ -204,7 +206,6 @@ type ``When creating SimpleCall statements``() =
         let expected: IExpression = (InvocationModel.Create instance method [])
         let codeModel = 
             Method(outerMethodName, Void) {
-                Public
                 SimpleCall (InvocationModel.Create instance method [])
                 }
 
@@ -219,16 +220,13 @@ type ``When creating Invoke statements``() =
         let outerMethodName = "A"
         let instance = "B"
         let method = "C"
-        let expected: IExpression = (InvocationModel.Create instance method [])
+        let expected: IStatement = (InvocationModel.Create instance method [])
         let codeModel = 
             Method(outerMethodName, Void) {
-                Public
-                Invoke instance method
+                Invoke instance method []
                 }
         Assert.Equal(1, codeModel.Statements.Length)
-        match codeModel.Statements[0] with 
-        | :? SimpleCallModel as actualCall -> Assert.Equal(expected, actualCall.Expression)
-        | _ -> Assert.Fail("Statement not of expected SimpleCallModel type")
+        Assert.Equal(expected, codeModel.Statements[0])
 
 type ``When creating Comment statements``() =
     [<Fact>]
