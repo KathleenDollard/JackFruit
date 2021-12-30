@@ -15,7 +15,7 @@
         InvocationsFromModel mapMethodName model
         |> Result.bind ArchetypeInfoListFrom
         |> Result.bind ArchetypeInfoTreeFrom
-        |> Result.map (CommandDefsFrom model appModel)
+        //|> Result.map (CommandDefsFrom model appModel)
         // Find Archetypes and build tree
         // Use Generator to find CommandDef info for handlers
         // Run archetype provider

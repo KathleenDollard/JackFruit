@@ -2,412 +2,204 @@
 
 open Generator
 open Common
+open DslKeywords
+open Generator.GeneralUtils
+open System
 
 
-type ILanguage =
-
-    // Language structure
-    abstract member Using: Using -> string list
-    abstract member NamespaceOpen: Namespace -> string list
-    abstract member NamespaceClose: Namespace -> string list
-    abstract member ClassOpen: Class -> string list
-    abstract member ClassClose: Class -> string list
-    abstract member ConstructorOpen: Constructor -> string list
-    abstract member ConstructorClose: Constructor -> string list
-    abstract member MethodOpen: Method -> string list
-    abstract member MethodClose: Method -> string list
-    abstract member AutoProperty: Property -> string list
-    abstract member PropertyOpen: Property -> string list
-    abstract member PropertyClose: Property -> string list
-    abstract member Field: Field -> string list
-    abstract member GetOpen: Property-> string list
-    abstract member GetClose: Property -> string list
-    abstract member SetOpen: Property -> string list
-    abstract member SetClose: Property -> string list
-
-    // Statements
-    abstract member IfOpen: If -> string list
-    abstract member IfClose: If -> string list
-    abstract member ForEachOpen: ForEach -> string list
-    abstract member ForEachClose: ForEach -> string list
-
-    abstract member Assignment: Assignment -> string list
-    abstract member AssignWithDeclare: AssignWithDeclare -> string list
-    abstract member Return: Expression -> string list
-    abstract member SimpleCall: Expression -> string list
-    abstract member Comment: Expression -> string list
-    abstract member Pragma: Expression -> string list
-
-    abstract member Invocation: Invocation -> string
-    abstract member Comparison: Comparison -> string
-
-    // Other
-    abstract member NamedItemOutput: NamedItem -> string
-
-type Scope =
-    | Public
-    | Private
-    | Internal
-    | Protected
-
-type StaticOrInstance =
+type Modifier =
     | Static
-    | Instance
+    | Async
+    | Extension
+    | Partial
+    | Abstract
+    | Sealed
+    | Readonly
+    static member Contains modifier list =
+        List.exists (fun x -> x = modifier) list
 
-// Where a class may be used, use NamedType, even if it will generally be an instance
-// KAD: Consider if all these overloads are needed
-type GenericNamedItem = 
-    { Name: string 
-      GenericTypes: NamedItem list }
-    static member Create name =
-        { Name = name 
-          GenericTypes = [] }
-let As name =
-    { Name = name
-      GenericTypes = []}
-let Of = As
-let AsGeneric name genericTypes =
-    { Name = name
-      GenericTypes = genericTypes }
-let OfGeneric = AsGeneric
+        
+type ParameterStyle =
+    | Normal
+    | DefaultValue of IExpression
+    | IsParamArray
 
 
-type Invocation =
-    { Instance: NamedItem // Named item for invoking static methods on generic types
-      MethodName: NamedItem // For generic methods
-      ShouldAwait: bool
-      Arguments: Expression list}
-let Invoke instanceName methodName arguments =
-    Expression.Invocation
-        { Instance = SimpleNamedItem instanceName
-          MethodName = methodName
-          ShouldAwait = false
-          Arguments = arguments } 
-let With (arguments: Expression list) = arguments 
 
-type Instantiation =
-    { TypeName: NamedItem
-      Arguments: Expression list}
-let New typeName arguments = 
-    Expression.Instantiation 
-        { TypeName = NamedItem.Create typeName []
-          Arguments = arguments }
-let NewGeneric typeName genericName arguments =
-    Expression.Instantiation
-        { TypeName = NamedItem.Create typeName [ NamedItem.Create genericName [] ]
-          Arguments = arguments }
+type IMember = interface end
+type IStatement = interface end
+type IExpression = interface end
 
-type Operator =
-    | Equals
-    | NotEquals
-    | GreaterThan
-    | LessThan
-    | GreaterThanOrEqualTo
-    | LessThanOrEqualTo
+type ICompareExpression = 
+    inherit IExpression
 
-type Comparison =
-    { Left: Expression
-      Right: Expression
-      Operator: Operator}
-    //static member Equals left right =
-    //    { Left = left
-    //      Right = right
-    //      Operator = Operator.Equals }
-    //static member NotEquals left right =
-    //    { Left = left
-    //      Right = right
-    //      Operator = Operator.NotEquals }  
+type IStatementContainer<'T> = 
+    abstract member AddStatements: IStatement list -> 'T
 
-type Expression =
-    | Invocation of Invocation
-    | Comparison of Comparison
-    | Instantiation of Instantiation
-    | StringLiteral of string
-    | NonStringLiteral of string
-    | Symbol of string
-    | Comment of string
-    | Pragma of string
-    | Null
-    static member Compare left operator right =
-        Comparison
-            { Left = left
-              Right = right
-              Operator = operator }
-    static member NotEquals left right =
-        { Left = left
-          Right = right
-          Operator = Operator.NotEquals }  
 
-type If =
-    { Condition: Expression
-      Statements: Statement list
-      Elses: If list}
-
-type ForEach =
-    { LoopVar: string
-      LoopOver: string
-      Statements: Statement list }
-
-type Assignment = 
-    { Item: string
-      Value: Expression}
-
-type AssignWithDeclare =
-    { Variable: string
-      TypeName: NamedItem option
-      Value: Expression}
-let AssignVar variable value =
-    Statement.AssignWithDeclare 
-        { Variable = variable
-          Value = value 
-          TypeName = None }
-
-type Statement =
-    | If of If
-    | Assign of Assignment
-    | AssignWithDeclare of AssignWithDeclare
-    | ForEach of ForEach
-    | Return of Expression
-    | SimpleCall of Expression
-    static member Invoke instanceName methodName arguments =
-        SimpleCall 
-            ( Invocation
-                { Instance = SimpleNamedItem instanceName
-                  MethodName = methodName
-                  ShouldAwait = false
-                  Arguments = arguments } )
-
-type Parameter =
+type IMethodLike<'T when 'T:> IMethodLike<'T>> =
+    inherit IStatementContainer<'T>
+    abstract member AddScopeAndModifiers: ScopeAndModifiers -> 'T
+    abstract member AddParameter: ParameterModel-> 'T
+   
+type ParameterModel =
     { ParameterName: string
       Type: NamedItem
-      Default: Expression option
-      IsParams: bool}
+      Style: ParameterStyle }
     static member Create name paramType =
         { ParameterName = name
           Type = paramType
-          Default = None
-          IsParams = false }
+          Style = Normal }
 
-type Method =
+
+type MethodModel =
     { MethodName: NamedItem
-      ReturnType: Return
-      StaticOrInstance: StaticOrInstance
-      IsExtension: bool
-      IsAsync: bool
+      ReturnType: ReturnType
       Scope: Scope
-      Parameters: Parameter list
-      Statements: Statement list}
-    static member Create name returnType =
-        { MethodName = NamedItem.Create name []
+      Modifiers: Modifier list
+      Parameters: ParameterModel list
+      Statements: IStatement list}
+    static member Create methodName returnType =
+        { MethodName = methodName
           ReturnType = returnType
-          StaticOrInstance = Instance
-          IsExtension = false
-          IsAsync = false
           Scope = Public
+          Modifiers = []
           Parameters = []
           Statements = [] }
-
-
-type Constructor =
-    { ClassName: NamedItem
-      StaticOrInstance: StaticOrInstance
-      Scope: Scope
-      Parameters: Parameter list
-      Statements: Statement list}
+    interface IMember
+    member this.AddStatements statements =
+        { this with Statements = statements }
+    member this.AddScopeAndModifiers (scopeAndModifiers: ScopeAndModifiers) = 
+        { this with Scope = scopeAndModifiers.Scope; Modifiers = scopeAndModifiers.Modifiers }
+    member this.AddParameter parameterModel = 
+        { this with Parameters = List.append this.Parameters [parameterModel] }
+    interface IMethodLike<MethodModel> with
+        member this.AddStatements statements = this.AddStatements statements
+        member this.AddScopeAndModifiers scopeAndModifiers = this.AddScopeAndModifiers scopeAndModifiers
+        member this.AddParameter parameterModel = 
+            this.AddParameter parameterModel
+     
+ 
+type ConstructorModel =
+    { Scope: Scope
+      Modifiers: Modifier list
+      Parameters: ParameterModel list
+      Statements: IStatement list}
     static member Create className =
-        { ClassName = SimpleNamedItem className
-          StaticOrInstance = Instance
-          Scope = Public
+        { Scope = Public
+          Modifiers = []
           Parameters = []
           Statements = [] }
+    interface IMember
+    member this.AddStatements statements =
+        { this with Statements = statements }
+    member this.AddScopeAndModifiers (scopeAndModifiers: ScopeAndModifiers) = 
+        { this with Scope = scopeAndModifiers.Scope; Modifiers = scopeAndModifiers.Modifiers }
+    member this.AddParameter parameterModel = 
+        { this with Parameters = List.append this.Parameters [parameterModel] }
+    interface IMethodLike<ConstructorModel> with
+        member this.AddStatements statements = this.AddStatements statements
+        member this.AddScopeAndModifiers scopeAndModifiers = this.AddScopeAndModifiers scopeAndModifiers
+        member this.AddParameter parameterModel = 
+            this.AddParameter parameterModel
 
-type Property =
+
+type PropertyModel =
     { PropertyName: string
       Type: NamedItem
-      StaticOrInstance: StaticOrInstance
       Scope: Scope
-      GetStatements: Statement list
-      SetStatements: Statement list}
+      Modifiers: Modifier list
+      GetStatements: IStatement list
+      SetStatements: IStatement list}
+    static member Create propertyName propertyType =
+        { PropertyName = propertyName
+          Type = propertyType
+          Scope = Public
+          Modifiers = []
+          GetStatements = []
+          SetStatements = [] }
+    interface IMember
 
-type Field =
+
+type FieldModel =
     { FieldName: string
       FieldType: NamedItem
-      IsReadonly: bool
-      StaticOrInstance: StaticOrInstance
       Scope: Scope
-      InitialValue: Expression option}
-      
+      Modifiers: Modifier list
+      InitialValue: IExpression option}
+    static member Create fieldName fieldType =
+        { FieldName = fieldName
+          FieldType = fieldType
+          Scope = Private
+          Modifiers = []
+          InitialValue = None }
+    interface IMember
 
-type Member =
-    | Method of Method
-    | Property of Property
-    | Field of Field
-    | Constructor of Constructor
-    | Class of Class
 
-type Class = 
+type InheritedFrom =
+    | SomeBase of BaseClass: NamedItem
+    | NoBase
+    interface IMember
+
+type ImplementedInterface =
+    | ImplementedInterface of Name: NamedItem
+    interface IMember
+        
+ 
+type ClassModel = 
     { ClassName: NamedItem
-      StaticOrInstance: StaticOrInstance
       Scope: Scope
-      InheritedFrom: NamedItem option
-      ImplementedInterfaces: NamedItem list
-      Members: Member list}
-    static member Create(className: NamedItem, scope: Scope, members: Member list) =
+      Modifiers: Modifier list
+      InheritedFrom: InheritedFrom
+      ImplementedInterfaces: ImplementedInterface list
+      Members: IMember list}
+    static member Create(className, scope) =
         { ClassName = className
-          StaticOrInstance = Instance
           Scope = scope
-          InheritedFrom = None
+          Modifiers = []
+          InheritedFrom = NoBase
           ImplementedInterfaces = []
-          Members = members }
+          Members = [] }
+    static member Create(className) =
+        ClassModel.Create((SimpleNamedItem className), Unknown)
+    interface IMember
 
-type Using = 
-    { Namespace: string
+
+type UsingModel = 
+    { UsingNamespace: string
       Alias: string option }
     static member Create nspace =
-        { Namespace = nspace
+        { UsingNamespace = nspace
           Alias = None }
 
-type Namespace = 
+
+type NamespaceModel = 
     { NamespaceName: string
-      Usings: Using list
-      Classes: Class list}
-
-type CodeBlock =
-    | NamespaceBlock
-    | MethodBlock
-    | FunctionBlock
-    | IfBlock
-    | ForBlock
-
-
-type RoslynOut(language: ILanguage, writer: IWriter) =
-
-    //let addLines (newLines: string list) oldLines =
-    //    let mutable retLines = oldLines
-    //    for line in newLines do
-    //        retLines <- line::retLines
-    //    retLines
-
-    member _.BlankLine() =
-        writer.AddLine ""
-
-    member this.OutputStatement (statement: Statement) =
-        match statement with 
-        | If x -> this.OutputIf x
-        | Assign x -> this.OutputAssignment x
-        | AssignWithDeclare x -> this.OutputAssignWithDeclare x
-        | Return x -> this.OutputReturn x
-        | ForEach x -> this.OutputForEach x
-        | SimpleCall x -> this.OutputSimpleCall x
-
-    member this.OutputStatements (statements: Statement list) =
-        for statement in statements do 
-            this.OutputStatement statement
-
-    member this.OutputIf (ifInfo: If) = 
-        writer.AddLines (language.IfOpen ifInfo)
-        writer.IncreaseIndent()
-        this.OutputStatements ifInfo.Statements
-        writer.DecreaseIndent()
-        writer.AddLines (language.IfClose ifInfo)
-
-    member _.OutputAssignWithDeclare assign =
-        writer.AddLines (language.AssignWithDeclare assign)
-
-    member _.OutputAssignment assignment =
-        writer.AddLines (language.Assignment assignment)
-
-    member _.OutputReturn ret =
-        writer.AddLines (language.Return ret)
-
-    member this.OutputForEach foreach :unit =
-        writer.AddLines (language.ForEachOpen foreach) 
-        writer.IncreaseIndent()
-        this.OutputStatements foreach.Statements
-        writer.DecreaseIndent()
-        writer.AddLines (language.ForEachClose foreach)
-
-    member _.OutputSimpleCall simple =
-        writer.AddLines (language.SimpleCall simple)
-
-    member _.OutputComment comment =
-        writer.AddLines (language.Comment comment)
-
-    member _.OutputPragma pragma =
-        writer.AddLines (language.Pragma pragma)
-
-    member this.OutputMethod (method: Method) =
-        writer.AddLines (language.MethodOpen method) 
-        writer.IncreaseIndent()
-        this.OutputStatements method.Statements
-        writer.DecreaseIndent()
-        writer.AddLines (language.MethodClose method)
-
-    member this.OutputConstructor (ctor: Constructor) =
-       writer.AddLines (language.ConstructorOpen ctor) 
-       writer.IncreaseIndent()
-       this.OutputStatements ctor.Statements
-       writer.DecreaseIndent()
-       writer.AddLines (language.ConstructorClose ctor)
-
-    member this.OutputProperty (prop : Property) =
-        let isAutoProp = 
-            prop.SetStatements.IsEmpty && prop.GetStatements.IsEmpty
-        if isAutoProp then
-            writer.AddLines (language.AutoProperty prop)
-        else
-            writer.AddLines (language.PropertyOpen prop)
-            writer.IncreaseIndent()
-            writer.AddLines (language.GetOpen prop)
-            writer.IncreaseIndent()
-            this.OutputStatements prop.GetStatements
-            writer.DecreaseIndent()
-            writer.AddLines (language.GetClose prop)
-            writer.AddLines (language.SetOpen prop)
-            writer.IncreaseIndent()
-            this.OutputStatements prop.SetStatements
-            writer.DecreaseIndent()
-            writer.AddLines (language.SetClose prop)
-            writer.DecreaseIndent()
-            writer.AddLines (language.PropertyClose prop)
-
-    member this.OutputField (field: Field) =
-        writer.AddLines (language.Field field)
-
-     member this.OutputMember mbr =
-        match mbr with 
-        | Method m -> this.OutputMethod m
-        | Property p -> this.OutputProperty p
-        | Class c -> this.OutputClass c
-        | Field f -> this.OutputField f
-        | Constructor c -> this.OutputConstructor c
-
-    member this.OutputMembers (members: Member list) =
-        for mbr in members do 
-            this.OutputMember mbr
-
-    member this.OutputClass cls =
-        writer.AddLines (language.ClassOpen cls)
-        writer.IncreaseIndent()
-        this.OutputMembers cls.Members
-        writer.DecreaseIndent()
-        writer.AddLines (language.ClassClose cls)
-
-    member this.OutputClasses (classes: Class list) =
-        for cls in classes do 
-            this.OutputClass cls
-
-    member _.OutputUsings (usings: Using list) =
-        for using in usings do 
-            writer.AddLines (language.Using using)
-
-    member this.Output (nspace: Namespace) = 
-        this.OutputUsings nspace.Usings
-        writer.AddLines (language.NamespaceOpen nspace)
-        writer.IncreaseIndent()
-        this.OutputClasses nspace.Classes
-        writer.DecreaseIndent()
-        writer.AddLines (language.NamespaceClose nspace)
-        writer
+      Usings: UsingModel list
+      Classes: ClassModel list}
+    static member Create(name: string) =
+        { NamespaceName = name
+          Usings = []
+          Classes = [] }    
+    member this.AddUsings (usings: UsingModel list) =
+        // Ignore usings with empty strings. They would be an error later
+        let newUsings =
+            [ for u in usings do
+                if not (String.IsNullOrWhiteSpace u.UsingNamespace) then u ]
+        { this with Usings = List.append this.Usings newUsings }
+    member this.AddClasses (classes: ClassModel list) =
+        { this with Classes = List.append this.Classes classes }
 
 
+type ScopeAndModifiers =
+    { Scope: Scope
+      Modifiers: Modifier list }
+    interface IMember
+    interface IStatement
+
+type System.String with 
+    member this.AsFieldName() =
+        ToCamel(this)
+    member this.AsParamName() =
+        ToCamel(this)
+        

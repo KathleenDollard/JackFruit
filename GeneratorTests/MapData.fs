@@ -15,7 +15,7 @@ type MapData =
           OutputCode = [ "" ] }
 
     static member OneSimpleMapping =
-        let commandDef = CommandDef("A", [], Void, Arbitrary)
+        let commandDef = CommandDef("A", [], Void, Arbitrary "MyCommand")
         let members = [ MemberDef("one", commandDef, (SimpleNamedItem "string"), ArbitraryMember, true) ]
         commandDef.Members <- members
 
@@ -24,7 +24,7 @@ type MapData =
           OutputCode = [ "" ] }
 
     static member OneComplexMapping =
-        let commandDef = CommandDef("BLongName", [], Void, Arbitrary)
+        let commandDef = CommandDef("BLongName", [], Void, Arbitrary "MyCommand")
         let members = 
             [ MemberDef("packageName", commandDef,(SimpleNamedItem "string"), ArbitraryMember, true)
               MemberDef("two", commandDef,(SimpleNamedItem "int"), ArbitraryMember, true)
@@ -37,7 +37,7 @@ type MapData =
 
     static member ThreeMappings =
         let makeCommandDef id =
-            CommandDef(id, [], Void, Arbitrary)
+            CommandDef(id, [], Void, Arbitrary "MyCommand")
 
         { HandlerCode = 
             [ "public static void A() { }"

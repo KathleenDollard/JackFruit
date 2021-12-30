@@ -4,6 +4,10 @@ module Generator.Tests.TestData
 
 open Generator.Language
 open Common
+open Generator.LanguageExpressions
+open Generator.LanguageStatements
+open Generator.LanguageHelpers
+
 
 type TestData<'T> = { Data: 'T; CSharp: string list } // Add VB later
 
@@ -20,7 +24,7 @@ type NamedItem with
         { Data = data
           CSharp = [ "RonWeasley(JackRussell)" ] }
 
-type Invocation with
+type InvocationModel with
     static member ForTesting =
         let data =
             { Instance = NamedItem.ForTesting.Data
@@ -31,7 +35,7 @@ type Invocation with
         { Data = data
           CSharp = [ "RonWeasley(JackRussell)" ] }
 
-type Instantiation with
+type InstantiationModel with
     static member ForTesting =
         let data =
             { TypeName = NamedItem.ForTesting.Data
@@ -40,33 +44,31 @@ type Instantiation with
         { Data = data
           CSharp = [ "new RonWeasley()" ] }
 
-type Comparison with
+type ComparisonModel with
     static member ForTesting =
         let data =
-            { Left = Symbol "left"
+            { Left = SymbolLiteral (Symbol "left")
               Right = StringLiteral "qwerty"
               Operator = Operator.Equals }
 
         { Data = data
           CSharp = [ "left = \"querty\"" ] }
 
-type If with
+type IfModel with
     static member ForTesting =
         let data =
-            { Condition =
-                Comparison
-                    { Left = Symbol "A"
-                      Right = NonStringLiteral "42"
-                      Operator = Operator.Equals }
-              Statements = []
-              Elses = [] }
+            { IfCondition =
+                { Left = SymbolLiteral (Symbol "A")
+                  Right = Literal "42"
+                  Operator = Operator.Equals }
+              Statements = [] }
 
         { Data = data
           CSharpOpen = [ "if (A == 42)"; "{" ]
           CSharpBlock = []
           CSharpClose = [ "}" ] }
 
-type ForEach with
+type ForEachModel with
     static member ForTesting =
         let data =
             { LoopVar = "x"
@@ -80,17 +82,17 @@ type ForEach with
           CSharpBlock = []
           CSharpClose = [ "}" ] }
 
-type Assignment with
+type AssignmentModel with
     static member ForTesting =
         let data =
-            { Item = "item"
+            { Variable = "item"
               Value = StringLiteral "boo!" }
 
         { Data = data
           CSharp = [ "item = \"boo!\";" ] }
 
 
-type AssignWithDeclare with
+type AssignWithDeclareModel with
     static member ForTesting =
         let data =
             { Variable = "item"
@@ -100,33 +102,32 @@ type AssignWithDeclare with
         { Data = data
           CSharp = [ "var item = \"boo!\";" ] }
 
-type Parameter with
+type ParameterModel with
     static member ForTesting =
         let data =
             { ParameterName = "param1"
               Type = NamedItem.Create "string"  []
-              Default = None
-              IsParams = false }
+              Style = Normal }
 
         { Data = data
           CSharp = [ "string param1" ] }
 
-type Method with
+type MethodModel with
     static member ForTesting =
-        let data = Method.Create "MyMethod" (Type (NamedItem.Create "string"  []))
+        let data = MethodModel.Create (SimpleNamedItem "MyMethod") (ReturnType (NamedItem.Create "string"  []))
 
         { Data = data
           CSharpOpen = [ "public string MyMethod()"; "{" ]
           CSharpBlock = []
           CSharpClose = [ "}" ] }
 
-type Property with
+type PropertyModel with
     static member ForTesting =
         let data =
             { PropertyName = "MyProperty"
               Type = NamedItem.Create "MyReturnType"  []
-              StaticOrInstance = Instance
               Scope = Public
+              Modifiers = []
               GetStatements = []
               SetStatements = [] }
 
@@ -135,29 +136,25 @@ type Property with
           CSharpBlock = []
           CSharpClose = [ "}"] }
 
-type Class with
+type ClassModel with
     static member ForTesting =
         let data =
-            { ClassName = NamedItem.ForTesting.Data
-              StaticOrInstance = Instance
-              Scope = Public
-              InheritedFrom = None
-              ImplementedInterfaces = []
-              Members = [] }
+            ClassModel.Create (NamedItem.ForTesting.Data, Public)
+         
 
         { Data = data
           CSharpOpen = [ "public class RonWeasley"; "{" ]
           CSharpBlock = []
           CSharpClose = [ "}" ] }
 
-type Using with
+type UsingModel with
     static member ForTesting =
-        let data = { Namespace = "System"; Alias = None }
+        let data = { UsingNamespace = "System"; Alias = None }
 
         { Data = data
           CSharp = [ "using System;" ]}
 
-type Namespace with
+type NamespaceModel with
     static member ForTesting =
         let data =
             { NamespaceName = "MyNamespace"

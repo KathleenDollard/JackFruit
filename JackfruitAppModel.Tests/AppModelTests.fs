@@ -16,6 +16,7 @@ open Generator.NewMapping
 //open Generator
 open Generator.Models
 open Jackfruit.Tests
+open Common
 
 
 type ``Can retrieve method for archetype``() =
