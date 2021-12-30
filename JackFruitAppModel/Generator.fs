@@ -1,23 +1,19 @@
-﻿module JackFruitAppModel.Generate
+﻿namespace Jackfruit
 
-    open Generator.RoslynUtils
-    open Microsoft.CodeAnalysis
-    open Jackfruit.ArchetypeMapping
-    open Jackfruit
-    open Generator.NewMapping
-
-    let private mapMethodName = "MapInferred"
-    let private appModel =  AppModel()
-
-    let BuildModel (model:SemanticModel) = 
+open Generator.RoslynUtils
+open Microsoft.CodeAnalysis
+open Jackfruit.ArchetypeMapping
+open Jackfruit
+open Generator.NewMapping
+open Generator.SourceGenerator
+open Common
+open Jackfruit.Models
 
 
-        InvocationsFromModel mapMethodName model
-        |> Result.bind ArchetypeInfoListFrom
-        |> Result.bind ArchetypeInfoTreeFrom
-        //|> Result.map (CommandDefsFrom model appModel)
-        // Find Archetypes and build tree
-        // Use Generator to find CommandDef info for handlers
-        // Run archetype provider
-        // Run XmlComments provider
-        // Run path provider
+[<Generator>]
+type Generator() =
+    inherit CliSourceGenerator<TreeNodeType<ArchetypeInfo>>()
+
+    override _.GetAppModel synataxTrees semanticModel =
+        Jackfruit.AppModel()
+

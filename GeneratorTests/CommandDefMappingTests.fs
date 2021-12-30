@@ -66,23 +66,32 @@ type ``When outputting code from CommandDef``() =
     [<Fact(Skip="Temp")>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``Code outputs for one simple command``() =
-        let writer = OutputCodeFromCommandDef MapData.OneSimpleMapping
-        let actual = writer.Output
-        Approvals.Verify(actual)
+        let writerResult = OutputCodeFromCommandDef MapData.OneSimpleMapping
+        match writerResult with 
+        | Error _ -> invalidOp "Unexpected error in test"
+        | Ok writer -> 
+            let actual = writer.Output
+            Approvals.Verify(actual)
 
     [<Fact(Skip="Temp")>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``Code outputs for three simple commands``() =
-        let writer = OutputCodeFromCommandDef MapData.ThreeMappings
-        let actual = writer.Output
-        Approvals.Verify(actual)
+        let writerResult = OutputCodeFromCommandDef MapData.ThreeMappings
+        match writerResult with 
+        | Error _ -> invalidOp "Unexpected error in test"
+        | Ok writer -> 
+            let actual = writer.Output
+            Approvals.Verify(actual)
 
     [<Fact(Skip="Fix later")>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``No command does not throw``() =
-        let writer = OutputCodeFromCommandDef MapData.NoMapping
-        let actual = writer.Output
-        Approvals.Verify(actual)
+        let writerResult = OutputCodeFromCommandDef MapData.NoMapping
+        match writerResult with 
+        | Error _ -> invalidOp "Unexpected error in test"
+        | Ok writer -> 
+            let actual = writer.Output
+            Approvals.Verify(actual)
 
 type ``When outputting code from handler code``() =
     let cSharp = LanguageCSharp() :> ILanguage
@@ -98,23 +107,32 @@ type ``When outputting code from handler code``() =
     [<Fact(Skip="Temp")>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``Code outputs for one simple command``() =
-        let writer = OutputCodeFromCode MapData.OneSimpleMapping
-        let actual = writer.Output
-        Approvals.Verify(actual)
+        let writerResult = OutputCodeFromCode MapData.OneSimpleMapping
+        match writerResult with 
+        | Error _ -> invalidOp "Unexpected error in test"
+        | Ok writer -> 
+            let actual = writer.Output
+            Approvals.Verify(actual)
 
     [<Fact(Skip="Temp")>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``Code outputs for three simple commands``() =
-        let writer = OutputCodeFromCode MapData.ThreeMappings
-        let actual = writer.Output
-        Approvals.Verify(actual)
+        let writerResult = OutputCodeFromCode MapData.ThreeMappings
+        match writerResult with 
+        | Error _ -> invalidOp "Unexpected error in test"
+        | Ok writer -> 
+            let actual = writer.Output
+            Approvals.Verify(actual)
 
     [<Fact(Skip="Fix later")>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``No command does not throw``() =
-        let writer = OutputCodeFromCode MapData.NoMapping
-        let actual = writer.Output
-        Approvals.Verify(actual)
+        let writerResult = OutputCodeFromCode MapData.NoMapping
+        match writerResult with 
+        | Error _ -> invalidOp "Unexpected error in test"
+        | Ok writer -> 
+            let actual = writer.Output
+            Approvals.Verify(actual)
 
 
                 

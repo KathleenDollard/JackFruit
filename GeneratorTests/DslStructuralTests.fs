@@ -226,10 +226,10 @@ type ``When creating a class``() =
         let generics = ["string"; "int"]
         let genericName = $"{className}<{generics[0]}, {generics[1]}>"
         let genericNamedItems = 
-            [ for n in generics do NamedItem.Create n [] ]
+            [ for n in generics do NamedItem.Create(n, []) ]
         let expected =
-            { ClassName = NamedItem.Create className genericNamedItems
-              Scope = Unknown
+            { ClassName = NamedItem.Create(className, genericNamedItems)
+              Scope = Scope.Public
               Modifiers = []
               InheritedFrom = NoBase
               ImplementedInterfaces = []
@@ -246,10 +246,10 @@ type ``When creating a class``() =
         let genericNames = ["string"; "int"]
         let genericName = $"{className}<{genericNames[0]}, {genericNames[1]}>"
         let genericNamedItems = 
-            [ for n in genericNames do NamedItem.Create n [] ]
+            [ for n in genericNames do NamedItem.Create(n, []) ]
         let expected =
-            { ClassName = NamedItem.Create className genericNamedItems
-              Scope = Unknown
+            { ClassName = NamedItem.Create(className, genericNamedItems)
+              Scope = Scope.Public
               Modifiers = []
               InheritedFrom = NoBase
               ImplementedInterfaces = []
@@ -285,7 +285,7 @@ type ``When creating a class``() =
         let className = "George"
         let interfaceNames = ["A"; "B"]
         let expectedInterfaces = 
-            [ for n in interfaceNames do ImplementedInterface (NamedItem.Create n []) ]
+            [ for n in interfaceNames do ImplementedInterface (NamedItem.Create(n, [])) ]
         let expected =
             { ClassName = className
               Scope = Unknown
@@ -295,7 +295,7 @@ type ``When creating a class``() =
               Members = [] }
         let actual = 
             Class(className) {
-                ImplementsInterfaces [| for i in interfaceNames do NamedItem.Create i [] |]
+                ImplementsInterfaces [| for i in interfaceNames do NamedItem.Create(i, []) |]
                 }
 
         Assert.Equal(expected, actual)

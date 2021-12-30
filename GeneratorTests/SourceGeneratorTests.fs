@@ -71,26 +71,6 @@ namespace MyCode
         Assert.Equal (0, (diagnostics.Count()))
         Assert.True (output.SyntaxTrees.Skip(1).First().ToString().Contains("namespace GeneratedNamespace"))
 
-type ``When generating CLI code``() =
-
-
-    let RunCliModelGenerator (inputCompilation: Compilation) =
-        RunGenerator CliModelGenerator inputCompilation
-
-//    let VerifyTestResult  driver (outputCompilation: Compilation) (diagnostics: Diagnostic list) =
-//        Assert.Equal(0, diagnostics.Length)
-//        let newTree = outputCompilation.SyntaxTrees.Skip(1).SingleOrDefault()
-//        Assert.NotNull newTree
-//        Approvals.Verify(newTree.ToString())
-     
-
-    [<Fact>]
-    [<UseReporter(typeof<DiffReporter>)>]
-    member _.``Code outputs for one simple command``() =
-        let code = String.Join("\n", MapData.NoMapping.HandlerCode)
-        let compilation = CreateCompilation code
-        VerifyTestResult RunCliModelGenerator compilation
-
 //    [<Fact>]
 //    [<UseReporter(typeof<DiffReporter>)>]
 //    member _.``Code outputs for three simple commands``() =

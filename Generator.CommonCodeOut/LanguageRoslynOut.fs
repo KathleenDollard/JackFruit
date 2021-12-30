@@ -157,10 +157,16 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
             writer.AddLines (language.Using using)
 
     member this.Output (nspace: NamespaceModel) = 
-        this.OutputUsings nspace.Usings
-        writer.AddLines (language.NamespaceOpen nspace)
-        writer.IncreaseIndent()
-        this.OutputClasses nspace.Classes
-        writer.DecreaseIndent()
-        writer.AddLines (language.NamespaceClose nspace)
-        writer
+        // This was originally built without Result support, and I think we just need
+        // to ensure no errors. Thus, just using a try here. 
+        try
+            this.OutputUsings nspace.Usings
+            writer.AddLines (language.NamespaceOpen nspace)
+            writer.IncreaseIndent()
+            this.OutputClasses nspace.Classes
+            writer.DecreaseIndent()
+            writer.AddLines (language.NamespaceClose nspace)
+            Ok writer
+        with 
+        // KAD-Chet: OK, the warning tells me this cast always succeeds, but how to do I fix?
+        | :? Exception as e -> Error e.Message

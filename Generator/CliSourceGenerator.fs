@@ -8,17 +8,22 @@ open Generator.NewMapping
 open Generator.BuildCliCodeModel
 open Generator.Transforms
 open System.Linq
+open LanguageRoslynOut
 
-let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel (outputter =
-    appModel.Initialize(semanticModel)                           // Passes back 'T
-    |> Result.bind (CommandDefsFrom semanticModel appModel)      // Passes back CommandDefs shape
-    |> Result.bind (ApplyTransformsToMany appModel.Transformers) // Passes back transformed CommandDefs
-    |> Result.bind OutputCommandWrapper                          // Passes back CodeModel/Namespace
-    |> Result.map (outputter.Output codeModel)                  // Passes back list of strings
+let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel (writer: IWriter) =
+    let outputter = RoslynOut(language, writer)
+    let x = 
+        appModel.Initialize(semanticModel)                           // Passes back 'T
+        |> Result.bind (CommandDefsFrom semanticModel appModel)      // Passes back CommandDefs shape
+        |> Result.bind (ApplyTransformsToMany appModel.Transformers) // Passes back transformed CommandDefs
+        |> Result.bind OutputCommandWrapper                          // Passes back CodeModel/Namespace
+        //|> Result.map ()                   // Passes back a writer, such as an ArrayWriter or StringBuilderWriter
+    match x with 
+    | Error e -> invalidOp "Oops"
+    | Ok codeModel -> outputter.Output codeModel
 
 
-
-[<Generator>]
+[<AbstractClass>]
 type CliSourceGenerator<'T>() =
     abstract member GetAppModel: synataxTrees: SyntaxTree list -> semanticModel : SemanticModel -> AppModel<'T>
 
@@ -37,11 +42,11 @@ type CliSourceGenerator<'T>() =
 
             let appModel = this.GetAppModel syntaxTrees semanticModel
 
-            let modelResult = GenerateFromAppModel appModel language semanticModel
+            let modelResult = GenerateFromAppModel appModel language semanticModel (StringBuilderWriter 3)
             match modelResult with 
             | Error e -> invalidOp "Oops, we need to write error handling" 
                 // We probably have added diagnostics and should here. But this Result is currently AppError and 
                 // should probably be Diagnostic so more info can be carried
-            | Ok output -> 
-                context.AddSource("myGeneratedFile.cs", output)
+            | Ok writer -> 
+                context.AddSource("myGeneratedFile.cs", writer.Output)
             ()

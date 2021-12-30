@@ -20,7 +20,7 @@ type TestDataBlock<'T> =
 // Where a class may be used, use NamedType, even if it will generally be an instance
 type NamedItem with
     static member ForTesting =
-        let data = NamedItem.Create "RonWeasley"  []
+        let data = NamedItem.Create("RonWeasley", [])
         { Data = data
           CSharp = [ "RonWeasley(JackRussell)" ] }
 
@@ -106,7 +106,7 @@ type ParameterModel with
     static member ForTesting =
         let data =
             { ParameterName = "param1"
-              Type = NamedItem.Create "string"  []
+              Type = NamedItem.Create("string", [])
               Style = Normal }
 
         { Data = data
@@ -114,7 +114,7 @@ type ParameterModel with
 
 type MethodModel with
     static member ForTesting =
-        let data = MethodModel.Create (SimpleNamedItem "MyMethod") (ReturnType (NamedItem.Create "string"  []))
+        let data = MethodModel.Create (SimpleNamedItem "MyMethod") (ReturnType (NamedItem.Create("string", [])))
 
         { Data = data
           CSharpOpen = [ "public string MyMethod()"; "{" ]
@@ -125,7 +125,7 @@ type PropertyModel with
     static member ForTesting =
         let data =
             { PropertyName = "MyProperty"
-              Type = NamedItem.Create "MyReturnType"  []
+              Type = NamedItem.Create("MyReturnType", [])
               Scope = Public
               Modifiers = []
               GetStatements = []
