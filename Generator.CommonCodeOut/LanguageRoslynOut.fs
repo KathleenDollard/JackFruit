@@ -5,7 +5,13 @@ open Generator
 open Generator.Language
 open Generator.LanguageStatements
 open Generator.LanguageExpressions
+open System
 
+type String with
+    member this.AsField = $"_{Char.ToLower(this[0])}{this[1..]}"
+    member this.AsVariable = $"{Char.ToLower(this[0])}{this[1..]}"
+    member this.AsPublic = $"{Char.ToUpper(this[0])}{this[1..]}"
+    
 
 type RoslynOut(language: ILanguage, writer: IWriter) =
 
@@ -26,6 +32,11 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         | :? ReturnModel as x -> this.OutputReturn x
         | :? ForEachModel as x -> this.OutputForEach x
         | :? SimpleCallModel as x -> this.OutputSimpleCall x
+        | :? InvocationModel as x -> this.OutputInvocation x
+        | :? InstantiationModel as x -> this.OutputInstantiation x
+        | :? CommentModel as x -> this.OutputComment x
+        | :? CompilerDirectiveModel as x -> this.OutputCompilerDirective x
+        | a -> invalidOp $"Unexpected statement type: {a}"
 
     member this.OutputStatements (statements: IStatement list) =
         for statement in statements do 
@@ -71,11 +82,17 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
     member _.OutputSimpleCall simple =
         writer.AddLines (language.SimpleCall simple)
 
+    member _.OutputInvocation invocation = 
+        writer.AddLines (language.InvocationStatement invocation)
+
+    member _.OutputInstantiation instantiation =
+        writer.AddLines (language.InstantiationStatement instantiation)
+
     member _.OutputComment comment =
         writer.AddLines (language.Comment comment)
 
-    member _.OutputCompilerDirective pragma =
-        writer.AddLines (language.CompilerDirective pragma)
+    member _.OutputCompilerDirective directive =
+        writer.AddLines (language.CompilerDirective directive)
 
     member this.OutputMethod (method: MethodModel) =
         writer.AddLines (language.MethodOpen method) 
@@ -115,18 +132,14 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
     member this.OutputField (field: FieldModel) =
         writer.AddLines (language.Field field)
 
-     //member this.OutputMember mbr =
-     //   match mbr with 
-     //   | Method m -> this.OutputMethod m
-     //   | Property p -> this.OutputProperty p
-     //   | Class c -> this.OutputClass c
-     //   | Field f -> this.OutputField f
-     //   | Constructor c -> this.OutputConstructor c
-
     member this.OutputMembers (members: IMember list) =
         for mbr in members do 
-            ()
-            //this.OutputMember mbr
+            match mbr with 
+            | :? FieldModel as x -> this.OutputField x
+            | :? ConstructorModel as x -> this.OutputConstructor x
+            | :? MethodModel as x -> this.OutputMethod x
+            | :? PropertyModel as x -> this.OutputProperty x
+            | a -> invalidOp $"Unexpected member type during output. Type: {a}"
 
     member this.OutputClass cls =
         writer.AddLines (language.ClassOpen cls)

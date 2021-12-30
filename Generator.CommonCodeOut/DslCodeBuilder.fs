@@ -62,71 +62,6 @@ type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
     member this.Yield (statement: IStatement) : 'T = 
         this.Zero().AddStatements [ statement ]
 
-    [<CustomOperation("Return", MaintainsVariableSpace = true)>]
-    member _.addReturn (item: 'T) =
-        item.AddStatements [ {ReturnModel.Expression = None} ] 
-
-    [<CustomOperation("Return", MaintainsVariableSpace = true)>]
-    member _.addReturn (item: 'T, expression: obj) =
-        let expr: IExpression = 
-            match expression with 
-            | :? IExpression as x -> x
-            | :? string as x -> StringLiteralModel.Create x
-            | _ -> OtherLiteralModel.Create (expression.ToString())
-
-        item.AddStatements [ {ReturnModel.Expression = Some expr} ] 
-
-    [<CustomOperation("SimpleCall", MaintainsVariableSpace = true)>]
-    member _.addSimpleCall (item: 'T, expression: obj) =
-        let expr: IExpression = 
-            match expression with 
-            | :? IExpression as x -> x
-            | :? string as x -> StringLiteralModel.Create x
-            | _ -> OtherLiteralModel.Create (expression.ToString())
-
-        item.AddStatements [ {SimpleCallModel.Expression = expr} ] 
- 
-    [<CustomOperation("Invoke", MaintainsVariableSpace = true)>]
-    member _.addInvoke (item: 'T, instance: NamedItem, itemToCall: NamedItem, [<ParamArray>] args: IExpression[]) =
-        let expr = InvokeExpression instance itemToCall (List.ofArray args)
-        item.AddStatements [ {SimpleCallModel.Expression = expr} ] 
-
-    [<CustomOperation("Invoke", MaintainsVariableSpace = true)>]
-    member _.addInvoke (item: 'T, instance: string, itemToCall: string, [<ParamArray>] args: IExpression[]) =
-        let expr = InvokeExpression instance itemToCall (List.ofArray args)
-        item.AddStatements [ {SimpleCallModel.Expression = expr} ] 
-
-    [<CustomOperation("Assign", MaintainsVariableSpace = true)>]
-    member _.addAssign (item: 'T, symbol: string, value: IExpression) =
-        item.AddStatements [ {AssignmentModel.Item = symbol; Value = value} ] 
-
-    [<CustomOperation("Assign", MaintainsVariableSpace = true)>]
-    member _.addAssign (item: 'T, symbol: string, value: obj) =
-        let expression = GetLiteral value
-        item.AddStatements [ {AssignmentModel.Item = symbol; Value = expression} ] 
-    
-    [<CustomOperation("AssignWithDeclare", MaintainsVariableSpace = true)>]
-    member _.addAssignWithDeclare (item: 'T, symbol: string, typeName: NamedItem option, value: IExpression) =
-        item.AddStatements [ {AssignWithDeclareModel.Variable = symbol; TypeName = typeName; Value = value} ] 
-
-    [<CustomOperation("AssignWithDeclare", MaintainsVariableSpace = true)>]
-    member _.addAssignWithDeclare (item: 'T, symbol: string, typeName: NamedItem option, value: obj) =
-        let expression = GetLiteral value
-        item.AddStatements [ {AssignWithDeclareModel.Variable = symbol; TypeName = typeName; Value = expression} ] 
-
-    [<CustomOperation("AssignWithVar", MaintainsVariableSpace = true)>]
-    member _.addAssignWithDeclare (item: 'T, symbol: string, value: IExpression) =
-        item.AddStatements [ {AssignWithDeclareModel.Variable = symbol; TypeName = None; Value = value} ] 
-
-    [<CustomOperation("AssignWithVar", MaintainsVariableSpace = true)>]
-    member _.addAssignWithDeclare (item: 'T, symbol: string, value: obj) =
-        let expression = GetLiteral value
-        item.AddStatements [ {AssignWithDeclareModel.Variable = symbol; TypeName = None; Value = expression} ] 
-        2
-    [<CustomOperation("If2", MaintainsVariableSpace = true)>]
-    member _.addIf (item: 'T, condition: IExpression, statements: IStatement list) =
-        item.AddStatements [ IfModel.Create condition statements ] 
-
 
 type If(condition: ICompareExpression) =
     inherit StatementBuilderBase<IfModel>()
@@ -199,53 +134,53 @@ type Class(name: string) =
             InheritedFrom = newInheritedFrom
             ImplementedInterfaces = List.append cls1.ImplementedInterfaces cls2.ImplementedInterfaces
             Members =  List.append cls1.Members cls2.Members }  
-    //member this.Yield (memberModel: IMember) : ClassModel = 
-    //    { this.Zero() with Members = [ memberModel ] }
-    //member this.Yield (modifiers: ScopeAndModifiers) : ClassModel = 
-    //    { this.Zero() with Scope = modifiers.Scope; Modifiers = modifiers.Modifiers }
-    //member this.Yield (inheritedFrom: InheritedFrom) : ClassModel = 
-    //    { this.Zero() with InheritedFrom = inheritedFrom }
-    //member this.Yield (implementedInterfaces: ImplementedInterface list) : ClassModel = 
-    //    { this.Zero() with ImplementedInterfaces = implementedInterfaces }
+    member this.Yield (memberModel: IMember) : ClassModel = 
+        { this.Zero() with Members = [ memberModel ] }
+    member this.Yield (modifiers: ScopeAndModifiers) : ClassModel = 
+        { this.Zero() with Scope = modifiers.Scope; Modifiers = modifiers.Modifiers }
+    member this.Yield (inheritedFrom: InheritedFrom) : ClassModel = 
+        { this.Zero() with InheritedFrom = inheritedFrom }
+    member this.Yield (implementedInterfaces: ImplementedInterface list) : ClassModel = 
+        { this.Zero() with ImplementedInterfaces = implementedInterfaces }
 
-    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
-    member _.publicWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers cls Public modifiers
+    //[<CustomOperation("Public", MaintainsVariableSpace = true)>]
+    //member _.publicWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: Modifier[]) =
+    //    updateModifiers cls Public modifiers
 
-    [<CustomOperation("Private", MaintainsVariableSpace = true)>]
-    member _.privateWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers cls Private modifiers
+    //[<CustomOperation("Private", MaintainsVariableSpace = true)>]
+    //member _.privateWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: Modifier[]) =
+    //    updateModifiers cls Private modifiers
 
-    [<CustomOperation("Internal", MaintainsVariableSpace = true)>]
-    member _.internalWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers cls Internal modifiers
+    //[<CustomOperation("Internal", MaintainsVariableSpace = true)>]
+    //member _.internalWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: Modifier[]) =
+    //    updateModifiers cls Internal modifiers
 
-    [<CustomOperation("Protected", MaintainsVariableSpace = true)>]
-    member _.protectedWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers cls Protected modifiers
+    //[<CustomOperation("Protected", MaintainsVariableSpace = true)>]
+    //member _.protectedWithModifiers (cls: ClassModel, [<ParamArray>] modifiers: Modifier[]) =
+    //    updateModifiers cls Protected modifiers
 
-    // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
-    [<CustomOperation("InheritedFrom", MaintainsVariableSpace = true)>]
-    member _.inheritedFrom (cls: ClassModel, inheritedFrom: NamedItem) =
-        // Consider whether resetting this to None is a valid scenario
-        { cls with InheritedFrom = SomeBase inheritedFrom }
+    //// TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
+    //[<CustomOperation("InheritedFrom", MaintainsVariableSpace = true)>]
+    //member _.inheritedFrom (cls: ClassModel, inheritedFrom: NamedItem) =
+    //    // Consider whether resetting this to None is a valid scenario
+    //    { cls with InheritedFrom = SomeBase inheritedFrom }
 
-    // TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
-    [<CustomOperation("ImplementedInterfaces", MaintainsVariableSpace = true)>]
-    member _.interfaces (cls: ClassModel, [<ParamArray>]interfaces: ImplementedInterface[]) =
-        { cls with ImplementedInterfaces = List.ofArray interfaces }
+    //// TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
+    //[<CustomOperation("ImplementedInterfaces", MaintainsVariableSpace = true)>]
+    //member _.interfaces (cls: ClassModel, [<ParamArray>]interfaces: ImplementedInterface[]) =
+    //    { cls with ImplementedInterfaces = List.ofArray interfaces }
 
-    [<CustomOperation("Generics", MaintainsVariableSpace = true)>]
-    member _.generics (cls: ClassModel, generics: NamedItem list) =
-        let currentName =
-            match cls.ClassName with 
-            | SimpleNamedItem n -> n
-            | GenericNamedItem (n, _ ) -> n
-        { cls with ClassName = NamedItem.Create currentName generics }
+    //[<CustomOperation("Generics", MaintainsVariableSpace = true)>]
+    //member _.generics (cls: ClassModel, generics: NamedItem list) =
+    //    let currentName =
+    //        match cls.ClassName with 
+    //        | SimpleNamedItem n -> n
+    //        | GenericNamedItem (n, _ ) -> n
+    //    { cls with ClassName = NamedItem.Create currentName generics }
 
-    [<CustomOperation("Members", MaintainsVariableSpace = true)>]
-    member _.addMember (cls: ClassModel, memberModels: IMember list) =
-        { cls with Members =  List.append cls.Members memberModels }
+    //[<CustomOperation("Members", MaintainsVariableSpace = true)>]
+    //member _.addMember (cls: ClassModel, memberModels: IMember list) =
+    //    { cls with Members =  List.append cls.Members memberModels }
  
 
 // Don: I have not been able to create a CE that supports an empty body. Is it possible?
@@ -284,25 +219,30 @@ type Field(name: string, typeName: NamedItem) =
 type MethodBase<'T when 'T :> IMethodLike<'T>>() =
     inherit StatementBuilderBase<'T>()
 
-    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
-    member _.publicWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
-        (item :> IMethodLike<'T>).AddScopeAndModifiers Public (List.ofArray modifiers)
+    member this.Yield (modifiers: ScopeAndModifiers) : 'T = 
+        this.Zero().AddScopeAndModifiers modifiers
+    member this.Yield (parameter: ParameterModel) : 'T = 
+        this.Zero().AddParameter parameter
 
-    [<CustomOperation("Private", MaintainsVariableSpace = true)>]
-    member _.privateWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
-         (item :> IMethodLike<'T>).AddScopeAndModifiers Private (List.ofArray modifiers)
+    //[<CustomOperation("Public", MaintainsVariableSpace = true)>]
+    //member _.publicWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
+    //    (item :> IMethodLike<'T>).AddScopeAndModifiers Public (List.ofArray modifiers)
 
-    [<CustomOperation("Internal", MaintainsVariableSpace = true)>]
-    member _.internalWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
-         (item :> IMethodLike<'T>).AddScopeAndModifiers Internal (List.ofArray modifiers)
+    //[<CustomOperation("Private", MaintainsVariableSpace = true)>]
+    //member _.privateWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
+    //     (item :> IMethodLike<'T>).AddScopeAndModifiers Private (List.ofArray modifiers)
 
-    [<CustomOperation("Protected", MaintainsVariableSpace = true)>]
-    member _.protectedWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
-         (item :> IMethodLike<'T>).AddScopeAndModifiers Protected (List.ofArray modifiers)
+    //[<CustomOperation("Internal", MaintainsVariableSpace = true)>]
+    //member _.internalWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
+    //     (item :> IMethodLike<'T>).AddScopeAndModifiers Internal (List.ofArray modifiers)
 
-    [<CustomOperation("Parameter", MaintainsVariableSpace = true)>]
-    member _.addParmaeter (item: 'T, parameterName: string, parameterType: NamedItem) =
-        (item :> IMethodLike<'T>).AddParameter parameterName parameterType Normal
+    //[<CustomOperation("Protected", MaintainsVariableSpace = true)>]
+    //member _.protectedWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
+    //     (item :> IMethodLike<'T>).AddScopeAndModifiers Protected (List.ofArray modifiers)
+
+    //[<CustomOperation("Parameter", MaintainsVariableSpace = true)>]
+    //member _.addParmaeter (item: 'T, parameterName: string, parameterType: NamedItem) =
+    //    (item :> IMethodLike<'T>).AddParameter parameterName parameterType Normal
 
 
 type Method(name: NamedItem, returnType: ReturnType) =

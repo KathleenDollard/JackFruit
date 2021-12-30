@@ -12,7 +12,7 @@
     <Compile Include="Transform.fs" />
 
     <Compile Include="NewMapping.fs" />
-    <Compile Include="BuildCodePattern.fs" />
+    <Compile Include="JackfruitHelpers.fs" />
     <Compile Include="BuildCliCodeModel.fs" />
     <Compile Include="CliSourceGenerator.fs" />
   </ItemGroup>

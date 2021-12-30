@@ -1,13 +1,16 @@
 ﻿module DslStatementTests
 
 open Xunit
-open Generator.Language
 open Common
+open Generator.Language
 open DslKeywords
 open DslCodeBuilder
 open Generator.Language
 open Generator.LanguageExpressions
 open Generator.LanguageExpressions.ExpressionHelpers
+open Generator.LanguageHelpers
+open Generator.LanguageHelpers.Statements
+open type Generator.LanguageHelpers.Structural
 open Generator.LanguageStatements
 
 
@@ -27,8 +30,7 @@ type ``When creating Return statements to test all expressions``() =
         let expectedModel = None
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
-                Public
-                Return
+                ReturnVoid()
                 }
 
         checkResult expectedModel codeModel
@@ -84,8 +86,8 @@ type ``When creating Return statements to test all expressions``() =
     [<Fact>]
     member _.``Can create string literal return``() =
         let outerMethodName = "A"
-        let literal = "Fred"
-        let expectedModel: IExpression = (StringLiteralModel.Create literal)
+        let literal = "\"Fred\""
+        let expectedModel: IExpression = StringLiteral literal[1..literal.Length - 2]
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
                 Return (Literal literal)
@@ -97,7 +99,7 @@ type ``When creating Return statements to test all expressions``() =
     member _.``Can create non string literal return``() =
         let outerMethodName = "A"
         let literal = 42
-        let expectedModel: IExpression = (OtherLiteralModel.Create "42")
+        let expectedModel: IExpression = IntegerLiteral 42
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
                 Return (Literal literal)
@@ -109,10 +111,10 @@ type ``When creating Return statements to test all expressions``() =
     member _.``Can create symbol return``() =
         let outerMethodName = "A"
         let name = "Fred"
-        let expectedModel: IExpression = (SymbolModel.Create name)
+        let expectedModel: IExpression = SymbolLiteral (Symbol name)
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
-                Return (Symbol name)
+                Return (SymbolLiteral (Symbol name))
                 }
   
         checkResult (Some expectedModel) codeModel
@@ -120,10 +122,10 @@ type ``When creating Return statements to test all expressions``() =
     [<Fact>]
     member _.``Can create null return``() =
         let outerMethodName = "A"
-        let expectedModel: IExpression = NullModel.Create()
+        let expectedModel: IExpression = NullLiteral
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
-                Return Null
+                Return NullLiteral
                 }
   
         checkResult (Some expectedModel) codeModel
@@ -134,10 +136,10 @@ type ``When creating If statements``() =
     member _.``Can  create If without Else``() =
         let returnIfTrue = "Fred"
         let returnStatement = { ReturnModel.Expression = Some (Literal returnIfTrue) }
-        let expectedModel = { IfCondition = True; Statements = [ returnStatement ] }
+        let expectedModel = { IfCondition = TrueLiteral; Statements = [ returnStatement ] }
         let actualModel = 
-            If (True) {
-                Return returnIfTrue }
+            If (TrueLiteral) {
+                Return (Literal returnIfTrue) }
 
         Assert.Equal(expectedModel, actualModel)
 
@@ -149,14 +151,14 @@ type ``When creating If statements``() =
         let returnStatementIfTrue = { ReturnModel.Expression = Some (Literal returnIfTrue) }
         let returnIfFalse = "George"
         let returnStatementIfFalse = { ReturnModel.Expression = Some (Literal returnIfFalse) }
-        let expectedModelIfTrue= { IfCondition = True; Statements = [ returnStatementIfTrue ] }
+        let expectedModelIfTrue= { IfCondition = TrueLiteral; Statements = [ returnStatementIfTrue ] }
         let expectedModelIfFalse= { ElseStatements = [ returnStatementIfFalse ] }
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
-                If (True) {
-                    Return returnIfTrue }
+                If (TrueLiteral) {
+                    Return (Literal returnIfTrue) }
                 Else() {
-                    Return returnIfFalse }
+                    Return (Literal returnIfFalse) }
                 }           
 
         let actualModelIfTrue = codeModel.Statements[0] :?> IfModel
@@ -170,11 +172,11 @@ type ``When creating If statements``() =
         let outerMethodName = "A"
         let returnIfTrue = "Fred"
         let returnStatementIfTrue = { ReturnModel.Expression = Some (Literal returnIfTrue) }
-        let expectedModelIfTrue= { IfCondition = True; Statements = [ returnStatementIfTrue ] }
+        let expectedModelIfTrue= { IfCondition = TrueLiteral; Statements = [ returnStatementIfTrue ] }
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
-                If (True) {
-                    Return returnIfTrue }
+                If (TrueLiteral) {
+                    Return (Literal returnIfTrue) }
                 }           
 
         let actualModelIfTrue = codeModel.Statements[0] :?> IfModel
@@ -204,7 +206,6 @@ type ``When creating SimpleCall statements``() =
         let expected: IExpression = (InvocationModel.Create instance method [])
         let codeModel = 
             Method(outerMethodName, Void) {
-                Public
                 SimpleCall (InvocationModel.Create instance method [])
                 }
 
@@ -219,16 +220,13 @@ type ``When creating Invoke statements``() =
         let outerMethodName = "A"
         let instance = "B"
         let method = "C"
-        let expected: IExpression = (InvocationModel.Create instance method [])
+        let expected: IStatement = (InvocationModel.Create instance method [])
         let codeModel = 
             Method(outerMethodName, Void) {
-                Public
-                Invoke instance method
+                Invoke instance method []
                 }
         Assert.Equal(1, codeModel.Statements.Length)
-        match codeModel.Statements[0] with 
-        | :? SimpleCallModel as actualCall -> Assert.Equal(expected, actualCall.Expression)
-        | _ -> Assert.Fail("Statement not of expected SimpleCallModel type")
+        Assert.Equal(expected, codeModel.Statements[0])
 
 type ``When creating Comment statements``() =
     [<Fact>]

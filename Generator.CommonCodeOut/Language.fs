@@ -18,6 +18,13 @@ type Modifier =
     static member Contains modifier list =
         List.exists (fun x -> x = modifier) list
 
+        
+type ParameterStyle =
+    | Normal
+    | DefaultValue of IExpression
+    | IsParamArray
+
+
 
 type IMember = interface end
 type IStatement = interface end
@@ -32,15 +39,9 @@ type IStatementContainer<'T> =
 
 type IMethodLike<'T when 'T:> IMethodLike<'T>> =
     inherit IStatementContainer<'T>
-    abstract member AddScopeAndModifiers: Scope -> Modifier list -> 'T
-    abstract member AddParameter: string -> NamedItem -> ParameterStyle -> 'T
-  
-
-type ParameterStyle =
-    | Normal
-    | DefaultValue of IExpression
-    | IsParamArray
-
+    abstract member AddScopeAndModifiers: ScopeAndModifiers -> 'T
+    abstract member AddParameter: ParameterModel-> 'T
+   
 type ParameterModel =
     { ParameterName: string
       Type: NamedItem
@@ -68,15 +69,15 @@ type MethodModel =
     interface IMember
     member this.AddStatements statements =
         { this with Statements = statements }
-    member this.AddScopeAndModifiers scope modifiers = 
-        { this with Scope = scope; Modifiers = modifiers }
-    member this.AddParameter parameterName parameterType style = 
-        { this with Parameters = List.append this.Parameters [{ ParameterName = parameterName; Type = parameterType; Style = style} ] }
+    member this.AddScopeAndModifiers (scopeAndModifiers: ScopeAndModifiers) = 
+        { this with Scope = scopeAndModifiers.Scope; Modifiers = scopeAndModifiers.Modifiers }
+    member this.AddParameter parameterModel = 
+        { this with Parameters = List.append this.Parameters [parameterModel] }
     interface IMethodLike<MethodModel> with
         member this.AddStatements statements = this.AddStatements statements
-        member this.AddScopeAndModifiers scope modifiers = this.AddScopeAndModifiers scope modifiers
-        member this.AddParameter parameterName parameterType style = 
-            this.AddParameter parameterName parameterType style
+        member this.AddScopeAndModifiers scopeAndModifiers = this.AddScopeAndModifiers scopeAndModifiers
+        member this.AddParameter parameterModel = 
+            this.AddParameter parameterModel
      
  
 type ConstructorModel =
@@ -92,15 +93,15 @@ type ConstructorModel =
     interface IMember
     member this.AddStatements statements =
         { this with Statements = statements }
-    member this.AddScopeAndModifiers scope modifiers = 
-        { this with Scope = scope; Modifiers = modifiers }
-    member this.AddParameter parameterName parameterType style = 
-        { this with Parameters = List.append this.Parameters [{ ParameterName = parameterName; Type = parameterType; Style = style} ] }
+    member this.AddScopeAndModifiers (scopeAndModifiers: ScopeAndModifiers) = 
+        { this with Scope = scopeAndModifiers.Scope; Modifiers = scopeAndModifiers.Modifiers }
+    member this.AddParameter parameterModel = 
+        { this with Parameters = List.append this.Parameters [parameterModel] }
     interface IMethodLike<ConstructorModel> with
         member this.AddStatements statements = this.AddStatements statements
-        member this.AddScopeAndModifiers scope modifiers = this.AddScopeAndModifiers scope modifiers
-        member this.AddParameter parameterName parameterType style = 
-            this.AddParameter parameterName parameterType style
+        member this.AddScopeAndModifiers scopeAndModifiers = this.AddScopeAndModifiers scopeAndModifiers
+        member this.AddParameter parameterModel = 
+            this.AddParameter parameterModel
 
 
 type PropertyModel =
@@ -138,9 +139,11 @@ type FieldModel =
 type InheritedFrom =
     | SomeBase of BaseClass: NamedItem
     | NoBase
+    interface IMember
 
 type ImplementedInterface =
     | ImplementedInterface of Name: NamedItem
+    interface IMember
         
  
 type ClassModel = 
@@ -187,29 +190,12 @@ type NamespaceModel =
     member this.AddClasses (classes: ClassModel list) =
         { this with Classes = List.append this.Classes classes }
 
+
 type ScopeAndModifiers =
     { Scope: Scope
       Modifiers: Modifier list }
-
-type LanguageHelpers =
-    static member Using (usingName: string) =
-        UsingModel.Create usingName
-    static member Using (usingName: string, ?w:AliasWord, ?alias: string) =
-        match alias with 
-        | None -> UsingModel.Create usingName
-        | Some a ->
-            if String.IsNullOrEmpty a then
-                UsingModel.Create usingName
-            else
-                { UsingNamespace = usingName; Alias = Some a }
-    //static member Public ([<ParamArray>] modifiers: Modifier[]) =
-    //    { Scope = Scope.Public; Modifiers = List.ofArray modifiers }
-    //static member Private ([<ParamArray>] modifiers: Modifier[]) =
-    //    { Scope = Scope.Public; Modifiers = List.ofArray modifiers }
-    //static member Internal ([<ParamArray>] modifiers: Modifier[]) =
-    //    { Scope = Scope.Public; Modifiers = List.ofArray modifiers }
-    //static member Protected ([<ParamArray>] modifiers: Modifier[]) =
-    //    { Scope = Scope.Public; Modifiers = List.ofArray modifiers }
+    interface IMember
+    interface IStatement
 
 type System.String with 
     member this.AsFieldName() =

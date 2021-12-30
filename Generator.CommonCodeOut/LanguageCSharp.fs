@@ -29,6 +29,8 @@ type LanguageCSharp() =
     override _.AwaitKeyword = "await"
     override _.NewKeyword = "new"
     override _.NullKeyword = "null"
+    override _.TrueKeyword = "true"
+    override _.FalseKeyword = "false"
 
     override _.EqualsOperator = "=="
     override _.NotEqualsOperator = "!="
@@ -72,7 +74,7 @@ type LanguageCSharp() =
     override this.MethodOpen method  = 
        let returnType =
             match method.ReturnType with 
-            | Type t -> this.OutputNamedItem t
+            | ReturnType t -> this.OutputNamedItem t
             | Void -> "void"
        [$"{this.ScopeOutput method.Scope}{this.OutputModifiers method.Modifiers} {returnType} {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters})"; "{"]
     override _.MethodClose _ = [ "}" ]

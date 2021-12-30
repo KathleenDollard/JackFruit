@@ -7,9 +7,11 @@ open System
 open Common
 open DslKeywords
 open DslCodeBuilder
-open type Generator.Language.LanguageHelpers
 open Generator.LanguageExpressions.ExpressionHelpers
 open Generator.LanguageHelpers
+open type Generator.LanguageHelpers.Structural
+open Generator.LanguageHelpers.Statements
+
 
 type System.String with 
     member this.AsFieldName() =
@@ -28,68 +30,33 @@ type ``When creating simple code``() =
         let paramName = propertyName.AsParamName()
         let methodName = "MethodA"
         let methodReturn = "int"
+        let comparison = Compare (InvokeExpression propertyName "Length" []) Equals (Literal 0)
         let code = 
             Namespace(nspaceName) {
                 Using "System"
                 Using "System.Linq"
 
                 Class(className) {
-                    Public
+                    Public()
 
-                    Members [
-                        Field("A", "string") { Private }
-
-                        Constructor() 
-                            { Public 
-                              Parameter paramName propertyType
-                              Assign propertyName paramName
-                            }
-
-                        Property(propertyName, "int") { Public }
-
-                        Method(methodName, (Type methodReturn))
-                            { Public
-                              //AssignWithVar "x" "0" 
-                              //If2 (Compare (InvokeExpression propertyName "Length" []) Equals (GetLiteral 0)) [
-                              //      Return 0
-                              //      ]
-
-                              
-                            }
-                    
-                    ]
-
-                }
-            }
-
-        let code2 = 
-            Namespace(nspaceName) {
-                Using "System"
-                Using "System.Linq"
-
-                Class(className) {
-                    Public ()
-                        Field("A", "string") { Private }
+                    Field("A", "string") { Private }
 
                     Constructor() 
-                        { Public 
+                        { Public()
+                          Parameter(paramName, propertyType)
+                          Assign propertyName paramName
                         }
 
                     Property(propertyName, "int") { Public }
 
-                    Method(methodName, (Type methodReturn))
-                            { Public
-                                //AssignWithVar "x" "0" 
-                                //If2 (Compare (InvokeExpression propertyName "Length" []) Equals (GetLiteral 0)) [
-                                //      Return 0
-                                //      ]
-
-                                  
-                            }
-                        
-                    ]
+                    Method(methodName, (ReturnType methodReturn))
+                        { Public()
+                          AssignWithVar "x" "0" 
+                          If (comparison) {
+                                Return (Literal 0)
+                                }
+                         }
 
                 }
             }
-
         ()

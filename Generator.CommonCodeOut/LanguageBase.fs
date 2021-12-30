@@ -20,6 +20,9 @@ type LanguageBase() =
     abstract AbstractKeyword: string with get
     abstract ReadonlyKeyword: string with get
 
+    abstract TrueKeyword: string with get
+    abstract FalseKeyword: string with get
+
     abstract UsingKeyword: string with get
     abstract NamespaceKeyword: string with get
     abstract ClassKeyword: string with get
@@ -107,7 +110,7 @@ type LanguageBase() =
         member this.ForEachClose forEach = this.ForEachClose forEach
 
         member this.Assignment assignment =
-            [$"{assignment.Item} = {this.OutputExpression assignment.Value}{this.EndOfStatement}"]
+            [$"{assignment.Variable} = {this.OutputExpression assignment.Value}{this.EndOfStatement}"]
         member this.AssignWithDeclare assign = this.AssignWithDeclare assign
       
         member this.Return ret =
@@ -119,19 +122,14 @@ type LanguageBase() =
         member this.Comment comment =
             [$"{this.CommentPrefix} {comment.Text}"]
         member this.CompilerDirective directive = this.CompilerDirective directive
+        member this.InvocationStatement invocation =
+            [$"{(this :> ILanguage).Invocation invocation}{this.EndOfStatement}"]
+        member this.InstantiationStatement instantiation =
+            [$"{(this :> ILanguage).Instantiation instantiation}{this.EndOfStatement}"]
 
-
-
-        member this.Invocation invocation =
-            let awaitIfNeeded = 
-                if invocation.ShouldAwait then
-                    $"{this.AwaitKeyword} "
-                else
-                    ""
-            $"{awaitIfNeeded}{invocation.Instance}.{invocation.MethodName}({this.OutputArguments invocation.Arguments})"
-
-        member this.Comparison comparison =
-            $"{this.OutputExpression comparison.Left} {this.OutputOperator comparison.Operator} {this.OutputExpression comparison.Right}"
+        member this.Invocation invocation = this.OutputInvocation invocation
+        member this.Instantiation instantiation = this.OutputInstantiation instantiation
+        member this.Comparison comparison = this.OutputComparison comparison
 
         member this.NamedItemOutput namedItem =
             $"{this.OutputNamedItem namedItem}"
@@ -193,7 +191,12 @@ type LanguageBase() =
         String.Join(", ", s)
     
     member this.OutputInvocation invocation = 
-        $"{this.OutputNamedItem invocation.Instance}.{this.OutputNamedItem invocation.MethodName}({this.OutputArguments invocation.Arguments})" 
+        let awaitIfNeeded = 
+            if invocation.ShouldAwait then
+                $"{this.AwaitKeyword} "
+            else
+                ""
+        $"{awaitIfNeeded}{this.OutputNamedItem invocation.Instance}.{this.OutputNamedItem invocation.MethodName}({this.OutputArguments invocation.Arguments})" 
     
     member this.OutputComparison comparison = 
         $"{this.OutputExpression comparison.Left} {this.OutputOperator comparison.Operator} {this.OutputExpression comparison.Right}"
@@ -202,16 +205,27 @@ type LanguageBase() =
         $"{this.NewKeyword} {this.OutputNamedItem instantiation.TypeName}({this.OutputArguments instantiation.Arguments})"  
     
     member this.OutputExpression expression =
+        let x = CompareLiteralsModel.TrueLiteral // trying to force the resolution
         match expression with 
         | :? InvocationModel as x -> this.OutputInvocation x
         | :? ComparisonModel as x -> this.OutputComparison x
         | :? InstantiationModel as x -> this.OutputInstantiation x
-        | :? StringLiteralModel as x -> "\"" + x.Value + "\""
-        | :? OtherLiteralModel as x -> x.Value
-        | :? SymbolModel as x -> x.Name
-        | :? NullModel as _ -> this.NullKeyword // TODO: Watch for issues with this. Comparisons with Null from Nullable can be flipped from C#
-    
+        | :? LiteralsModel as asLiteralModel ->
+            match asLiteralModel with 
+            | StringLiteral x -> "\"" + x + "\""
+            | IntegerLiteral x -> x.ToString()
+            | DoubleLiteral x -> x.ToString()
+            | SymbolLiteral x ->
+                match x with 
+                | Symbol s -> s
+            | NullLiteral _ -> this.NullKeyword // TODO: Watch for issues with this. Comparisons with Null from Nullable can be flipped from C#
+            | UnknownLiteral x -> $"**Unknown<{x}>**"
+        | :? CompareLiteralsModel as asLiteralModel ->
+            match asLiteralModel with 
+            | TrueLiteral -> this.TrueKeyword
+            | FalseLiteral -> this.FalseKeyword
+
     member this.OutputAssignment assignment =
-        $"{assignment.Item} = {assignment.Value}"
+        $"{assignment.Variable} = {assignment.Value}"
 
 

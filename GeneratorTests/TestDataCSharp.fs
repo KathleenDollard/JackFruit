@@ -6,6 +6,7 @@ open Generator.Language
 open Common
 open Generator.LanguageExpressions
 open Generator.LanguageStatements
+open Generator.LanguageHelpers
 
 
 type TestData<'T> = { Data: 'T; CSharp: string list } // Add VB later
@@ -46,8 +47,8 @@ type InstantiationModel with
 type ComparisonModel with
     static member ForTesting =
         let data =
-            { Left = SymbolModel.Create "left"
-              Right = StringLiteralModel.Create "qwerty"
+            { Left = SymbolLiteral (Symbol "left")
+              Right = StringLiteral "qwerty"
               Operator = Operator.Equals }
 
         { Data = data
@@ -57,8 +58,8 @@ type IfModel with
     static member ForTesting =
         let data =
             { IfCondition =
-                { Left = SymbolModel.Create "A"
-                  Right = OtherLiteralModel.Create "42"
+                { Left = SymbolLiteral (Symbol "A")
+                  Right = Literal "42"
                   Operator = Operator.Equals }
               Statements = [] }
 
@@ -84,8 +85,8 @@ type ForEachModel with
 type AssignmentModel with
     static member ForTesting =
         let data =
-            { Item = "item"
-              Value = StringLiteralModel.Create "boo!" }
+            { Variable = "item"
+              Value = StringLiteral "boo!" }
 
         { Data = data
           CSharp = [ "item = \"boo!\";" ] }
@@ -96,7 +97,7 @@ type AssignWithDeclareModel with
         let data =
             { Variable = "item"
               TypeName = None
-              Value = StringLiteralModel.Create "boo!" }
+              Value = StringLiteral "boo!" }
 
         { Data = data
           CSharp = [ "var item = \"boo!\";" ] }
@@ -113,7 +114,7 @@ type ParameterModel with
 
 type MethodModel with
     static member ForTesting =
-        let data = MethodModel.Create (SimpleNamedItem "MyMethod") (Type (NamedItem.Create "string"  []))
+        let data = MethodModel.Create (SimpleNamedItem "MyMethod") (ReturnType (NamedItem.Create "string"  []))
 
         { Data = data
           CSharpOpen = [ "public string MyMethod()"; "{" ]

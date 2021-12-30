@@ -57,11 +57,11 @@ type ForEachModel =
         { LoopVar = loopvar; LoopOver = loopover; Statements = statements }
 
 type AssignmentModel = 
-    { Item: string
+    { Variable: string
       Value: IExpression}
     interface IStatement
-    static member Create item value =
-        { Item = item; Value = value }
+    static member Create variable value =
+        { Variable = variable; Value = value }
 
 type AssignWithDeclareModel =
     { Variable: string

@@ -1,12 +1,20 @@
 ﻿module Generator.BuildCliCodeModel
 
+open Common
 open Generator.Language
 open Generator.Models
-open Common
 open Generator.LanguageStatements
 open Generator.GeneralUtils
 open DslCodeBuilder
 open Generator.LanguageRoslynOut
+open type Generator.LanguageHelpers.Structural
+open Generator.LanguageHelpers.Statements
+open Generator.LanguageExpressions
+open Generator.LanguageExpressions.ExpressionHelpers
+open Generator.LanguageHelpers
+open System
+open Generator.JackfruitHelpers
+
 
 let private operationName = "operation"
 let private operationFieldName = "_operation"
@@ -32,20 +40,10 @@ let private methodSigFromCommandDef (commandDef: CommandDef) =
         [ for memberDef in commandDef.Members do 
             memberDef.TypeName
             match commandDef.ReturnType with 
-            | Type t -> t
+            | ReturnType t -> t
             | Void -> () ]
     let name = if isAction then "Action" else "Func"
     GenericNamedItem (name, memberTypes)
-
-let baseMemberName (memberDef: MemberDef) = $"{memberDef.Name}{memberDef.KindName}"
-let memberFieldName (memberDef: MemberDef) = $"_{ToCamel (baseMemberName memberDef)}"
-let memberPropName (memberDef: MemberDef) = $"{ToPascal (baseMemberName memberDef)}"
-let memberParamName (memberDef: MemberDef) = ToCamel (baseMemberName memberDef)
-let memberSymbolType (memberDef: MemberDef) = GenericNamedItem (memberDef.KindName, [ memberDef.TypeName ])
-
-let commandFieldName (_: CommandDef)  ="_command"  
-let commandPropName (_: CommandDef) = "Command"
-let commandClassName (commandDef: CommandDef) = $"{ToPascal commandDef.Name}CommandWrapper"
 
 let generatedCommandHandlerName (_: CommandDef) = "GeneratedHandler"
 
@@ -56,56 +54,38 @@ let argumentSpecificValues (memberDef:MemberDef) = []
 
 let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel, AppErrors> =
 
+    let methodForCommandDef (commandDef: CommandDef) =
+        Method (commandDef.MethodName, ReturnType "Command") {
+            Public()
+            AssignWithVar commandDef.VariableName (New "Command" [ StringLiteral commandDef.Name ])
+            for mbr in commandDef.Members do
+                AssignWithVar mbr.NameAsVariable (New mbr.SymbolType [ StringLiteral mbr.Name ])
+                match mbr.Description with 
+                | Some desc -> Assign $"{mbr.NameAsVariable}.Description" mbr.Description
+                | None -> ()
+                Invoke commandDef.VariableName "Add" [ Literal mbr.NameAsVariable ] 
 
-
-    let classForCommandDef (commandDef: CommandDef) =
-        let className = commandClassName commandDef
-        Class (className)
-            {
-                Members [
-                    //Public
-                    Field ("operation", GenericNamedItem ("Action", [SimpleNamedItem "int"]))
-                        {
-                            // TODO: Make private the default and support Zero so body can be empty
-                            Public 
-                        }
-                    Constructor()
-                        {
-                            Public
-                        }
-                    // TODO: Add singleton support for the following two members
-                    Field ("command", SimpleNamedItem "Command")
-                        {
-                            Public // TODO: Add private support
-                        }
-                    Property("Command", SimpleNamedItem "Command")
-                        {
-                            Public
-                        }
-                    //Class("GeneratedHandler")
-                    //    {
-                    //        Public
-                    //    }
-                ]
-            }
-
-    let classForCommandDef (commandDef: CommandDef) = ()
-
-
-    let classes = 
-        [ for commandDef in commandDefs do
-            classForCommandDef commandDef
-        ]
+            Comment "In the following, the hard coded handler name is wrong, but I am just getting code structure correct"
+            Invoke commandDef.VariableName "SetHandler" [
+                SymbolLiteral (Symbol commandDef.HandlerMethodName)
+                for mbr in commandDef.Members do (Literal (mbr.NameAsVariable))]
+            Return (SymbolLiteral (Symbol commandDef.VariableName)) }
 
     try
-        // KAD: Figure out right namespace
-        Ok ({ NamespaceName = "GeneratedHandlers"
-              Usings = 
-                [ UsingModel.Create "System" 
-                  UsingModel.Create "System.CommandLine"
-                  UsingModel.Create "System.CommandLine.Invocation"
-                  UsingModel.Create "System.Threading.Tasks"]
-              Classes = classes })
+        // KAD: Figure out right namespace: Should probably collect the correct namespace from the initial code. 
+        let nspace = Namespace ("CliDefinition") {
+            UsingModel.Create "System" 
+            UsingModel.Create "System.CommandLine"
+            UsingModel.Create "System.CommandLine.Invocation"
+            UsingModel.Create "System.Threading.Tasks"
+
+            for commandDef in commandDefs do 
+                Class($"{commandDef.Name}Cli") {
+                    Public()
+                    methodForCommandDef commandDef }
+            }
+        Ok nspace
+
     with
     | ex -> Error (Other $"Error creating code model {ex.Message}")
 

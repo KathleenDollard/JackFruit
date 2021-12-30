@@ -35,11 +35,11 @@ type NamedItem =
 
 type ReturnType =
     | Void
-    | Type of t: NamedItem
+    | ReturnType of t: NamedItem
     static member Create typeName =
         match typeName with 
          | "void" -> Void
-         | _ -> Type (NamedItem.Create (typeName) [])
+         | _ -> ReturnType (NamedItem.Create (typeName) [])
 
 
 type TreeNodeType<'T> = {

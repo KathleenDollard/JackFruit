@@ -51,8 +51,9 @@ type MemberDefUsage =
 
 type CommandDefUsage =
     | UserMethod of Method: IMethodSymbol * SemanticModel: SemanticModel
+    // Set Handler is just to support the work Kevin Bost did in 2021. Might be deleted in future
     | SetHandlerMethod of Method: IMethodSymbol * SemanticModel: SemanticModel * Symbol: Symbol
-    | Arbitrary
+    | Arbitrary of Name: string // might just be used in testing
 
 /// The main structure for command members during transformation.
 /// The single structure is used so that late transformers can
@@ -230,6 +231,13 @@ and CommandDef(commandId: string, path: string list, returnType: ReturnType, com
             match memberDef.Kind with 
             | Option | Argument -> memberDef
             | _ -> () ]
+
+
+    member this.HandlerMethodName : string = 
+        match commandDefUsage with 
+        | UserMethod (m, _) -> m.Name
+        | SetHandlerMethod (_, _, _) -> invalidOp "SetHandler handlers are not yet supported"
+        | Arbitrary n -> n
 
 
     /// All commands need to be in either the flat list or in a tree based on 

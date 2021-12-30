@@ -29,6 +29,8 @@ type LanguageVisualBasic() =
     override _.AwaitKeyword = "Await"
     override _.NewKeyword = "New"
     override _.NullKeyword = "Nothing"
+    override _.TrueKeyword = "True"
+    override _.FalseKeyword = "False"
 
     override _.EqualsOperator = "=="
     override _.NotEqualsOperator = "<>"
