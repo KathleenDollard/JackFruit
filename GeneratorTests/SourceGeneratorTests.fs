@@ -14,6 +14,8 @@ open ApprovalTests.Reporters
 open ApprovalTests
 open Generator.Tests
 open System
+open Generator.Tests.UtilsForTests
+open Generator.SourceGenerator
 
 [<Generator>]
 type TestGenerator() =
@@ -39,17 +41,16 @@ type TestGenerator() =
 
 type ``When testing source generators``() =
 
-    let RunGenerator (generator: ISourceGenerator) (inputCompilation: Compilation)=
-        let driver = CSharpGeneratorDriver.Create(generator)
-        let c = CancellationToken.None
-        driver.RunGeneratorsAndUpdateCompilation (inputCompilation, cancellationToken = c)
+    //let RunGenerator (generator: ISourceGenerator) (inputCompilation: Compilation)=
+    //    let driver = CSharpGeneratorDriver.Create(generator)
+    //    let c = CancellationToken.None
+    //    driver.RunGeneratorsAndUpdateCompilation (inputCompilation, cancellationToken = c)
 
-    let CreateCompilation (source: string) =
-        CSharpCompilation.Create("compilation",
-            seq {CSharpSyntaxTree.ParseText(source)},
-            seq {MetadataReference.CreateFromFile(typeof<Binder>.Assembly.Location)},
-            CSharpCompilationOptions(OutputKind.ConsoleApplication))
-        
+    //let CreateCompilation (source: string) =
+    //    CSharpCompilation.Create("compilation",
+    //        seq {CSharpSyntaxTree.ParseText(source)},
+    //        seq {MetadataReference.CreateFromFile(typeof<Binder>.Assembly.Location)},
+    //        CSharpCompilationOptions(OutputKind.ConsoleApplication))       
 
     [<Fact>]
     member _.``Simple tests work``() =
@@ -70,40 +71,25 @@ namespace MyCode
         Assert.Equal (0, (diagnostics.Count()))
         Assert.True (output.SyntaxTrees.Skip(1).First().ToString().Contains("namespace GeneratedNamespace"))
 
-//type ``When generating CLI code``() =
+type ``When generating CLI code``() =
 
-//    let RunGenerator (generator: ISourceGenerator) (inputCompilation: Compilation) =
-//        let driver = CSharpGeneratorDriver.Create(generator)
-//        let c = CancellationToken.None
-//        let d, output, diagnostics = driver.RunGeneratorsAndUpdateCompilation (inputCompilation, cancellationToken = c)
-//        let diagList = 
-//            [ for diag in diagnostics do 
-//                diag ]
-//        d, output, diagList
 
-//    let CreateCompilation (source: string) =
-//        CSharpCompilation.Create("compilation",
-//            seq {CSharpSyntaxTree.ParseText(source)},
-//            seq {MetadataReference.CreateFromFile(typeof<Binder>.Assembly.Location)},
-//            CSharpCompilationOptions(OutputKind.ConsoleApplication))
-
-//    let RunCliModelGenerator (inputCompilation: Compilation) =
-//        RunGenerator CliModelGenerator inputCompilation
+    let RunCliModelGenerator (inputCompilation: Compilation) =
+        RunGenerator CliModelGenerator inputCompilation
 
 //    let VerifyTestResult  driver (outputCompilation: Compilation) (diagnostics: Diagnostic list) =
 //        Assert.Equal(0, diagnostics.Length)
 //        let newTree = outputCompilation.SyntaxTrees.Skip(1).SingleOrDefault()
 //        Assert.NotNull newTree
 //        Approvals.Verify(newTree.ToString())
+     
 
-      
-
-//    [<Fact>]
-//    [<UseReporter(typeof<DiffReporter>)>]
-//    member _.``Code outputs for one simple command``() =
-//        let code = String.Join("\n", MapData.NoMapping.HandlerCode)
-//        let compilation = CreateCompilation code
-//        VerifyTestResult RunCliModelGenerator compilation
+    [<Fact>]
+    [<UseReporter(typeof<DiffReporter>)>]
+    member _.``Code outputs for one simple command``() =
+        let code = String.Join("\n", MapData.NoMapping.HandlerCode)
+        let compilation = CreateCompilation code
+        VerifyTestResult RunCliModelGenerator compilation
 
 //    [<Fact>]
 //    [<UseReporter(typeof<DiffReporter>)>]

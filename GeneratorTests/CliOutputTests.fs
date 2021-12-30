@@ -1,4 +1,4 @@
-﻿module JackfruitTests
+﻿module Generator.CliOutputTests
 
 open Xunit
 open Generator.Tests

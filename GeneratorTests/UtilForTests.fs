@@ -9,6 +9,8 @@ open Generator.Models
 open Xunit
 open Generator.NewMapping
 open Generator
+open System.Threading
+open System.Reflection
 
 let testNamespace = "TestCode"
 let private seperator = "\r\n"
@@ -220,6 +222,19 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
         match errors with 
         | [] -> None
         | _ -> Some errors
+
+let RunGenerator (generator: ISourceGenerator) (inputCompilation: Compilation)=
+    let driver = CSharpGeneratorDriver.Create(generator)
+    let c = CancellationToken.None
+    driver.RunGeneratorsAndUpdateCompilation (inputCompilation, cancellationToken = c)
+
+let CreateCompilation (source: string) =
+    CSharpCompilation.Create("compilation",
+        seq {CSharpSyntaxTree.ParseText(source)},
+        seq {MetadataReference.CreateFromFile(typeof<Binder>.Assembly.Location)},
+        CSharpCompilationOptions(OutputKind.ConsoleApplication))       
+
+
 
 
 
