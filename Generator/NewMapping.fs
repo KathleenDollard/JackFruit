@@ -17,7 +17,7 @@ let CommandDefFromMethod model (info: AppModelCommandInfo) =
     let usage = 
         match info.Method with 
         | Some m -> UserMethod (m, model)
-        | None -> Arbitrary
+        | None -> Arbitrary ""
 
     let returnType = 
         match info.Method with 

@@ -30,7 +30,7 @@ type ``When creating simple code``() =
         let paramName = propertyName.AsParamName()
         let methodName = "MethodA"
         let methodReturn = "int"
-        let comparison = Compare (InvokeExpression propertyName "Length" []) Equals (GetExpression 0)
+        let comparison = Compare (InvokeExpression propertyName "Length" []) Equals (Literal 0)
         let code = 
             Namespace(nspaceName) {
                 Using "System"
@@ -53,7 +53,7 @@ type ``When creating simple code``() =
                         { Public()
                           AssignWithVar "x" "0" 
                           If (comparison) {
-                                Return (GetExpression 0)
+                                Return (Literal 0)
                                 }
                          }
 

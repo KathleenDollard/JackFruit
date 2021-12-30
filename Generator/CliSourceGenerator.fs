@@ -5,7 +5,7 @@ open Microsoft.CodeAnalysis.CSharp
 open Microsoft.CodeAnalysis.VisualBasic
 open Generator
 open Generator.NewMapping
-open Generator.BuildCodePattern
+open Generator.BuildCliCodeModel
 open Generator.Transforms
 
 let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel =

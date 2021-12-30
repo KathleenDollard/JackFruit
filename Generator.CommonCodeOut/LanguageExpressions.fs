@@ -39,47 +39,24 @@ type ComparisonModel =
           Operator = operator }
     interface ICompareExpression
 
-type StringLiteralModel =
-    { Value: string}
-    interface IExpression
-    static member Create value =
-        { Value = value }
+// KAD-Chet: This results in weird syntax around usage. Is there a better way (do FindRef to see)
+type Symbol=
+    | Symbol of s: string
 
-// Keeping this as string means testing the model tests the value actually output. BUT, this isn't consistent with null/bool as those differ by language
-type OtherLiteralModel =
-    { Value: string}
+type LiteralsModel =
+    | StringLiteral of s: String
+    | IntegerLiteral of i: int
+    | DoubleLiteral of d: Double
+    | SymbolLiteral of s: Symbol
+    | NullLiteral
+    | UnknownLiteral of x: obj
     interface IExpression
-    static member Create value =
-        { Value = value }
 
-type UnknownLiteralModel =
-    { Value: string}
-    interface IExpression
-    static member Create value =
-        { Value = value }
-
-type BoolLiteralModel =
-    { Value: bool}
-    interface IExpression
-    static member Create value =
-        { Value = value }
+type CompareLiteralsModel =
+    | TrueLiteral
+    | FalseLiteral
     interface ICompareExpression
 
-type SymbolModel =
-    { Name: string}
-    interface IExpression
-    static member Create name =
-        { Name = name }
-
-type NullModel() = class
-    interface IExpression
-    static member Create() = NullModel()
-    end
-
-type VoidModel() = class // Just for method return
-    interface IExpression
-    static member Create() = VoidModel()
-    end
 
 module ExpressionHelpers =
     // KAD: Do you see another way to differentiate this from the statement Invoke? Reconsider once E@E is working
@@ -104,21 +81,3 @@ module ExpressionHelpers =
         (right: IExpression) =
         
         ComparisonModel.Create left right operator
-
-    let Literal (value: obj) : IExpression=
-
-        match value with 
-        | :? string as s -> StringLiteralModel.Create s
-        | :? bool as b -> BoolLiteralModel.Create b
-        | _ -> OtherLiteralModel.Create (value.ToString())
-
-    let Symbol
-        (name: string) =
-
-        SymbolModel.Create name
-
-    let Null = NullModel.Create()
-
-    let True = BoolLiteralModel.Create(true)
-
-    let False = BoolLiteralModel.Create(true)

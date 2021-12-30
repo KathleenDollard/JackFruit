@@ -29,6 +29,8 @@ type LanguageCSharp() =
     override _.AwaitKeyword = "await"
     override _.NewKeyword = "new"
     override _.NullKeyword = "null"
+    override _.TrueKeyword = "true"
+    override _.FalseKeyword = "false"
 
     override _.EqualsOperator = "=="
     override _.NotEqualsOperator = "!="

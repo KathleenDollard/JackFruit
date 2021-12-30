@@ -14,7 +14,7 @@ type MapData =
           CommandDefs = [ ] }
 
     static member OneMapping =
-        let commandDef = CommandDef("A", [""], Void, Arbitrary)
+        let commandDef = CommandDef("A", [""], Void, Arbitrary "MyCommand")
         let members = [ MemberDef("one",commandDef, (SimpleNamedItem "string"), ArbitraryMember, true) ]
         commandDef.Members <- members
 
@@ -24,7 +24,7 @@ type MapData =
         
 
     static member ThreeMappings =
-        let package = CommandDef("package", [ "dotnet"; "add"; "package" ], Void, Arbitrary)
+        let package = CommandDef("package", [ "dotnet"; "add"; "package" ], Void, Arbitrary "MyCommand")
         package.Members <-
             [ MemberDef("packageName", package, (SimpleNamedItem "string"), ArbitraryMember, true)
               MemberDef("version", package, (SimpleNamedItem "string"), ArbitraryMember, true)
@@ -35,10 +35,10 @@ type MapData =
               MemberDef("interactive",  package, (SimpleNamedItem "bool"), ArbitraryMember, true)
               MemberDef("prerelease",  package, (SimpleNamedItem "bool"), ArbitraryMember, true) ] 
    
-        let add = CommandDef("add", [ "dotnet"; "add" ], Void, Arbitrary )
+        let add = CommandDef("add", [ "dotnet"; "add" ], Void, Arbitrary "MyCommand")
         add.SubCommands <- [package]
 
-        let dotnet = CommandDef("dotnet", [ "dotnet" ], Void, Arbitrary)
+        let dotnet = CommandDef("dotnet", [ "dotnet" ], Void, Arbitrary "MyCommand")
         dotnet.Members <-
             [ MemberDef("project", dotnet, (SimpleNamedItem "string"), ArbitraryMember, true) ]
         dotnet.SubCommands <- [add]

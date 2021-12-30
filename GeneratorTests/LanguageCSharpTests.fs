@@ -11,6 +11,7 @@ open Common
 open Generator.LanguageExpressions
 open Generator.LanguageStatements
 open Generator.LanguageRoslynOut
+open Generator.LanguageHelpers
 
 
 type ``When working with language parts`` () =
@@ -173,7 +174,7 @@ type ``When outputting code`` () =
         let outPutter = RoslynOut(LanguageCSharp(),writer)
         let expected = 
             [ (0,"return 42;") ]
-        let data =  { ReturnModel.Expression = Some (OtherLiteralModel.Create "42") }
+        let data =  { ReturnModel.Expression = Some (Literal "42") }
 
         outPutter.OutputReturn data
         let actual = writer.LinePairs()
@@ -187,7 +188,7 @@ type ``When outputting code`` () =
         let outPutter = RoslynOut(LanguageCSharp(),writer)
         let expected = 
             [ (0,"\"Harry\";") ]
-        let data =  { SimpleCallModel.Expression = StringLiteralModel.Create "Harry" }
+        let data =  { SimpleCallModel.Expression = StringLiteral "Harry" }
 
         outPutter.OutputSimpleCall data
         let actual = writer.LinePairs()
@@ -256,8 +257,8 @@ type ``When outputting code`` () =
               (0, "}")]
         let data = 
             { PropertyModel.ForTesting.Data with 
-                GetStatements = [ { ReturnModel.Expression = Some (SymbolModel.Create "x") } ]
-                SetStatements = [  { AssignmentModel.Variable = "value"; Value = SymbolModel.Create "x"}] }
+                GetStatements = [ { ReturnModel.Expression = Some (Literal "x") } ]
+                SetStatements = [  { AssignmentModel.Variable = "value"; Value = Literal "x"}] }
 
         outPutter.OutputProperty data
         let actual = writer.LinePairs()

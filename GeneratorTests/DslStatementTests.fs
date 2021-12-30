@@ -86,8 +86,8 @@ type ``When creating Return statements to test all expressions``() =
     [<Fact>]
     member _.``Can create string literal return``() =
         let outerMethodName = "A"
-        let literal = "Fred"
-        let expectedModel: IExpression = (StringLiteralModel.Create literal)
+        let literal = "\"Fred\""
+        let expectedModel: IExpression = StringLiteral literal[1..literal.Length - 2]
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
                 Return (Literal literal)
@@ -99,7 +99,7 @@ type ``When creating Return statements to test all expressions``() =
     member _.``Can create non string literal return``() =
         let outerMethodName = "A"
         let literal = 42
-        let expectedModel: IExpression = (OtherLiteralModel.Create "42")
+        let expectedModel: IExpression = IntegerLiteral 42
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
                 Return (Literal literal)
@@ -111,10 +111,10 @@ type ``When creating Return statements to test all expressions``() =
     member _.``Can create symbol return``() =
         let outerMethodName = "A"
         let name = "Fred"
-        let expectedModel: IExpression = (SymbolModel.Create name)
+        let expectedModel: IExpression = SymbolLiteral (Symbol name)
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
-                Return (Symbol name)
+                Return (SymbolLiteral (Symbol name))
                 }
   
         checkResult (Some expectedModel) codeModel
@@ -122,10 +122,10 @@ type ``When creating Return statements to test all expressions``() =
     [<Fact>]
     member _.``Can create null return``() =
         let outerMethodName = "A"
-        let expectedModel: IExpression = NullModel.Create()
+        let expectedModel: IExpression = NullLiteral
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
-                Return Null
+                Return NullLiteral
                 }
   
         checkResult (Some expectedModel) codeModel
@@ -136,10 +136,10 @@ type ``When creating If statements``() =
     member _.``Can  create If without Else``() =
         let returnIfTrue = "Fred"
         let returnStatement = { ReturnModel.Expression = Some (Literal returnIfTrue) }
-        let expectedModel = { IfCondition = True; Statements = [ returnStatement ] }
+        let expectedModel = { IfCondition = TrueLiteral; Statements = [ returnStatement ] }
         let actualModel = 
-            If (True) {
-                Return (GetExpression returnIfTrue) }
+            If (TrueLiteral) {
+                Return (Literal returnIfTrue) }
 
         Assert.Equal(expectedModel, actualModel)
 
@@ -151,14 +151,14 @@ type ``When creating If statements``() =
         let returnStatementIfTrue = { ReturnModel.Expression = Some (Literal returnIfTrue) }
         let returnIfFalse = "George"
         let returnStatementIfFalse = { ReturnModel.Expression = Some (Literal returnIfFalse) }
-        let expectedModelIfTrue= { IfCondition = True; Statements = [ returnStatementIfTrue ] }
+        let expectedModelIfTrue= { IfCondition = TrueLiteral; Statements = [ returnStatementIfTrue ] }
         let expectedModelIfFalse= { ElseStatements = [ returnStatementIfFalse ] }
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
-                If (True) {
-                    Return (GetExpression returnIfTrue) }
+                If (TrueLiteral) {
+                    Return (Literal returnIfTrue) }
                 Else() {
-                    Return (GetExpression returnIfFalse) }
+                    Return (Literal returnIfFalse) }
                 }           
 
         let actualModelIfTrue = codeModel.Statements[0] :?> IfModel
@@ -172,11 +172,11 @@ type ``When creating If statements``() =
         let outerMethodName = "A"
         let returnIfTrue = "Fred"
         let returnStatementIfTrue = { ReturnModel.Expression = Some (Literal returnIfTrue) }
-        let expectedModelIfTrue= { IfCondition = True; Statements = [ returnStatementIfTrue ] }
+        let expectedModelIfTrue= { IfCondition = TrueLiteral; Statements = [ returnStatementIfTrue ] }
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {
-                If (True) {
-                    Return (GetExpression returnIfTrue) }
+                If (TrueLiteral) {
+                    Return (Literal returnIfTrue) }
                 }           
 
         let actualModelIfTrue = codeModel.Statements[0] :?> IfModel

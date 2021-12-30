@@ -36,6 +36,8 @@ type ILanguage =
     abstract member ElseClose: ElseModel -> string list
     abstract member ForEachOpen: ForEachModel -> string list
     abstract member ForEachClose: ForEachModel -> string list
+    abstract member InvocationStatement: InvocationModel -> string list
+    abstract member InstantiationStatement: InstantiationModel -> string list
 
     abstract member Assignment: AssignmentModel -> string list
     abstract member AssignWithDeclare: AssignWithDeclareModel -> string list
@@ -45,6 +47,7 @@ type ILanguage =
     abstract member CompilerDirective: CompilerDirectiveModel -> string list
 
     abstract member Invocation: InvocationModel -> string
+    abstract member Instantiation: InstantiationModel -> string
     abstract member Comparison: ComparisonModel -> string
 
     // Other

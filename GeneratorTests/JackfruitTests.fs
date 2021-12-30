@@ -26,4 +26,3 @@ type ``When creating a code from model``() =
 
         Approvals.Verify(code)
 
-        Assert.Fail("Not yet implemented")

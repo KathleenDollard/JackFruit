@@ -8,24 +8,26 @@ open Generator.Language
 open Common
 open DslKeywords
 
-let (|NullLiteral|_|)  (value: obj) =
+let (|NullLiteral|_|)  (value: obj) : IExpression option =
     match value with 
     | :? string as s-> 
         if String.IsNullOrWhiteSpace(s) then 
-            Some (NullModel.Create())
+            Some LiteralsModel.NullLiteral
         else None
     | _ -> None
 
-let (|BoolLiteral|_|)  (value: obj) =
+let (|ExplicitLiteral|_|)  (value: obj) : IExpression option =
     match value with 
     | :? string as s-> 
         match (s.Trim().ToUpperInvariant()) with
-        | "TRUE" -> Some (BoolLiteralModel.Create(true))
-        | "FALSE" -> Some (BoolLiteralModel.Create(false))
+        | "TRUE" -> Some TrueLiteral
+        | "FALSE" -> Some FalseLiteral
+        | "NULL" -> Some NullLiteral
         | _ -> None
     | _ -> None
 
-let (|StringLiteral|_|) (value: obj) =
+
+let (|StringLiteral|_|) (value: obj) : IExpression option =
     match value with 
     | :? string as s-> 
         let s = s.Trim()
@@ -33,27 +35,29 @@ let (|StringLiteral|_|) (value: obj) =
             None 
         else
             match s[0] with
-            | '"' -> Some (StringLiteralModel.Create(s[0..]))
+            | '"' -> Some (LiteralsModel.StringLiteral (s.Replace("\"", "")))
             | _ -> None     
     | _ -> None   
     
-let (|IntegerLiteral|_|) (value: obj) =   // Long could be supported instead, some perf hit I assume
+let (|IntegerLiteral|_|) (value: obj) : IExpression option =   // Long could be supported instead, some perf hit I assume
     match value with 
-    | :? string as s->
+    | :? int as i -> Some (LiteralsModel.IntegerLiteral i)
+    | :? string as s ->
         match Int32.TryParse(s) with
-        | true, v -> Some (OtherLiteralModel.Create(v.ToString())) 
+        | true, v -> Some (LiteralsModel.IntegerLiteral v)
         | _ -> None
     | _ -> None   
 
-let (|DoubleLiteral|_|) (value: obj) =
+let (|DoubleLiteral|_|) (value: obj) : IExpression option =
     match value with 
+    | :? double as d -> Some (LiteralsModel.DoubleLiteral d)
     | :? string as s->
         match Double.TryParse(s) with
-        | true, v -> Some (OtherLiteralModel.Create(v.ToString()))
+        | true, v -> Some (LiteralsModel.DoubleLiteral v)
         | _ -> None
     | _ -> None   
 
-let (|SymbolLiteral|_|) (value: obj) = 
+let (|SymbolLiteral|_|) (value: obj) : IExpression option = 
     let allValidChars (s: string) =
         if Char.IsDigit(s[0]) then 
             false
@@ -69,30 +73,32 @@ let (|SymbolLiteral|_|) (value: obj) =
 
     match value with 
     | null -> None
-    | :? string as s -> // probably unnecessary optimization
-        if not (String.IsNullOrWhiteSpace(s)) then 
+    | :? string as s -> 
+        let s = s.Trim()
+        if (String.IsNullOrWhiteSpace(s)) then
+            None
+        elif (Char.IsDigit(s[0])) then
+            None
+        else
             match s with 
             | NullLiteral _ 
-            | BoolLiteral _
-            | StringLiteral _ 
-            | IntegerLiteral _
-            | DoubleLiteral _ -> None
-            | _ when allValidChars s -> Some (SymbolModel.Create(s))
+            | ExplicitLiteral _
+            | StringLiteral _ -> None
+            | _ when allValidChars s -> Some (LiteralsModel.SymbolLiteral (Symbol s))
             | _ -> None
-        else None
     | _ -> None
 
-let GetExpression (value: obj) : IExpression =
+let Literal (value: obj) : IExpression =
     match value with 
-    | null -> UnknownLiteralModel.Create("<Error: Actual Null>")
+    | null -> UnknownLiteral "<Error: Actual Null>"
     | :? IExpression as exp -> exp
     | NullLiteral x -> x
-    | BoolLiteral x -> x
+    | ExplicitLiteral x -> x
     | StringLiteral x -> x
     | IntegerLiteral x -> x
     | DoubleLiteral x -> x
     | SymbolLiteral x -> x
-    | _ -> UnknownLiteralModel.Create (value.ToString())
+    | _ -> UnknownLiteral value
 
 
 type Structural =
@@ -135,15 +141,15 @@ module Statements =
     //    * Creating ForEachModel
 
     let Assign(variable: string) (value: obj) =
-        let expression = GetExpression value
+        let expression = Literal value
         AssignmentModel.Create variable expression
 
     let AssignWithDeclare (variable: string) (typeName: NamedItem) (value: obj) =
-        let expression = GetExpression value
+        let expression = Literal value
         AssignWithDeclareModel.Create variable (Some typeName) expression
 
     let AssignWithVar (variable: string) (value: obj) =
-        let expression = GetExpression value
+        let expression = Literal value
         AssignWithDeclareModel.Create variable None expression
 
     let SimpleCall (expression: IExpression) =

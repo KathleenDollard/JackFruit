@@ -5,7 +5,13 @@ open Generator
 open Generator.Language
 open Generator.LanguageStatements
 open Generator.LanguageExpressions
+open System
 
+type String with
+    member this.AsField = $"_{Char.ToLower(this[0])}{this[1..]}"
+    member this.AsVariable = $"{Char.ToLower(this[0])}{this[1..]}"
+    member this.AsPublic = $"{Char.ToUpper(this[0])}{this[1..]}"
+    
 
 type RoslynOut(language: ILanguage, writer: IWriter) =
 
@@ -26,6 +32,11 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         | :? ReturnModel as x -> this.OutputReturn x
         | :? ForEachModel as x -> this.OutputForEach x
         | :? SimpleCallModel as x -> this.OutputSimpleCall x
+        | :? InvocationModel as x -> this.OutputInvocation x
+        | :? InstantiationModel as x -> this.OutputInstantiation x
+        | :? CommentModel as x -> this.OutputComment x
+        | :? CompilerDirectiveModel as x -> this.OutputCompilerDirective x
+        | a -> invalidOp $"Unexpected statement type: {a}"
 
     member this.OutputStatements (statements: IStatement list) =
         for statement in statements do 
@@ -70,6 +81,12 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
 
     member _.OutputSimpleCall simple =
         writer.AddLines (language.SimpleCall simple)
+
+    member _.OutputInvocation invocation = 
+        writer.AddLines (language.InvocationStatement invocation)
+
+    member _.OutputInstantiation instantiation =
+        writer.AddLines (language.InstantiationStatement instantiation)
 
     member _.OutputComment comment =
         writer.AddLines (language.Comment comment)

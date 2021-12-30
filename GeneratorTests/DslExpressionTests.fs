@@ -6,6 +6,7 @@ open Generator.Language
 open Common
 open Generator.LanguageExpressions
 open Generator.LanguageExpressions.ExpressionHelpers
+open Generator.LanguageHelpers
 
 
 type ``When creating expressions``() =
@@ -37,8 +38,8 @@ type ``When creating expressions``() =
 
     [<Fact>]
     member _.``Can create a Comparison``() =
-        let left = OtherLiteralModel.Create "42"
-        let right = OtherLiteralModel.Create "1"
+        let left = Literal"42"
+        let right = Literal "1"
         let expectedModel = 
             { Left = left
               Right = right
@@ -50,9 +51,8 @@ type ``When creating expressions``() =
 
     [<Fact>]
     member _.``Can create a String Literal``() =
-        let value = "George"
-        let expectedModel: IExpression = 
-            { StringLiteralModel.Value = value }
+        let value = "\"George\""
+        let expectedModel: IExpression = StringLiteral value[1..value.Length - 2]
 
         let actualModel = Literal value
 
@@ -62,8 +62,7 @@ type ``When creating expressions``() =
     member _.``Can create a non-String Literal``() =
         let value = 42
         let stringValue = "42"
-        let expectedModel: IExpression = 
-            { OtherLiteralModel.Value = stringValue }
+        let expectedModel: IExpression = Literal stringValue
 
         let actualModel = Literal value
 
@@ -72,9 +71,9 @@ type ``When creating expressions``() =
 
     [<Fact>]
     member _.``Can create a Symbol``() =
+        // I can't figure out a reasonable way to test this
         let name = "George"
-        let expectedModel = 
-            { SymbolModel.Name = name }
+        let expectedModel = Symbol name
 
         let actualModel = Symbol name
 
@@ -83,10 +82,11 @@ type ``When creating expressions``() =
 
     [<Fact>]
     member _.``Can create a Null``() =
+         // I can't figure out a reasonable way to test this
         let value = "George"
-        let expectedModel = NullModel()
+        let expectedModel = NullLiteral
 
-        let actualModel = Null
+        let actualModel = NullLiteral
 
         Assert.Equal(expectedModel, actualModel)
 
