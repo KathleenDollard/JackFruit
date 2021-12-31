@@ -5,11 +5,13 @@ open Common
 
 type MapData =
     { MapInferredStatements: string list
+      HandlerStatements: string list
       CommandNames: string list
       CommandDefs: CommandDef list }
 
     static member NoMapping =
         { MapInferredStatements = []
+          HandlerStatements = []
           CommandNames = []
           CommandDefs = [ ] }
 
@@ -19,6 +21,7 @@ type MapData =
         commandDef.Members <- members
 
         { MapInferredStatements = [ "builder.MapInferred(\"\", Handlers.A);" ]
+          HandlerStatements = [ "public static void A(string one) {}" ]
           CommandNames = [ "" ]
           CommandDefs = [ commandDef ] }
         
@@ -47,6 +50,10 @@ type MapData =
             [ "builder.MapInferred(\"dotnet <PROJECT>\", DotnetHandlers.Dotnet);"
               "builder.MapInferred(\"dotnet add\", null);"
               "builder.MapInferred(\"dotnet add package <PACKAGE_NAME> --source|-s\", DotnetHandlers.AddPackage);" ]
+          HandlerStatements = 
+              [ "public static void A() { }"
+                "public static void B() { }"
+                "public static void C() { }" ]
           CommandNames = [ "dotnet"; "add"; "package" ]
 
           CommandDefs = [ dotnet ] }

@@ -3,27 +3,35 @@
 open Microsoft.CodeAnalysis;
 open Xunit
 open ApprovalTests.Reporters
-open Generator.Tests
+open Jackfruit.Tests
 open System
 open Generator.Tests.UtilsForTests
 open ApprovalTests
 open System.Linq
 
 [<Generator>]
-type ``When doing end to end generation``() =
+type End2End() =
     let RunCliModelGenerator (inputCompilation: Compilation) =
         RunGenerator (Jackfruit.Generator()) inputCompilation
      
-    let VerifyTestResult  driver (outputCompilation: Compilation) (diagnostics: Diagnostic list) =
+    [<Fact>]
+    [<UseReporter(typeof<DiffReporter>)>]
+    member _.``One simple command``() =
+        let code = String.Join("\n", MapData.NoMapping.HandlerStatements)
+        let compilation = CreateCompilation code
+        let (driver, outputCompilation, diagnostics) = RunCliModelGenerator compilation
         Assert.Equal(0, diagnostics.Length)
         let newTree = outputCompilation.SyntaxTrees.Skip(1).SingleOrDefault()
         Assert.NotNull newTree
         Approvals.Verify(newTree.ToString())
-     
-
+        
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
-    member _.``Code outputs for one simple command``() =
-        let code = String.Join("\n", MapData.NoMapping.HandlerCode)
+    member _.``No commands``() =
+        let code = String.Join("\n", MapData.OneMapping.HandlerStatements)
         let compilation = CreateCompilation code
-        VerifyTestResult RunCliModelGenerator compilation
+        let (driver, outputCompilation, diagnostics) = RunCliModelGenerator compilation
+        Assert.Equal(0, diagnostics.Length)
+        let newTree = outputCompilation.SyntaxTrees.Skip(1).SingleOrDefault()
+        Assert.NotNull newTree
+        Approvals.Verify(newTree.ToString())        

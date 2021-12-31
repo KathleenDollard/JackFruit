@@ -78,7 +78,8 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: NamedItem, me
         match this.Kind  with 
         | Argument -> "Argument" 
         | Option -> "Option" 
-        | Service -> ""        
+        | Service -> ""       
+    //static member Create()
 
 
 
