@@ -64,7 +64,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel
             
             [ Method commandDef.MethodName {
                 ReturnType commandMethodName
-                Private()
+                Public()
                 AssignWithVar commandDef.VariableName To (New commandMethodName [ StringLiteral commandDef.Name ])
                 for mbr in commandDef.Members do
                     AssignWithVar mbr.NameAsVariable To (New mbr.SymbolType [ StringLiteral mbr.Name ])

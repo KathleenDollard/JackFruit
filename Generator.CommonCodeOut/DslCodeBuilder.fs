@@ -1,5 +1,12 @@
 ﻿module DslCodeBuilder
 
+// KAD-Chet: The previous approach of individual type specific yields had a problem with 
+//           multiple entries. Only the first entry appeared, which I didn't initially 
+//           discover because I was just aassigning a scope/modifiers - a single line - 
+//           onlyv when working with Zero(). The old Combine() ignored the data on the class
+//
+//           So, I removed those and added a much more complex Combine(). This works great 
+//           whenever it is actually called, which does not happen on zero().
 
 open System
 open DslKeywords
@@ -27,28 +34,46 @@ let partitionOfTypeAndRemaining<'T when 'T :> IStatement>(list: IStatement list)
     let matches = sequence.Where(fun x -> x :? 'T)
     let remaining = sequence.Except(matches)
     (matches.OfType<'T>(), List.ofSeq remaining)
-let getLastOfTypeAndRemaining<'T when 'T :> IStatement>(list: IStatement list) =
-    // KAD-Chet: I could not get this to work, even with bizarre code, with list
-    let sequence = List.ofSeq list
-    let (typedMatches, remaining) = partitionOfTypeAndRemaining<'T>(list)
-    let typedMatch = 
-        if typedMatches.Any() then Some (typedMatches.Last())
-        else None
-    (typedMatch, remaining)
-let getMethodLikeData (list2: IStatement list) (existingData: methodLikeData) =
-    let (returnTypeOption, remaining) = getLastOfTypeAndRemaining<ReturnType>(list2)
-    let (scopeAndModifiersOption, remaining) = getLastOfTypeAndRemaining<ScopeAndModifiers>(list2)
-    let (parameters, remaining) = partitionOfTypeAndRemaining<ParameterModel> remaining
+let getMethodLikeData 
+    (existingData1: methodLikeData) 
+    (existingData2: methodLikeData) =
+    // I do not think we care which list returnType, etc came from
+    let list = List.append existingData1.Statements existingData2.Statements
+
+    let (returnTypes, remaining) = partitionOfTypeAndRemaining<ReturnType> list
+    let returnType =
+        let candidates = List.ofSeq (returnTypes.Where(fun x -> x <> ReturnTypeUnknown))
+        match candidates with 
+        // New one overwrites old, if no new one, take right, unless right is unknown
+        | [] -> if existingData2.ReturnType = ReturnTypeUnknown then existingData1.ReturnType else existingData2.ReturnType
+        | _ -> candidates[0] 
+
+    let (scopeAndModifiers, remaining) = partitionOfTypeAndRemaining<ScopeAndModifiers> remaining
+    let scope =
+        let candidates = List.ofSeq (scopeAndModifiers.Where(fun x -> x.Scope <> Unknown))
+        match candidates with 
+        // New one overwrites old, if no new one, take right, unless right is unknown
+        | [] -> if existingData2.Scope = Unknown then existingData1.Scope else existingData2.Scope
+        | _ -> candidates[0].Scope
     let modifiers = 
-        match scopeAndModifiersOption with 
-        | None -> existingData.Modifiers
-        | Some x -> List.append existingData.Modifiers x.Modifiers
-    // Scope and modifiers are wrong below, not fixinb because I think I will split them everywhere
-    { Scope = match scopeAndModifiersOption with | None -> existingData.Scope | Some x -> x.Scope
+        let modifierList = 
+            List.ofSeq (scopeAndModifiers.Select(fun x -> x.Modifiers))
+            |> List.collect (fun x -> x)
+        List.append existingData1.Modifiers existingData2.Modifiers
+            |> List.append modifierList
+            |> List.distinct
+
+    // Parameters should, perhaps, be their own CE. I'm worried about retaining order correctly this way
+    let (newParameters, statements) = partitionOfTypeAndRemaining<ParameterModel> remaining
+    let parameters =
+        List.append existingData1.Parameters existingData2.Parameters
+            |> List.append (List.ofSeq newParameters)
+
+    { Scope = scope
       Modifiers = modifiers
-      ReturnType = match returnTypeOption with | None -> existingData.ReturnType | Some x -> x
-      Parameters = List.append existingData.Parameters (List.ofSeq parameters)
-      Statements = List.append existingData.Statements remaining }
+      ReturnType = returnType
+      Parameters = parameters
+      Statements = statements }
 
 [<AbstractClass>]
 type BuilderBase<'T>() =
@@ -259,10 +284,10 @@ type Field(name: string, typeName: NamedItem) =
 type MethodBase<'T when 'T :> IMethodLike<'T>>() =
     inherit StatementBuilderBase<'T>()
 
-    member this.Yield (modifiers: ScopeAndModifiers) : 'T = 
-        this.Zero().AddScopeAndModifiers modifiers
-    member this.Yield (parameter: ParameterModel) : 'T = 
-        this.Zero().AddParameter parameter
+    //member this.Yield (modifiers: ScopeAndModifiers) : 'T = 
+    //    this.Zero().AddScopeAndModifiers modifiers
+    //member this.Yield (parameter: ParameterModel) : 'T = 
+    //    this.Zero().AddParameter parameter
 
 
     //[<CustomOperation("Public", MaintainsVariableSpace = true)>]
@@ -290,15 +315,21 @@ type Method (name: NamedItem) =
     inherit MethodBase<MethodModel>()
 
     override _.EmptyItem (): MethodModel =  MethodModel.Create (name, Void)
-    override _.InternalCombine (method: MethodModel) (method2: MethodModel) =
+    override _.InternalCombine (method1: MethodModel) (method2: MethodModel) =
         let data =
-            getMethodLikeData method2.Statements
-                { Scope = method.Scope 
-                  Modifiers = method.Modifiers
-                  ReturnType = method.ReturnType
-                  Parameters = method.Parameters
-                  Statements = method.Statements }
-        { method with 
+            getMethodLikeData 
+                { Scope = method1.Scope 
+                  Modifiers = method1.Modifiers
+                  ReturnType = method1.ReturnType
+                  Parameters = method1.Parameters
+                  Statements = method1.Statements }
+                { Scope = method2.Scope 
+                  Modifiers = method2.Modifiers
+                  ReturnType = method2.ReturnType
+                  Parameters = method2.Parameters
+                  Statements = method2.Statements }
+
+        { method1 with 
             Scope = data.Scope
             Modifiers = data.Modifiers
             ReturnType = data.ReturnType
@@ -339,8 +370,24 @@ type Constructor() =
     inherit MethodBase<ConstructorModel>()
         
     override _.EmptyItem (): ConstructorModel =  ConstructorModel.Create()
-    override _.InternalCombine (ctor: ConstructorModel) (ctor2: ConstructorModel) =
-        { ctor with Statements =  List.append ctor.Statements ctor2.Statements }
+    override _.InternalCombine (ctor1: ConstructorModel) (ctor2: ConstructorModel) =
+        let data =
+            getMethodLikeData 
+                { Scope = ctor1.Scope 
+                  Modifiers = ctor1.Modifiers
+                  ReturnType = ReturnTypeUnknown
+                  Parameters = ctor1.Parameters
+                  Statements = ctor1.Statements }
+                { Scope = ctor2.Scope 
+                  Modifiers = ctor2.Modifiers
+                  ReturnType = ReturnTypeUnknown
+                  Parameters = ctor2.Parameters
+                  Statements = ctor2.Statements }
 
+        { ctor1 with 
+            Scope = data.Scope
+            Modifiers = data.Modifiers
+            Parameters = data.Parameters
+            Statements = data.Statements }
 
 
