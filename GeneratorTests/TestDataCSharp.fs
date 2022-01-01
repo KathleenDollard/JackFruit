@@ -114,7 +114,7 @@ type ParameterModel with
 
 type MethodModel with
     static member ForTesting =
-        let data = MethodModel.Create (SimpleNamedItem "MyMethod") (ReturnType (NamedItem.Create("string", [])))
+        let data = MethodModel.Create ((SimpleNamedItem "MyMethod"), (ReturnType (NamedItem.Create("string", []))))
 
         { Data = data
           CSharpOpen = [ "public string MyMethod()"; "{" ]

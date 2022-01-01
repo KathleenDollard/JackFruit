@@ -29,7 +29,7 @@ type ``When creating Return statements to test all expressions``() =
         let outerMethodName = "A"
         let expectedModel = None
         let codeModel = 
-            Method(SimpleNamedItem outerMethodName, Void) {
+            Method(SimpleNamedItem outerMethodName) {
                 ReturnVoid()
                 }
 
@@ -46,7 +46,7 @@ type ``When creating Return statements to test all expressions``() =
               ShouldAwait = false
               Arguments = [] }
         let codeModel = 
-            Method(SimpleNamedItem outerMethodName, Void) {
+            Method(SimpleNamedItem outerMethodName) {
                 Return (InvokeExpression className methodName [])
                 }
   
@@ -60,7 +60,7 @@ type ``When creating Return statements to test all expressions``() =
             { TypeName = NamedItem.Create (className, [])
               Arguments = [] }
         let codeModel = 
-            Method(SimpleNamedItem outerMethodName, Void) {
+            Method(SimpleNamedItem outerMethodName) {
                 Return (New className [])
                 }
   
@@ -77,7 +77,7 @@ type ``When creating Return statements to test all expressions``() =
               Right = Literal right
               Operator = operator }
         let codeModel = 
-            Method(SimpleNamedItem outerMethodName, Void) {
+            Method(SimpleNamedItem outerMethodName) {
                 Return (Compare (Literal left) GreaterThan (Literal right))
                 }
   
@@ -89,7 +89,7 @@ type ``When creating Return statements to test all expressions``() =
         let literal = "\"Fred\""
         let expectedModel: IExpression = StringLiteral literal[1..literal.Length - 2]
         let codeModel = 
-            Method(SimpleNamedItem outerMethodName, Void) {
+            Method(SimpleNamedItem outerMethodName) {
                 Return (Literal literal)
                 }
   
@@ -101,7 +101,7 @@ type ``When creating Return statements to test all expressions``() =
         let literal = 42
         let expectedModel: IExpression = IntegerLiteral 42
         let codeModel = 
-            Method(SimpleNamedItem outerMethodName, Void) {
+            Method(SimpleNamedItem outerMethodName) {
                 Return (Literal literal)
                 }
   
@@ -113,7 +113,7 @@ type ``When creating Return statements to test all expressions``() =
         let name = "Fred"
         let expectedModel: IExpression = SymbolLiteral (Symbol name)
         let codeModel = 
-            Method(SimpleNamedItem outerMethodName, Void) {
+            Method(SimpleNamedItem outerMethodName) {
                 Return (SymbolLiteral (Symbol name))
                 }
   
@@ -124,7 +124,7 @@ type ``When creating Return statements to test all expressions``() =
         let outerMethodName = "A"
         let expectedModel: IExpression = NullLiteral
         let codeModel = 
-            Method(SimpleNamedItem outerMethodName, Void) {
+            Method(SimpleNamedItem outerMethodName) {
                 Return NullLiteral
                 }
   
@@ -154,7 +154,7 @@ type ``When creating If statements``() =
         let expectedModelIfTrue= { IfCondition = TrueLiteral; Statements = [ returnStatementIfTrue ] }
         let expectedModelIfFalse= { ElseStatements = [ returnStatementIfFalse ] }
         let codeModel = 
-            Method(SimpleNamedItem outerMethodName, Void) {
+            Method(SimpleNamedItem outerMethodName) {
                 If (TrueLiteral) {
                     Return (Literal returnIfTrue) }
                 Else() {
@@ -174,7 +174,7 @@ type ``When creating If statements``() =
         let returnStatementIfTrue = { ReturnModel.Expression = Some (Literal returnIfTrue) }
         let expectedModelIfTrue= { IfCondition = TrueLiteral; Statements = [ returnStatementIfTrue ] }
         let codeModel = 
-            Method(SimpleNamedItem outerMethodName, Void) {
+            Method(SimpleNamedItem outerMethodName) {
                 If (TrueLiteral) {
                     Return (Literal returnIfTrue) }
                 }           
@@ -205,7 +205,7 @@ type ``When creating SimpleCall statements``() =
         let method = "C"
         let expected: IExpression = (InvocationModel.Create instance method [])
         let codeModel = 
-            Method(outerMethodName, Void) {
+            Method(outerMethodName) {
                 SimpleCall (InvocationModel.Create instance method [])
                 }
 
@@ -222,7 +222,7 @@ type ``When creating Invoke statements``() =
         let method = "C"
         let expected: IStatement = (InvocationModel.Create instance method [])
         let codeModel = 
-            Method(outerMethodName, Void) {
+            Method(outerMethodName) {
                 Invoke instance method []
                 }
         Assert.Equal(1, codeModel.Statements.Length)
