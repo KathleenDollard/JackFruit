@@ -113,6 +113,9 @@ type Structural =
             else
                 { UsingNamespace = usingName; Alias = Some a }
 
+    static member ReturnType (returnType: ReturnType) =
+        
+
     static member Public ([<ParamArray>] modifiers: Modifier[]) =
         { Scope = Scope.Public; Modifiers = List.ofArray modifiers }
     static member Private ([<ParamArray>] modifiers: Modifier[]) =
