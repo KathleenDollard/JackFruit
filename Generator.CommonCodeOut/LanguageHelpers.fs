@@ -151,8 +151,8 @@ module Statements =
         let expression = Literal value
         AssignWithDeclareModel.Create variable None expression
 
-    //let SimpleCall (expression: IExpression) =
-    //    SimpleCallModel.Create expression
+    let SimpleCall (expression: IExpression) =
+        SimpleCallModel.Create expression
 
     let Comment (text: string) =
         CommentModel.Create text
