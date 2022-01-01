@@ -379,7 +379,8 @@ type ``When creating a method``() =
         let name = "A"
         let returnType = Void
         let codeModel = 
-            Method(SimpleNamedItem name, returnType) {
+            Method (SimpleNamedItem name) {
+                ReturnType returnType
                 Public()
                 }
         

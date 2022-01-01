@@ -49,8 +49,9 @@ type ``When creating simple code``() =
 
                     Property(propertyName, "int") { Public }
 
-                    Method(methodName, (ReturnType methodReturn))
+                    Method(methodName)
                         { Public()
+                          ReturnType methodReturn
                           AssignWithVar "x" To "0" 
                           If (comparison) {
                                 Return (Literal 0)

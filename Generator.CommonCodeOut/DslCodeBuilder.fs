@@ -9,7 +9,46 @@ open Generator.LanguageExpressions
 open Common
 open Generator.LanguageExpressions.ExpressionHelpers
 open Generator.LanguageHelpers
+open FSharp.Core
+open System.Linq
 
+type methodLikeData =
+    { Scope: Scope
+      Modifiers: Modifier list
+      ReturnType: ReturnType
+      Parameters: ParameterModel list
+      Statements: IStatement list }
+
+
+// KAD-Chet: What's sane way to do tihs.
+let partitionOfTypeAndRemaining<'T when 'T :> IStatement>(list: IStatement list) =
+    // KAD-Chet: I could not get this to work, even with bizarre code, with list
+    let sequence = List.ofSeq list
+    let matches = sequence.Where(fun x -> x :? 'T)
+    let remaining = sequence.Except(matches)
+    (matches.OfType<'T>(), List.ofSeq remaining)
+let getLastOfTypeAndRemaining<'T when 'T :> IStatement>(list: IStatement list) =
+    // KAD-Chet: I could not get this to work, even with bizarre code, with list
+    let sequence = List.ofSeq list
+    let (typedMatches, remaining) = partitionOfTypeAndRemaining<'T>(list)
+    let typedMatch = 
+        if typedMatches.Any() then Some (typedMatches.Last())
+        else None
+    (typedMatch, remaining)
+let getMethodLikeData (list2: IStatement list) (existingData: methodLikeData) =
+    let (returnTypeOption, remaining) = getLastOfTypeAndRemaining<ReturnType>(list2)
+    let (scopeAndModifiersOption, remaining) = getLastOfTypeAndRemaining<ScopeAndModifiers>(list2)
+    let (parameters, remaining) = partitionOfTypeAndRemaining<ParameterModel> remaining
+    let modifiers = 
+        match scopeAndModifiersOption with 
+        | None -> existingData.Modifiers
+        | Some x -> List.append existingData.Modifiers x.Modifiers
+    // Scope and modifiers are wrong below, not fixinb because I think I will split them everywhere
+    { Scope = match scopeAndModifiersOption with | None -> existingData.Scope | Some x -> x.Scope
+      Modifiers = modifiers
+      ReturnType = match returnTypeOption with | None -> existingData.ReturnType | Some x -> x
+      Parameters = List.append existingData.Parameters (List.ofSeq parameters)
+      Statements = List.append existingData.Statements remaining }
 
 [<AbstractClass>]
 type BuilderBase<'T>() =
@@ -54,6 +93,7 @@ type BuilderBase2<'M, 'T>() =
             for x in tail do 
                 headResult <- this.Combine(headResult, f(x))
             headResult
+
 
 [<AbstractClass>]
 type StatementBuilderBase<'T when 'T :> IStatementContainer<'T>>() =
@@ -224,6 +264,7 @@ type MethodBase<'T when 'T :> IMethodLike<'T>>() =
     member this.Yield (parameter: ParameterModel) : 'T = 
         this.Zero().AddParameter parameter
 
+
     //[<CustomOperation("Public", MaintainsVariableSpace = true)>]
     //member _.publicWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
     //    (item :> IMethodLike<'T>).AddScopeAndModifiers Public (List.ofArray modifiers)
@@ -245,12 +286,25 @@ type MethodBase<'T when 'T :> IMethodLike<'T>>() =
     //    (item :> IMethodLike<'T>).AddParameter parameterName parameterType Normal
 
 
-type Method(name: NamedItem, returnType: ReturnType) =
+type Method (name: NamedItem) =
     inherit MethodBase<MethodModel>()
 
-    override _.EmptyItem (): MethodModel =  MethodModel.Create name returnType
+    override _.EmptyItem (): MethodModel =  MethodModel.Create (name, Void)
     override _.InternalCombine (method: MethodModel) (method2: MethodModel) =
-        { method with Statements =  List.append method.Statements method2.Statements }
+        let data =
+            getMethodLikeData method2.Statements
+                { Scope = method.Scope 
+                  Modifiers = method.Modifiers
+                  ReturnType = method.ReturnType
+                  Parameters = method.Parameters
+                  Statements = method.Statements }
+        { method with 
+            Scope = data.Scope
+            Modifiers = data.Modifiers
+            ReturnType = data.ReturnType
+            Parameters = data.Parameters
+            Statements = data.Statements }
+  
 
 
 type Property(name: string, typeName: NamedItem) =
@@ -287,7 +341,6 @@ type Constructor() =
     override _.EmptyItem (): ConstructorModel =  ConstructorModel.Create()
     override _.InternalCombine (ctor: ConstructorModel) (ctor2: ConstructorModel) =
         { ctor with Statements =  List.append ctor.Statements ctor2.Statements }
-
 
 
 
