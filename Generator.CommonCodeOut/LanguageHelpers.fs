@@ -139,21 +139,20 @@ module Statements =
     // Since these contain statements, they are Computation Expressions in DslCodeBuilder
     //    * Creating IfModel, ElseIfModel, and ElseModel
     //    * Creating ForEachModel
-
-    let Assign(variable: string) (value: obj) =
+    let Assign(variable: string) (_: ToWord) (value: obj) =
         let expression = Literal value
         AssignmentModel.Create variable expression
 
-    let AssignWithDeclare (variable: string) (typeName: NamedItem) (value: obj) =
+    let AssignWithDeclare (variable: string) (_: ToWord) (typeName: NamedItem) (value: obj) =
         let expression = Literal value
         AssignWithDeclareModel.Create variable (Some typeName) expression
 
-    let AssignWithVar (variable: string) (value: obj) =
+    let AssignWithVar (variable: string) (_: ToWord)  (value: obj) =
         let expression = Literal value
         AssignWithDeclareModel.Create variable None expression
 
-    let SimpleCall (expression: IExpression) =
-        SimpleCallModel.Create expression
+    //let SimpleCall (expression: IExpression) =
+    //    SimpleCallModel.Create expression
 
     let Comment (text: string) =
         CommentModel.Create text

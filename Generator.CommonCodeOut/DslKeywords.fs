@@ -10,6 +10,9 @@ type AliasWord =
 type AsWord =
     | As
 
+type ToWord =
+    | To
+
 
 type IModifierWord = interface end
 type IClassModifierWord = interface inherit IModifierWord end

@@ -14,6 +14,7 @@ open Generator.LanguageExpressions.ExpressionHelpers
 open Generator.LanguageHelpers
 open System
 open Generator.JackfruitHelpers
+open DslKeywords
 
 
 let private operationName = "operation"
@@ -57,18 +58,20 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel
     let methodForCommandDef (parentCommandDef: CommandDef) : IMember list =
         let rec recurse (recurseDepth: int) (commandDef: CommandDef) : IMember list =
             if recurseDepth > 10 then invalidOp "Runaway recursion suspected!"
-            [ Method (commandDef.MethodName, ReturnType "Command") {
+            let commandMethodName = "Command"
+            let setHandlerName = "SetHandler"
+            let add = "Add"
+            [ Method (commandDef.MethodName, ReturnType commandMethodName) {
                 Public()
-                AssignWithVar commandDef.VariableName (New "Command" [ StringLiteral commandDef.Name ])
+                AssignWithVar commandDef.VariableName To (New commandMethodName [ StringLiteral commandDef.Name ])
                 for mbr in commandDef.Members do
-                    AssignWithVar mbr.NameAsVariable (New mbr.SymbolType [ StringLiteral mbr.Name ])
+                    AssignWithVar mbr.NameAsVariable To (New mbr.SymbolType [ StringLiteral mbr.Name ])
                     match mbr.Description with 
-                    | Some desc -> Assign $"{mbr.NameAsVariable}.Description" mbr.Description
+                    | Some desc -> Assign $"{mbr.NameAsVariable}.Description" To mbr.Description
                     | None -> ()
-                    Invoke commandDef.VariableName "Add" [ Literal mbr.NameAsVariable ] 
+                    Invoke commandDef.VariableName add [ Literal mbr.NameAsVariable ] 
 
-                Comment "In the following, the hard coded handler name is wrong, but I am just getting code structure correct"
-                Invoke commandDef.VariableName "SetHandler" [
+                Invoke commandDef.VariableName setHandlerName [
                     SymbolLiteral (Symbol commandDef.HandlerMethodName)
                     for mbr in commandDef.Members do (Literal (mbr.NameAsVariable))]
                 Return (SymbolLiteral (Symbol commandDef.VariableName)) }
