@@ -17,31 +17,6 @@ type Operator =
     | GreaterThanOrEqualTo
     | LessThanOrEqualTo
 
-type NamedItem =
-    | GenericNamedItem of Name: string * GenericTypes: NamedItem list
-    | SimpleNamedItem of Name: string
-    static member GenericsFromStrings (name: string) genericsAsStrings =
-        genericsAsStrings |> List.map (fun x -> SimpleNamedItem x)
-    member this.WithoutGenerics() =
-        match this with 
-        | SimpleNamedItem name -> name
-        | GenericNamedItem (name, t) -> name
-    static member Create (name: string) generics =
-        match generics with 
-        | [] -> SimpleNamedItem name
-        | _ -> GenericNamedItem (name, generics)
-    static member op_Implicit(name: string) : NamedItem = 
-        SimpleNamedItem name
-
-type ReturnType =
-    | Void
-    | ReturnType of t: NamedItem
-    static member Create typeName =
-        match typeName with 
-         | "void" -> Void
-         | _ -> ReturnType (NamedItem.Create (typeName) [])
-
-
 type TreeNodeType<'T> = {
     Data: 'T
     Children: TreeNodeType<'T> list }
@@ -148,3 +123,48 @@ let TreeFromDelimitedString (openChar: char) (closeChar: char) (separator: char)
     else
         let (tree, s) = splitOne input 0
         tree
+
+let MapTree<'b> fMap tree : 'b =
+    let rec innerMap (recurseCount: int) fMap tree : 'b =
+        if recurseCount > 10 then 
+            invalidOp "Possible runaway recursion!"
+        let newChildren =
+            [ for child in tree.Children do 
+                innerMap (recurseCount + 1) fMap child ]
+        fMap tree newChildren
+    innerMap 0 fMap tree
+
+
+type NamedItem =
+    | GenericNamedItem of Name: string * GenericTypes: NamedItem list
+    | SimpleNamedItem of Name: string
+    static member GenericsFromStrings (name: string, genericsAsStrings) =
+        genericsAsStrings |> List.map (fun x -> SimpleNamedItem x)
+    member this.WithoutGenerics() =
+        match this with 
+        | SimpleNamedItem name -> name
+        | GenericNamedItem (name, t) -> name
+    static member Create (name: string, generics) =
+        match generics with 
+        | [] -> SimpleNamedItem name
+        | _ -> GenericNamedItem (name, generics)
+    static member Create (name: string) =
+        let fMap (oldNode: TreeNodeType<string>) (newChildren: NamedItem list) =
+            if newChildren.IsEmpty then 
+                SimpleNamedItem oldNode.Data
+            else
+                GenericNamedItem (oldNode.Data, newChildren)
+        TreeFromDelimitedString '<' '>' ',' name
+        |> MapTree fMap 
+    static member op_Implicit(name: string) : NamedItem = 
+        NamedItem.Create name
+        
+type ReturnType =
+    | Void
+    | ReturnType of t: NamedItem
+    static member Create typeName =
+        match typeName with 
+            | "void" -> Void
+            | _ -> ReturnType (NamedItem.Create (typeName, []))
+        
+        

@@ -1,52 +1,87 @@
-﻿namespace Jackfruit.Tests
+﻿module Jackfruit.Tests.MapData
 
 open Generator.Models
+open Generator.Tests.UtilsForTests
+open System
 open Common
 
-type MapData =
-    { MapInferredStatements: string list
+type  Data =
+    { MapInferredStatements: string
+      HandlerClassName: string
+      HandlerMethods: string
       CommandNames: string list
       CommandDefs: CommandDef list }
+    member this.CliCode =
+        let handlerClassName = if String.IsNullOrWhiteSpace(this.HandlerClassName) then "Handlers" else this.HandlerClassName
+        $@"
+        using System;
 
-    static member NoMapping =
-        { MapInferredStatements = []
-          CommandNames = []
-          CommandDefs = [ ] }
+        public class Builder
+        {{
+            public static void MapInferred(string archetype, Delegate handler) {{}}
+        }}
 
-    static member OneMapping =
-        let commandDef = CommandDef("A", [""], Void, Arbitrary "MyCommand")
-        let members = [ MemberDef("one",commandDef, (SimpleNamedItem "string"), ArbitraryMember, true) ]
-        commandDef.Members <- members
+        public class Cli
+        {{
+            public void Definition()
+            {{ {this.MapInferredStatements} }}
+        }}
 
-        { MapInferredStatements = [ "builder.MapInferred(\"\", Handlers.A);" ]
-          CommandNames = [ "" ]
-          CommandDefs = [ commandDef ] }
+        public class {handlerClassName}
+        {{
+            { this.HandlerMethods }
+        }}"
+
+let NoMapping =
+    { MapInferredStatements = ""
+      HandlerClassName = ""
+      HandlerMethods = ""
+      CommandNames = []
+      CommandDefs = [ ] }
+
+let OneMapping =
+    let commandDef = CommandDef("A", [""], Void, Arbitrary "MyCommand")
+    let members = [ MemberDef("one",commandDef, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+    commandDef.Members <- members
+
+    { MapInferredStatements = "Builder.MapInferred(\"\", Handlers.A);"
+      HandlerClassName = "Handlers"
+      HandlerMethods = "public static void A(string one) {}"
+      CommandNames = [ "" ]
+      CommandDefs = [ commandDef ] }
         
 
-    static member ThreeMappings =
-        let package = CommandDef("package", [ "dotnet"; "add"; "package" ], Void, Arbitrary "MyCommand")
-        package.Members <-
-            [ MemberDef("packageName", package, (SimpleNamedItem "string"), ArbitraryMember, true)
-              MemberDef("version", package, (SimpleNamedItem "string"), ArbitraryMember, true)
-              MemberDef("framework",  package, (SimpleNamedItem "string"), ArbitraryMember, true)
-              MemberDef("noRestore",  package, (SimpleNamedItem "bool"), ArbitraryMember, true)
-              MemberDef("source",  package, (SimpleNamedItem "string"), ArbitraryMember, true)
-              MemberDef("packageDirectory",  package, (SimpleNamedItem "string"), ArbitraryMember, true)
-              MemberDef("interactive",  package, (SimpleNamedItem "bool"), ArbitraryMember, true)
-              MemberDef("prerelease",  package, (SimpleNamedItem "bool"), ArbitraryMember, true) ] 
+let ThreeMappings =
+    let package = CommandDef("package", [ "dotnet"; "add"; "package" ], Void, Arbitrary "MyCommand")
+    package.Members <-
+        [ MemberDef("packageName", package, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("version", package, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("framework",  package, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("noRestore",  package, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("source",  package, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("packageDirectory",  package, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("interactive",  package, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("prerelease",  package, (SimpleNamedItem "bool"), ArbitraryMember, true) ] 
    
-        let add = CommandDef("add", [ "dotnet"; "add" ], Void, Arbitrary "MyCommand")
-        add.SubCommands <- [package]
+    let add = CommandDef("add", [ "dotnet"; "add" ], Void, Arbitrary "MyCommand")
+    add.SubCommands <- [package]
 
-        let dotnet = CommandDef("dotnet", [ "dotnet" ], Void, Arbitrary "MyCommand")
-        dotnet.Members <-
-            [ MemberDef("project", dotnet, (SimpleNamedItem "string"), ArbitraryMember, true) ]
-        dotnet.SubCommands <- [add]
+    let dotnet = CommandDef("dotnet", [ "dotnet" ], Void, Arbitrary "MyCommand")
+    dotnet.Members <-
+        [ MemberDef("project", dotnet, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+    dotnet.SubCommands <- [add]
 
-        { MapInferredStatements =
-            [ "builder.MapInferred(\"dotnet <PROJECT>\", DotnetHandlers.Dotnet);"
-              "builder.MapInferred(\"dotnet add\", null);"
-              "builder.MapInferred(\"dotnet add package <PACKAGE_NAME> --source|-s\", DotnetHandlers.AddPackage);" ]
-          CommandNames = [ "dotnet"; "add"; "package" ]
+    { MapInferredStatements =
+        @"
+        Builder.MapInferred(""dotnet <PROJECT>"", DotnetHandlers.Dotnet);
+        Builder.MapInferred(""dotnet add"", null);
+        Builder.MapInferred(""dotnet add package <PACKAGE_NAME> --source|-s"", DotnetHandlers.AddPackage);"
+      HandlerClassName = "DotnetHandlers"
+      HandlerMethods = 
+        @"
+         public static void Dotnet(string project) { }
+         public static void AddPackage(string packageName, string version, string framework, bool noRestore, string source, 
+                string packageDirectory, bool interactive, bool prerelease) { }"
+      CommandNames = [ "dotnet"; "add"; "package" ]
 
-          CommandDefs = [ dotnet ] }
+      CommandDefs = [ dotnet ] }

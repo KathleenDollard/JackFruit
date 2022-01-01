@@ -223,7 +223,7 @@ type ``When creating archetypeInfo from mapping``() =
 
     [<Fact>]
     member _.``None are found when there are none``() =
-        let source = AddMapStatements false MapData.NoMapping.MapInferredStatements
+        let source = MapData.NoMapping.CliCode
 
         let actual = CommandNamesFromSource source
 
@@ -231,7 +231,7 @@ type ``When creating archetypeInfo from mapping``() =
 
     [<Fact>]
     member _.``One is found when there is one``() =
-        let source = AddMapStatements false MapData.OneMapping.MapInferredStatements
+        let source = MapData.OneMapping.CliCode
 
         let actual = CommandNamesFromSource source
 
@@ -239,7 +239,7 @@ type ``When creating archetypeInfo from mapping``() =
 
     [<Fact>]
     member _.``Multiples are found when there are multiple``() =
-        let source = AddMapStatements false MapData.ThreeMappings.MapInferredStatements
+        let source = MapData.ThreeMappings.CliCode
 
         let actual = CommandNamesFromSource source
 

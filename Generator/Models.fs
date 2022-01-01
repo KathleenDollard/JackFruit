@@ -3,6 +3,7 @@
 open Microsoft.CodeAnalysis
 open System.CommandLine
 open System.Collections.Generic
+open Generator.GeneralUtils 
 open Common
 
 
@@ -78,7 +79,8 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: NamedItem, me
         match this.Kind  with 
         | Argument -> "Argument" 
         | Option -> "Option" 
-        | Service -> ""        
+        | Service -> ""       
+    //static member Create()
 
 
 
@@ -235,7 +237,8 @@ and CommandDef(commandId: string, path: string list, returnType: ReturnType, com
 
     member this.HandlerMethodName : string = 
         match commandDefUsage with 
-        | UserMethod (m, _) -> m.Name
+        | UserMethod (m, _) -> 
+            m.ToDisplayString().SubstringBefore("(", m.ToDisplayString())
         | SetHandlerMethod (_, _, _) -> invalidOp "SetHandler handlers are not yet supported"
         | Arbitrary n -> n
 

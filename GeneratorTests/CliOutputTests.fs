@@ -1,4 +1,4 @@
-﻿module JackfruitTests
+﻿module Generator.CliOutputTests
 
 open Xunit
 open Generator.Tests
@@ -21,8 +21,12 @@ type ``When creating a code from model``() =
             match codeModelResult with 
             | Ok codeModel ->  codeModel
             | Error e -> invalidOp $"Failed creating code model {e}"
-        let writer = outputter.Output codeModel
-        let code = writer.Output
+        let writerResult = outputter.Output codeModel
+        let code =
+            match writerResult with 
+            | Error _ -> invalidOp "Unexpected error in test"
+            | Ok writer -> 
+                writer.Output
 
         Approvals.Verify(code)
 

@@ -31,7 +31,7 @@ let CommandDefFromMethod model (info: AppModelCommandInfo) =
         match info.Method with
             | Some method -> 
                 [ for parameter in method.Parameters do
-                    let memberType = NamedItem.Create (parameter.Type.ToDisplayString()) []
+                    let memberType = NamedItem.Create (parameter.Type.ToDisplayString(), [])
                     let usage = UserParameter parameter
                     MemberDef(parameter.Name, commandDef, memberType, usage, true)]
             | None -> [] 

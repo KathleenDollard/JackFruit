@@ -29,7 +29,6 @@ type AppModel() =
             InvocationsFromModel mapMethodName semanticModel
             |> Result.bind ArchetypeInfoListFrom
             |> Result.bind ArchetypeInfoTreeFrom
-
         
         override _.Children archTree =
             archTree.Children

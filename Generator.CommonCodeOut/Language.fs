@@ -161,7 +161,7 @@ type ClassModel =
           ImplementedInterfaces = []
           Members = [] }
     static member Create(className) =
-        ClassModel.Create((SimpleNamedItem className), Unknown)
+        ClassModel.Create((NamedItem.Create className), Unknown)
     interface IMember
 
 

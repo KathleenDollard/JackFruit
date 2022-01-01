@@ -11,5 +11,6 @@ type AppErrors =
     | Other of Message: string
     | Aggregate of Errors: AppErrors list
     | AppModelIssue of Message: string
+    | RoslynOutIssue of Message: string
 
 

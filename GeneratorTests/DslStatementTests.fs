@@ -57,7 +57,7 @@ type ``When creating Return statements to test all expressions``() =
         let outerMethodName = "B"
         let className = "A"
         let expectedModel: IExpression = 
-            { TypeName = NamedItem.Create className []
+            { TypeName = NamedItem.Create (className, [])
               Arguments = [] }
         let codeModel = 
             Method(SimpleNamedItem outerMethodName, Void) {

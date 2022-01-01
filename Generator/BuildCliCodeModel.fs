@@ -54,22 +54,30 @@ let argumentSpecificValues (memberDef:MemberDef) = []
 
 let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel, AppErrors> =
 
-    let methodForCommandDef (commandDef: CommandDef) =
-        Method (commandDef.MethodName, ReturnType "Command") {
-            Public()
-            AssignWithVar commandDef.VariableName (New "Command" [ StringLiteral commandDef.Name ])
-            for mbr in commandDef.Members do
-                AssignWithVar mbr.NameAsVariable (New mbr.SymbolType [ StringLiteral mbr.Name ])
-                match mbr.Description with 
-                | Some desc -> Assign $"{mbr.NameAsVariable}.Description" mbr.Description
-                | None -> ()
-                Invoke commandDef.VariableName "Add" [ Literal mbr.NameAsVariable ] 
+    let methodForCommandDef (parentCommandDef: CommandDef) : IMember list =
+        let rec recurse (recurseDepth: int) (commandDef: CommandDef) : IMember list =
+            if recurseDepth > 10 then invalidOp "Runaway recursion suspected!"
+            [ Method (commandDef.MethodName, ReturnType "Command") {
+                Public()
+                AssignWithVar commandDef.VariableName (New "Command" [ StringLiteral commandDef.Name ])
+                for mbr in commandDef.Members do
+                    AssignWithVar mbr.NameAsVariable (New mbr.SymbolType [ StringLiteral mbr.Name ])
+                    match mbr.Description with 
+                    | Some desc -> Assign $"{mbr.NameAsVariable}.Description" mbr.Description
+                    | None -> ()
+                    Invoke commandDef.VariableName "Add" [ Literal mbr.NameAsVariable ] 
 
-            Comment "In the following, the hard coded handler name is wrong, but I am just getting code structure correct"
-            Invoke commandDef.VariableName "SetHandler" [
-                SymbolLiteral (Symbol commandDef.HandlerMethodName)
-                for mbr in commandDef.Members do (Literal (mbr.NameAsVariable))]
-            Return (SymbolLiteral (Symbol commandDef.VariableName)) }
+                Comment "In the following, the hard coded handler name is wrong, but I am just getting code structure correct"
+                Invoke commandDef.VariableName "SetHandler" [
+                    SymbolLiteral (Symbol commandDef.HandlerMethodName)
+                    for mbr in commandDef.Members do (Literal (mbr.NameAsVariable))]
+                Return (SymbolLiteral (Symbol commandDef.VariableName)) }
+              // KAD-Chet: Does this need to be this ugly? Help :( also below within the try
+              let subCommandMethods = 
+                [ for subCommand in commandDef.SubCommands do 
+                    for m in recurse (recurseDepth + 1) subCommand do m ]
+              for method in subCommandMethods do method ]
+        recurse 0 parentCommandDef
 
     try
         // KAD: Figure out right namespace: Should probably collect the correct namespace from the initial code. 
@@ -82,7 +90,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel
             for commandDef in commandDefs do 
                 Class($"{commandDef.Name}Cli") {
                     Public()
-                    methodForCommandDef commandDef }
+                    for method in methodForCommandDef commandDef do method }
             }
         Ok nspace
 
