@@ -17,6 +17,8 @@ open Generator.NewMapping
 open Generator.Models
 open Jackfruit.Tests
 open Common
+open ApprovalTests.Reporters
+open ApprovalTests
 
 
 type ``Can retrieve method for archetype``() =
@@ -36,8 +38,8 @@ type ``Can retrieve method for archetype``() =
         | Ok list -> list, model
         | Error err -> invalidOp $"Test failed durin Archetype list creation with {err}"
 
-    let TestArchetypeHandlerRetrieval (code: string list) (expectedNames: string list) =
-        let code = AddMethodsToClassWithBuilder code
+    let TestArchetypeHandlerRetrieval (code: string) (expectedNames: string list) =
+        //let code = AddMethodsToClassWithBuilder code
         let (archetypeList, model) = ArchetypeList code
         
         let actual =
@@ -57,15 +59,15 @@ type ``Can retrieve method for archetype``() =
     // Not sure other than the first is interesting
     [<Fact>]
     member _.``Handler found for one mappings``() =
-        TestArchetypeHandlerRetrieval MapData.OneMapping.MapInferredStatements  ["A"]
+        TestArchetypeHandlerRetrieval MapData.OneMapping.CliCode  ["A"]
 
     [<Fact>]
     member _.``Error not thrown when no mapping``() =
-        TestArchetypeHandlerRetrieval MapData.NoMapping.MapInferredStatements  []
+        TestArchetypeHandlerRetrieval MapData.NoMapping.CliCode  []
 
     [<Fact>]
     member _.``Handlers found for three mappings``() =
-        TestArchetypeHandlerRetrieval MapData.ThreeMappings.MapInferredStatements  ["Dotnet"; "AddPackage"]
+        TestArchetypeHandlerRetrieval MapData.ThreeMappings.CliCode  ["Dotnet"; "AddPackage"]
 
 
 
@@ -88,8 +90,15 @@ type ``Can build CommandDef from archetype``() =
         | Ok list -> list, model
         | Error err -> invalidOp $"Test failed durin ArchetypeTree creation with {err}"
 
-    let TestArchetypeHandlerRetrieval (code: string list) (expectedCommandDefs: CommandDef list) =
-        let code = AddMethodsToClassWithBuilder code
+    let GetCommandDefs(code: string) =
+        let (archetypeTreeList, model) = ArchetypeTree code
+        let appModel = Jackfruit.AppModel() :> Generator.AppModel<TreeNodeType<ArchetypeInfo>>
+        [ match CommandDefsFrom model appModel archetypeTreeList with
+            | Ok nodeDefs -> nodeDefs
+            | Error e -> invalidOp "Error when building CommandDef"]
+
+    let TestArchetypeHandlerRetrieval (code: string) (expectedCommandDefs: CommandDef list) =
+        //let code = AddMethodsToClassWithBuilder code
         let (archetypeTreeList, model) = ArchetypeTree code
         let appModel = Jackfruit.AppModel() :> Generator.AppModel<TreeNodeType<ArchetypeInfo>>
         let commandDefs =
@@ -105,16 +114,17 @@ type ``Can build CommandDef from archetype``() =
        
   
     [<Fact>]
+    [<UseReporter(typeof<DiffReporter>)>]
     member _.``Handler found for one mappings``() =
-        TestArchetypeHandlerRetrieval MapData.OneMapping.MapInferredStatements  MapData.OneMapping.CommandDefs
+        TestArchetypeHandlerRetrieval MapData.OneMapping.CliCode MapData.OneMapping.CommandDefs
 
     [<Fact>]
     member _.``Error not thrown when no mapping``() =
-        TestArchetypeHandlerRetrieval MapData.NoMapping.MapInferredStatements MapData.NoMapping.CommandDefs
+        TestArchetypeHandlerRetrieval MapData.NoMapping.CliCode MapData.NoMapping.CommandDefs
 
     [<Fact>]
     member _.``Handlers found for three mappings``() =
-        TestArchetypeHandlerRetrieval MapData.ThreeMappings.MapInferredStatements MapData.ThreeMappings.CommandDefs
+        TestArchetypeHandlerRetrieval MapData.ThreeMappings.CliCode MapData.ThreeMappings.CommandDefs
 
 
  

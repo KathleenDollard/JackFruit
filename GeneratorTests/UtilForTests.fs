@@ -109,8 +109,6 @@ let IsModelOk modelResult =
     IsResultOk modelResult
 
 
-
-
 let ModelFrom(sources: Source list) =
     let combineTrees (trees: SyntaxTree list) source =
         let newTreeResult = SyntaxTreeResult source
@@ -160,7 +158,6 @@ let CommandDefFromHandlerSource source =
     [ for method in methods do
         CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} ]
 
-
 let ShouldEqual (expected: 'a) (actual: 'a) =     
     try
         Assert.Equal<'a>(expected, actual)
@@ -186,14 +183,14 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
 
     let rec CompareCommand parentId (exp: CommandDef) (act: CommandDef) =
         [ let id = parentId + if String.IsNullOrEmpty(exp.CommandId) then act.CommandId else exp.CommandId
-          if exp.CommandId <> act.CommandId then $"{parentId}: CommandId {exp.CommandId} does not match {act.CommandId}"
-          if exp.ReturnType <> act.ReturnType then $"{parentId}: ReturnType {exp.ReturnType} does not match {act.ReturnType}"
-          if exp.Path <> act.Path then $"{parentId}: Path {exp.Path} does not match {act.Path}"
-          if exp.Aliases <> act.Aliases then $"{parentId}: Aliases {exp.Aliases} does not match {act.Aliases}"
-          if exp.Description <> act.Description then $"{parentId}: Description {exp.Description} does not match {act.Description}" 
+          if exp.CommandId <> act.CommandId then $"{id}: CommandId {exp.CommandId} does not match {act.CommandId}"
+          if exp.ReturnType <> act.ReturnType then $"{id}: ReturnType {exp.ReturnType} does not match {act.ReturnType}"
+          if exp.Path <> act.Path then $"{id}: Path {exp.Path} does not match {act.Path}"
+          if exp.Aliases <> act.Aliases then $"{id}: Aliases {exp.Aliases} does not match {act.Aliases}"
+          if exp.Description <> act.Description then $"{id}: Description {exp.Description} does not match {act.Description}" 
           
           if exp.Members.Length <> act.Members.Length then 
-            $"{parentId}: Members length of expected ({exp.Members.Length}) is different than the length of actual ({act.Members.Length})"
+            $"{id}: Members length of expected ({exp.Members.Length}) is different than the length of actual ({act.Members.Length})"
           else
             let members = List.zip exp.Members act.Members
             for expMember, actMember in members do
@@ -201,7 +198,7 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
                 yield! CompareMember id expMember actMember
 
           if exp.SubCommands.Length <> act.SubCommands.Length then 
-            $"{parentId}: SubCommands length of expected ({exp.SubCommands.Length}) is different than the length of actual ({act.SubCommands.Length})"
+            $"{id}: SubCommands length of expected ({exp.SubCommands.Length}) is different than the length of actual ({act.SubCommands.Length})"
           else
             let subCommands = List.zip exp.SubCommands act.SubCommands
             for expSubCommand, actSubCommand in subCommands do
@@ -232,7 +229,7 @@ let CreateCompilation (source: string) =
     CSharpCompilation.Create("compilation",
         seq {CSharpSyntaxTree.ParseText(source)},
         seq {MetadataReference.CreateFromFile(typeof<Binder>.Assembly.Location)},
-        CSharpCompilationOptions(OutputKind.ConsoleApplication))       
+        CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))       
 
 
 

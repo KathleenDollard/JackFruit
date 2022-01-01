@@ -101,5 +101,13 @@ let ToSnake input =
 let ToKebab input =
     AddCharsAndLower "-" input
 
+type System.String with 
+    member this.SubstringBefore(lookFor: string, input: string) =
+        let pos = input.IndexOf(lookFor)
+        input[0..pos - 1]
+    member this.SubstringAfter(lookFor: string, input: string) =
+        let pos = input.IndexOf(lookFor)
+        input[pos..]
+
 
 

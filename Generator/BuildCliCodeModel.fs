@@ -54,7 +54,7 @@ let argumentSpecificValues (memberDef:MemberDef) = []
 
 let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel, AppErrors> =
 
-    let methodForCommandDef (commandDef: CommandDef) =
+    let rec methodForCommandDef (commandDef: CommandDef) =
         Method (commandDef.MethodName, ReturnType "Command") {
             Public()
             AssignWithVar commandDef.VariableName (New "Command" [ StringLiteral commandDef.Name ])
@@ -82,7 +82,9 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel
             for commandDef in commandDefs do 
                 Class($"{commandDef.Name}Cli") {
                     Public()
-                    methodForCommandDef commandDef }
+                    methodForCommandDef commandDef
+                    for subCommand in commandDef.SubCommands do 
+                       methodForCommandDef subCommand }
             }
         Ok nspace
 

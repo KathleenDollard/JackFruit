@@ -1,0 +1,26 @@
+﻿using System;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.Threading.Tasks;
+namespace CliDefinition
+{
+   public class dotnetCli
+   {
+      public Command DotnetCommand()
+      {
+         var command = new Command("dotnet");
+         var projectOption = new Option<string>("project");
+         command.Add(projectOption);
+         // In the following, the hard coded handler name is wrong, but I am just getting code structure correct
+         command.SetHandler(DotnetHandlers.Dotnet, projectOption);
+         return command;
+      }
+      public Command AddCommand()
+      {
+         var command = new Command("add");
+         // In the following, the hard coded handler name is wrong, but I am just getting code structure correct
+         command.SetHandler();
+         return command;
+      }
+   }
+}

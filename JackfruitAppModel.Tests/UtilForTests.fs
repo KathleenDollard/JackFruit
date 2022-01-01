@@ -30,7 +30,6 @@ let AddMapStatements includeBad (statements: string list) =
           if includeBad then BadMappingStatement
           for s in statements do s ]
 
-
 let AddMethodsToClassWithBuilder (source: string list) =
     let source = source |> String.concat "\r\n"
     @$"
