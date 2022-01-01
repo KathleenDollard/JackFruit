@@ -101,6 +101,7 @@ let Literal (value: obj) : IExpression =
     | _ -> UnknownLiteral value
 
 
+
 type Structural =
     static member Using (usingName: string) =
         UsingModel.Create usingName
@@ -112,9 +113,7 @@ type Structural =
                 UsingModel.Create usingName
             else
                 { UsingNamespace = usingName; Alias = Some a }
-
-    static member ReturnType (returnType: ReturnType) =
-        
+       
 
     static member Public ([<ParamArray>] modifiers: Modifier[]) =
         { Scope = Scope.Public; Modifiers = List.ofArray modifiers }

@@ -165,6 +165,6 @@ type ReturnType =
     static member Create typeName =
         match typeName with 
             | "void" -> Void
-            | _ -> ReturnType (NamedItem.Create (typeName, []))
-        
+            | _ -> ReturnType (NamedItem.Create typeName)
+   
         
