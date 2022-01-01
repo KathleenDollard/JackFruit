@@ -52,6 +52,18 @@ type ParameterModel =
           Style = Normal }
 
 
+type ReturnType =
+    | Void
+    | ReturnType of t: NamedItem
+    interface IMember
+    static member Create typeName =
+        match typeName with 
+            | "void" -> Void
+            | _ -> ReturnType (NamedItem.Create typeName)
+    static member op_Implicit(typeName: string) : ReturnType = 
+        ReturnType.Create typeName
+
+
 type MethodModel =
     { MethodName: NamedItem
       ReturnType: ReturnType

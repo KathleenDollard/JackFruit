@@ -158,13 +158,6 @@ type NamedItem =
         |> MapTree fMap 
     static member op_Implicit(name: string) : NamedItem = 
         NamedItem.Create name
-        
-type ReturnType =
-    | Void
-    | ReturnType of t: NamedItem
-    static member Create typeName =
-        match typeName with 
-            | "void" -> Void
-            | _ -> ReturnType (NamedItem.Create typeName)
-   
+
+
         

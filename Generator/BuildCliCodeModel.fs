@@ -41,7 +41,7 @@ let private methodSigFromCommandDef (commandDef: CommandDef) =
         [ for memberDef in commandDef.Members do 
             memberDef.TypeName
             match commandDef.ReturnType with 
-            | ReturnType t -> t
+            | CommandReturnType t -> t
             | Void -> () ]
     let name = if isAction then "Action" else "Func"
     GenericNamedItem (name, memberTypes)
