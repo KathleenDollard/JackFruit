@@ -27,6 +27,7 @@ type ParameterStyle =
 
 
 type IMember = interface end
+type IStatementLike = interface end
 type IStatement = interface end
 type IExpression = interface end
 
@@ -41,15 +42,30 @@ type IMethodLike<'T when 'T:> IMethodLike<'T>> =
     inherit IStatementContainer<'T>
     abstract member AddScopeAndModifiers: ScopeAndModifiers -> 'T
     abstract member AddParameter: ParameterModel-> 'T
+    abstract member AddReturnType: ReturnType -> 'T // no op for constructors and setters
    
 type ParameterModel =
     { ParameterName: string
       Type: NamedItem
       Style: ParameterStyle }
+    interface IStatement
     static member Create name paramType =
         { ParameterName = name
           Type = paramType
           Style = Normal }
+
+
+type ReturnType =
+    | Void
+    | ReturnTypeUnknown
+    | ReturnType of t: NamedItem
+    interface IStatement
+    static member Create typeName =
+        match typeName with 
+            | "void" -> Void
+            | _ -> ReturnType (NamedItem.Create typeName)
+    static member op_Implicit(typeName: string) : ReturnType = 
+        ReturnType.Create typeName
 
 
 type MethodModel =
@@ -59,13 +75,15 @@ type MethodModel =
       Modifiers: Modifier list
       Parameters: ParameterModel list
       Statements: IStatement list}
-    static member Create methodName returnType =
+    static member Create (methodName, returnType) =
         { MethodName = methodName
           ReturnType = returnType
           Scope = Public
           Modifiers = []
           Parameters = []
           Statements = [] }
+    static member Create methodName  =
+        MethodModel.Create (methodName, ReturnTypeUnknown)
     interface IMember
     member this.AddStatements statements =
         { this with Statements = statements }
@@ -73,11 +91,15 @@ type MethodModel =
         { this with Scope = scopeAndModifiers.Scope; Modifiers = scopeAndModifiers.Modifiers }
     member this.AddParameter parameterModel = 
         { this with Parameters = List.append this.Parameters [parameterModel] }
+    member this.AddReturnType (returnType: ReturnType) = 
+        { this with ReturnType = returnType }
     interface IMethodLike<MethodModel> with
         member this.AddStatements statements = this.AddStatements statements
         member this.AddScopeAndModifiers scopeAndModifiers = this.AddScopeAndModifiers scopeAndModifiers
         member this.AddParameter parameterModel = 
             this.AddParameter parameterModel
+        member this.AddReturnType returnType = 
+            this.AddReturnType returnType
      
  
 type ConstructorModel =
@@ -102,6 +124,8 @@ type ConstructorModel =
         member this.AddScopeAndModifiers scopeAndModifiers = this.AddScopeAndModifiers scopeAndModifiers
         member this.AddParameter parameterModel = 
             this.AddParameter parameterModel
+        member this.AddReturnType returnType = 
+            this  // no op
 
 
 type PropertyModel =

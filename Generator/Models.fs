@@ -12,6 +12,15 @@ type ItemReturn<'T> =
 | UsePreviousValue
 
 
+type CommandReturnType =
+    | Void
+    | CommandReturnType of t: NamedItem
+    static member Create typeName =
+        match typeName with 
+            | "void" -> Void
+            | _ -> CommandReturnType (NamedItem.Create typeName)
+
+
 /// MemberKind indicates the System.CommandLine symbol used
 /// for the member. They are treated the same during transformation
 /// so that a late transformer can determine which they are. 
@@ -201,7 +210,7 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: NamedItem, me
 
 
 /// The main structure for commands during transformations
-and CommandDef(commandId: string, path: string list, returnType: ReturnType, commandDefUsage: CommandDefUsage) =
+and CommandDef(commandId: string, path: string list, returnType: CommandReturnType, commandDefUsage: CommandDefUsage) =
 
     let pocket = Dictionary<string, obj>()
 
@@ -303,7 +312,7 @@ and CommandDef(commandId: string, path: string list, returnType: ReturnType, com
     /// the environment return, and thus this is often unit (null)
     ///
     /// This always comes from the method and cannot be changed by transformers
-    member _.ReturnType: ReturnType = returnType
+    member _.ReturnType: CommandReturnType = returnType
 
     /// Used by the generator to determine whether to output SetHandler.
     /// When GenerateSetHandler is set to false, any tree structure is unused

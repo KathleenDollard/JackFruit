@@ -44,14 +44,15 @@ type ``When creating simple code``() =
                     Constructor() 
                         { Public()
                           Parameter(paramName, propertyType)
-                          Assign propertyName paramName
+                          Assign propertyName To paramName
                         }
 
                     Property(propertyName, "int") { Public }
 
-                    Method(methodName, (ReturnType methodReturn))
+                    Method(methodName)
                         { Public()
-                          AssignWithVar "x" "0" 
+                          ReturnType methodReturn
+                          AssignWithVar "x" To "0" 
                           If (comparison) {
                                 Return (Literal 0)
                                 }

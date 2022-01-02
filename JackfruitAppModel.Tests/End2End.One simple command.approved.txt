@@ -11,7 +11,6 @@ namespace CliDefinition
          var command = new Command("A");
          var oneOption = new Option<string>("one");
          command.Add(oneOption);
-         // In the following, the hard coded handler name is wrong, but I am just getting code structure correct
          command.SetHandler(Handlers.A, oneOption);
          return command;
       }

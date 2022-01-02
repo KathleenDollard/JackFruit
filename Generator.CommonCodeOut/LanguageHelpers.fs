@@ -101,6 +101,7 @@ let Literal (value: obj) : IExpression =
     | _ -> UnknownLiteral value
 
 
+
 type Structural =
     static member Using (usingName: string) =
         UsingModel.Create usingName
@@ -112,6 +113,9 @@ type Structural =
                 UsingModel.Create usingName
             else
                 { UsingNamespace = usingName; Alias = Some a }
+       
+    static member ReturnType(returnType: ReturnType) =
+        returnType
 
     static member Public ([<ParamArray>] modifiers: Modifier[]) =
         { Scope = Scope.Public; Modifiers = List.ofArray modifiers }
@@ -139,16 +143,15 @@ module Statements =
     // Since these contain statements, they are Computation Expressions in DslCodeBuilder
     //    * Creating IfModel, ElseIfModel, and ElseModel
     //    * Creating ForEachModel
-
-    let Assign(variable: string) (value: obj) =
+    let Assign(variable: string) (_: ToWord) (value: obj) =
         let expression = Literal value
         AssignmentModel.Create variable expression
 
-    let AssignWithDeclare (variable: string) (typeName: NamedItem) (value: obj) =
+    let AssignWithDeclare (variable: string) (_: ToWord) (typeName: NamedItem) (value: obj) =
         let expression = Literal value
         AssignWithDeclareModel.Create variable (Some typeName) expression
 
-    let AssignWithVar (variable: string) (value: obj) =
+    let AssignWithVar (variable: string) (_: ToWord)  (value: obj) =
         let expression = Literal value
         AssignWithDeclareModel.Create variable None expression
 

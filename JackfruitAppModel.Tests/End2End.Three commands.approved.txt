@@ -11,14 +11,12 @@ namespace CliDefinition
          var command = new Command("dotnet");
          var projectOption = new Option<string>("project");
          command.Add(projectOption);
-         // In the following, the hard coded handler name is wrong, but I am just getting code structure correct
          command.SetHandler(DotnetHandlers.Dotnet, projectOption);
          return command;
       }
       public Command AddCommand()
       {
          var command = new Command("add");
-         // In the following, the hard coded handler name is wrong, but I am just getting code structure correct
          command.SetHandler();
          return command;
       }
@@ -41,7 +39,6 @@ namespace CliDefinition
          command.Add(interactiveOption);
          var prereleaseOption = new Option<bool>("prerelease");
          command.Add(prereleaseOption);
-         // In the following, the hard coded handler name is wrong, but I am just getting code structure correct
          command.SetHandler(DotnetHandlers.AddPackage, packageNameOption, versionOption, frameworkOption, noRestoreOption, sourceOption, packageDirectoryOption, interactiveOption, prereleaseOption);
          return command;
       }
