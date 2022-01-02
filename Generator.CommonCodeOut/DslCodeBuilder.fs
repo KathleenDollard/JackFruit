@@ -232,27 +232,6 @@ type MethodBase<'T when 'T :> IMethodLike<'T>>() =
     member this.Yield (returnType: ReturnType) : 'T = 
         this.Zero().AddReturnType returnType
 
-    //[<CustomOperation("Public", MaintainsVariableSpace = true)>]
-    //member _.publicWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
-    //    (item :> IMethodLike<'T>).AddScopeAndModifiers Public (List.ofArray modifiers)
-
-    //[<CustomOperation("Private", MaintainsVariableSpace = true)>]
-    //member _.privateWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
-    //     (item :> IMethodLike<'T>).AddScopeAndModifiers Private (List.ofArray modifiers)
-
-    //[<CustomOperation("Internal", MaintainsVariableSpace = true)>]
-    //member _.internalWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
-    //     (item :> IMethodLike<'T>).AddScopeAndModifiers Internal (List.ofArray modifiers)
-
-    //[<CustomOperation("Protected", MaintainsVariableSpace = true)>]
-    //member _.protectedWithModifiers (item: 'T, [<ParamArray>] modifiers: Modifier[]) =
-    //     (item :> IMethodLike<'T>).AddScopeAndModifiers Protected (List.ofArray modifiers)
-
-    //[<CustomOperation("Parameter", MaintainsVariableSpace = true)>]
-    //member _.addParmaeter (item: 'T, parameterName: string, parameterType: NamedItem) =
-    //    (item :> IMethodLike<'T>).AddParameter parameterName parameterType Normal
-
-
 type Method (name: NamedItem) =
     inherit MethodBase<MethodModel>()
 
@@ -274,31 +253,18 @@ type Method (name: NamedItem) =
 
 
 type Property(name: string, typeName: NamedItem) =
+    inherit BuilderBase<PropertyModel>()
 
-    let updateModifiers (property: PropertyModel) scope (modifiers: Modifier[]) =
-        { property with 
-            Scope = scope
-            Modifiers = List.ofArray modifiers }        
-        
-    member _.Yield (_) = PropertyModel.Create name typeName
-    member this.Zero() = this.Yield()
+    override _.EmptyItem (): PropertyModel =  PropertyModel.Create name typeName
+    override _.InternalCombine (prop1: PropertyModel) (prop2: PropertyModel) =
+        { prop1 with 
+            Scope = newScope prop1.Scope prop2.Scope
+            Modifiers = List.append prop1.Modifiers prop2.Modifiers
+            GetStatements = List.append prop1.GetStatements prop2.GetStatements
+            SetStatements = List.append prop1.SetStatements prop2.SetStatements }
 
-    [<CustomOperation("Public", MaintainsVariableSpace = true)>]
-    member _.modifiers (property: PropertyModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers property Public modifiers
-
-
-    [<CustomOperation("Private", MaintainsVariableSpace = true)>]
-    member _.privateWithModifiers (property: PropertyModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers property Public modifiers
-
-    [<CustomOperation("Internal", MaintainsVariableSpace = true)>]
-    member _.internalWithModifiers (property: PropertyModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers property Public modifiers
-
-    [<CustomOperation("Protected", MaintainsVariableSpace = true)>]
-    member _.protectedWithModifiers (property: PropertyModel, [<ParamArray>] modifiers: Modifier[]) =
-        updateModifiers property Public modifiers
+    member this.Yield (modifiers: ScopeAndModifiers) : PropertyModel =
+        this.Zero().AddScopeAndModifiers modifiers
 
 
 type Constructor() =

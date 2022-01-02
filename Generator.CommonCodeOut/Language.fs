@@ -143,6 +143,8 @@ type PropertyModel =
           GetStatements = []
           SetStatements = [] }
     interface IMember
+    member this.AddScopeAndModifiers (scopeAndModifiers: ScopeAndModifiers) = 
+        { this with Scope = scopeAndModifiers.Scope; Modifiers = scopeAndModifiers.Modifiers }
 
 
 type FieldModel =

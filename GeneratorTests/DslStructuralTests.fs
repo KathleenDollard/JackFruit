@@ -352,7 +352,7 @@ type ``When creating a property``() =
         let propertyType = SimpleNamedItem "int"
         let codeModel = 
             Property(name, propertyType) {
-                Public
+                Public()
                 }
 
         Assert.Equal(name, codeModel.PropertyName)

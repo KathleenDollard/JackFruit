@@ -47,7 +47,7 @@ type ``When creating simple code``() =
                           Assign propertyName To paramName
                         }
 
-                    Property(propertyName, "int") { Public }
+                    Property(propertyName, "int") { Public() }
 
                     Method(methodName)
                         { Public()
