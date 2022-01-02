@@ -1,10 +1,8 @@
 ﻿namespace Jackfruit
 
-open Generator.RoslynUtils
+// KAD-Chet: I am not getting Windows to correctly display the AssemblyVersion
+
 open Microsoft.CodeAnalysis
-open Jackfruit.ArchetypeMapping
-open Jackfruit
-open Generator.NewMapping
 open Generator.SourceGenerator
 open Common
 open Jackfruit.Models
