@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>10</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <OutputPath>..\..\packages</OutputPath>
   </PropertyGroup>
-
+  
   <PropertyGroup>
     <PackageId>Jackfruit.AppModel.CSharp</PackageId>
     <Version>0.0.1-alpha</Version>
@@ -14,6 +15,25 @@
     <Company>Microsoft</Company>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <!-- Generates a package at build -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- Do not include the generator as a lib dependency -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Take a private dependency on Newtonsoft.Json (PrivateAssets=all) Consumers of this generator will not reference it.
+         Set GeneratePathProperty=true so we can reference the binaries via the PKGNewtonsoft_Json property -->
+    <PackageReference Include="FSharp.Core" Version="12.0.1" PrivateAssets="all" GeneratePathProperty="true" />
+
+    <!-- Package the generator in the analyzer directory of the nuget package -->
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+
+    <!-- Package the Newtonsoft.Json dependency alongside the generator assembly -->
+    <None Include="$(PkgFSharp_Core)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.1.0-1.final" />

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>netstandard2.0</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<AssemblyVersion>0.0.1-alpha</AssemblyVersion>
 	</PropertyGroup>
@@ -16,7 +16,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
 		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.1.0-1.final" />
-		<PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
+		<PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21623.1" />
 	</ItemGroup>
 
 	<ItemGroup>

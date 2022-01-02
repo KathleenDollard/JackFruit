@@ -22,7 +22,6 @@ let (|Command|Arg|Option|) (part: string) =
 
 let private stringSplitOptions =
      System.StringSplitOptions.RemoveEmptyEntries
-     ||| System.StringSplitOptions.TrimEntries
 
 let private FirstNonHiddenWord words =
     let mutable name = ""
@@ -36,7 +35,7 @@ let private FirstNonHiddenWord words =
         Some name
 
 let private ParseArechetypePart (part: string) =
-    let words = part.Trim().Split('|', stringSplitOptions)
+    let words = part.Trim().Split([|'|'|], stringSplitOptions)
     let id = 
         if words.Length > 0 then
             RemoveSurroundingSquareBrackets words[0]
@@ -87,7 +86,7 @@ let ArgArchetypeFrom part =
 let ParseArchtypeParts archetype =
     let words =
         (RemoveSurroundingDoubleQuote archetype)
-            .Split(' ', stringSplitOptions)
+            .Split([|' '|], stringSplitOptions)
         |> Array.toList
     let argOptions =
         [ for word in words do 

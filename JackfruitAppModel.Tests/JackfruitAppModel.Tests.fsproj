@@ -19,7 +19,7 @@
   <ItemGroup>
     <PackageReference Include="FsUnit.xUnit" Version="4.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0-preview-20211130-02" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21623.1" />
     <PackageReference Include="xunit" Version="2.4.2-pre.12" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

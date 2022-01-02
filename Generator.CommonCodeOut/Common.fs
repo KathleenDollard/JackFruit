@@ -106,7 +106,7 @@ let TreeFromDelimitedString (openChar: char) (closeChar: char) (separator: char)
 
     and splitMany (inputWithPrefix: string) (depth: int): TreeNodeType<string> list * string =
         if depth > maxRecursion then invalidOp "May be in infite recursion in splitMany, or you made want a algorithm that supports tail call optimiation"
-        if inputWithPrefix.StartsWith(closeChar) then
+        if inputWithPrefix[0] = closeChar then
             [], inputWithPrefix[1..]
         else
             let input = inputWithPrefix[1..]
