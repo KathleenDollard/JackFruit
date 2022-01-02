@@ -101,8 +101,8 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
         writer.DecreaseIndent()
         writer.AddLines (language.MethodClose method)
 
-    member this.OutputConstructor (ctor: ConstructorModel) =
-       writer.AddLines (language.ConstructorOpen ctor) 
+    member this.OutputConstructor cls (ctor: ConstructorModel) =
+       writer.AddLines (language.ConstructorOpen cls ctor) 
        writer.IncreaseIndent()
        this.OutputStatements ctor.Statements
        writer.DecreaseIndent()
@@ -132,19 +132,20 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
     member this.OutputField (field: FieldModel) =
         writer.AddLines (language.Field field)
 
-    member this.OutputMembers (members: IMember list) =
+    member this.OutputMembers cls (members: IMember list) =
         for mbr in members do 
             match mbr with 
             | :? FieldModel as x -> this.OutputField x
-            | :? ConstructorModel as x -> this.OutputConstructor x
+            | :? ConstructorModel as x -> this.OutputConstructor cls x
             | :? MethodModel as x -> this.OutputMethod x
             | :? PropertyModel as x -> this.OutputProperty x
             | a -> invalidOp $"Unexpected member type during output. Type: {a}"
 
     member this.OutputClass cls =
+        writer.AddLine("")
         writer.AddLines (language.ClassOpen cls)
         writer.IncreaseIndent()
-        this.OutputMembers cls.Members
+        this.OutputMembers cls cls.Members 
         writer.DecreaseIndent()
         writer.AddLines (language.ClassClose cls)
 

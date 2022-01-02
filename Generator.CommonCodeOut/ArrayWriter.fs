@@ -7,7 +7,7 @@ open System.Text
 type ArrayWriter(indentSize: int) =
 
     let mutable currentIndent = 0
-    let mutable linePairs = []
+    let mutable (linePairs: (struct (int * string)) list) = []
 
     member _.LinePairs() = linePairs
 

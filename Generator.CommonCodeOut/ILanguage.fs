@@ -14,7 +14,7 @@ type ILanguage =
     abstract member NamespaceClose: NamespaceModel -> string list
     abstract member ClassOpen: ClassModel -> string list
     abstract member ClassClose: ClassModel -> string list
-    abstract member ConstructorOpen: ConstructorModel -> string list
+    abstract member ConstructorOpen: ClassModel -> ConstructorModel -> string list
     abstract member ConstructorClose: ConstructorModel -> string list
     abstract member MethodOpen: MethodModel -> string list
     abstract member MethodClose: MethodModel -> string list

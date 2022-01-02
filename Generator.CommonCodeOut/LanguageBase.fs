@@ -42,7 +42,7 @@ type LanguageBase() =
 
     abstract member TypeAndName: typeName: NamedItem -> name: string -> string
     abstract member BlockClose: blockType: string -> string
-    abstract member ConstructorName: ConstructorModel -> string
+    abstract member ConstructorName: ClassModel -> ConstructorModel -> string
 
     abstract member Generic: typeNames: NamedItem list -> string
     abstract member ClassOpen: ClassModel -> string list
@@ -80,8 +80,8 @@ type LanguageBase() =
         member this.ClassClose _ =
             [this.BlockClose this.ClassKeyword ]
 
-        member this.ConstructorOpen(ctor: ConstructorModel) =
-            [ $"{this.ScopeOutput ctor.Scope}{this.OutputModifiers ctor.Modifiers} {this.ConstructorName ctor}({this.OutputParameters ctor.Parameters})"
+        member this.ConstructorOpen cls (ctor: ConstructorModel) =
+            [ $"{this.ScopeOutput ctor.Scope}{this.OutputModifiers ctor.Modifiers} {this.ConstructorName cls ctor}({this.OutputParameters ctor.Parameters})"
               this.BlockOpen]
         member this.ConstructorClose _ =
             [this.BlockClose "Sub"]

@@ -12,7 +12,10 @@ open Generator.LanguageExpressions
 open Generator.LanguageStatements
 open Generator.LanguageRoslynOut
 open Generator.LanguageHelpers
+open System.Collections.Generic
 
+let CompareLines (expected: (struct (int * string)) list) (actual: (struct (int * string)) list) =
+    Assert.Equal<IEnumerable<struct (int * string)>>(List.toSeq expected, List.toSeq actual)
 
 type ``When working with language parts`` () =
     let cSharp = LanguageCSharp() :> ILanguage
@@ -110,7 +113,7 @@ type ``When outputting code`` () =
     member _.``If outputs correctly``() =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        let expected = 
+        let (expected: (struct (int * string)) list) = 
             [ (0, IfModel.ForTesting.CSharpOpen |> List.head)
               (0, "{")
               (1, AssignmentModel.ForTesting.CSharp |> List.head)
@@ -120,14 +123,14 @@ type ``When outputting code`` () =
         outPutter.OutputIf data
         let actual = writer.LinePairs()
 
-        actual |> should equal expected
+        CompareLines (expected: (struct (int * string)) list) actual
 
 
     [<Fact>]
     member _.``ForEach outputs correctly``() =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        let expected = 
+        let (expected: (struct (int * string)) list) = 
             [ (0, ForEachModel.ForTesting.CSharpOpen |> List.head)
               (0, "{")
               (1, AssignmentModel.ForTesting.CSharp |> List.head)
@@ -137,83 +140,83 @@ type ``When outputting code`` () =
         outPutter.OutputForEach data
         let actual = writer.LinePairs()
 
-        actual |> should equal expected
+        CompareLines (expected: (struct (int * string)) list) actual
 
 
     [<Fact>]
     member _.``Assignment outputs correctly``() =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        let expected = 
+        let (expected: (struct (int * string)) list) = 
             [ (0, AssignmentModel.ForTesting.CSharp |> List.head )]
         let data = AssignmentModel.ForTesting.Data
 
         outPutter.OutputAssignment data
         let actual = writer.LinePairs()
 
-        actual |> should equal expected
+        CompareLines (expected: (struct (int * string)) list) actual
 
 
     [<Fact>]
     member _.``AssignWithDeclare outputs correctly``() =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        let expected = 
+        let (expected: (struct (int * string)) list) = 
             [ (0, AssignWithDeclareModel.ForTesting.CSharp |> List.head )]
         let data = AssignWithDeclareModel.ForTesting.Data
 
         outPutter.OutputAssignWithDeclare data
         let actual = writer.LinePairs()
 
-        actual |> should equal expected
+        CompareLines (expected: (struct (int * string)) list) actual
 
 
     [<Fact>]
     member _.``Return outputs correctly``() =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        let expected = 
+        let (expected: (struct (int * string)) list) = 
             [ (0,"return 42;") ]
         let data =  { ReturnModel.Expression = Some (Literal "42") }
 
         outPutter.OutputReturn data
         let actual = writer.LinePairs()
 
-        actual |> should equal expected
+        CompareLines (expected: (struct (int * string)) list) actual
 
 
     [<Fact>]
     member _.``SimpleCall outputs correctly``() =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        let expected = 
+        let (expected: (struct (int * string)) list) = 
             [ (0,"\"Harry\";") ]
         let data =  { SimpleCallModel.Expression = StringLiteral "Harry" }
 
         outPutter.OutputSimpleCall data
         let actual = writer.LinePairs()
 
-        actual |> should equal expected
+        CompareLines (expected: (struct (int * string)) list) actual
 
     [<Fact>]
     member _.``Comment outputs correctly``() =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        let expected = 
+        let (expected: (struct (int * string)) list) = 
             [ (0,"// This is a Comment") ]
         let data = CommentModel.Create "This is a Comment"
 
         outPutter.OutputComment data
         let actual = writer.LinePairs()
 
-        actual |> should equal expected
+        CompareLines (expected: (struct (int * string)) list) actual
 
 
     [<Fact>]
     member _.``Auto-properties output correctly``() =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        let expected = 
+        let (expected: (struct (int * string)) list) = 
             [ (0,"public MyReturnType MyProperty {get; set;}") ]
         let data = PropertyModel.ForTesting.Data
 
@@ -222,7 +225,7 @@ type ``When outputting code`` () =
 
         Assert.Equal(expected[0], actual[0])
 
-        actual |> should equal expected
+        CompareLines (expected: (struct (int * string)) list) actual
 
 
     [<Fact>]
@@ -243,7 +246,7 @@ type ``When outputting code`` () =
         //    "}"
         //    "}" ]
 
-        let expected = 
+        let (expected: (struct (int * string)) list) = 
             [ (0, PropertyModel.ForTesting.CSharpOpen |> List.head)
               (0, "{")
               (1, "get")
@@ -263,14 +266,14 @@ type ``When outputting code`` () =
         outPutter.OutputProperty data
         let actual = writer.LinePairs()
 
-        actual |> should equal expected
+        CompareLines (expected: (struct (int * string)) list) actual
 
 
     //[<Fact>]
     //member _.``Void method outputs correctly`` () =
     //    let writer = ArrayWriter(3)
     //    let outPutter = RoslynOut(LanguageCSharp(),writer)
-    //    let expected = 
+    //    let (expected: (struct (int * string)) list) = 
     //        [ (0, MethodModel.ForTesting.CSharpOpen |> List.head)
     //          (0, "{")
     //          (1, "var x = 42;")
@@ -293,14 +296,14 @@ type ``When outputting code`` () =
     //    outPutter.OutputMethod data
     //    let actual = writer.LinePairs()
 
-    //    actual |> should equal expected
+    //    CompareLines (expected: (struct (int * string)) list) actual
 
 
     [<Fact>]
     member _.``Class outputs correctly`` () =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        let expected = 
+        let (expected: (struct (int * string)) list) = 
             [ (0, ClassModel.ForTesting.CSharpOpen |> List.head)
               (0, "{")
               (1, MethodModel.ForTesting.CSharpOpen |> List.head)
@@ -315,15 +318,16 @@ type ``When outputting code`` () =
         //outPutter.OutputClass data
         //let actual = writer.LinePairs()
 
-        //actual |> should equal expected
+        //CompareLines (expected: (struct (int * string)) list) actual
 
     [<Fact>]
     member _.``Namespace outputs correctly`` () =
         let writer = ArrayWriter(3)
         let outPutter = RoslynOut(LanguageCSharp(),writer)
-        let expected = 
+        let (expected: (struct (int * string)) list) = 
             [ (0, NamespaceModel.ForTesting.CSharpOpen |> List.head)
               (0, "{")
+              (1, "")
               (1, ClassModel.ForTesting.CSharpOpen |> List.head)
               (1, "{")
               (1, "}")
@@ -335,5 +339,5 @@ type ``When outputting code`` () =
         outPutter.Output data
         let actual = writer.LinePairs()
 
-        actual |> should equal expected
+        CompareLines (expected: (struct (int * string)) list) actual
 
