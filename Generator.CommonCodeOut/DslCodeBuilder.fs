@@ -284,10 +284,12 @@ type Field(name: string, typeName: NamedItem) =
 type MethodBase<'T when 'T :> IMethodLike<'T>>() =
     inherit StatementBuilderBase<'T>()
 
-    //member this.Yield (modifiers: ScopeAndModifiers) : 'T = 
-    //    this.Zero().AddScopeAndModifiers modifiers
-    //member this.Yield (parameter: ParameterModel) : 'T = 
-    //    this.Zero().AddParameter parameter
+    member this.Yield (modifiers: ScopeAndModifiers) : 'T = 
+        this.Zero().AddScopeAndModifiers modifiers
+    member this.Yield (parameter: ParameterModel) : 'T = 
+        this.Zero().AddParameter parameter
+    member this.Yield (returnType: ReturnType) : 'T = 
+        this.Zero().AddReturnType returnType
 
 
     //[<CustomOperation("Public", MaintainsVariableSpace = true)>]
@@ -314,7 +316,7 @@ type MethodBase<'T when 'T :> IMethodLike<'T>>() =
 type Method (name: NamedItem) =
     inherit MethodBase<MethodModel>()
 
-    override _.EmptyItem (): MethodModel =  MethodModel.Create (name, Void)
+    override _.EmptyItem (): MethodModel =  MethodModel.Create (name, ReturnTypeUnknown)
     override _.InternalCombine (method1: MethodModel) (method2: MethodModel) =
         let data =
             getMethodLikeData 
