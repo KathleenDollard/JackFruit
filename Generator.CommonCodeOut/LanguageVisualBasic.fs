@@ -40,7 +40,7 @@ type LanguageVisualBasic() =
 
     override this.TypeAndName typeName name = $"{name} As {this.OutputNamedItem typeName}"
     override _.BlockClose structureName = $"End {structureName}"
-    override _.ConstructorName _  = "Sub New"
+    override _.ConstructorName _ _  = "Sub New"
 
     override this.Generic typeNames  = 
         match typeNames with 

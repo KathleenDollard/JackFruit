@@ -1,50 +1,16 @@
 ﻿module Generator.BuildCliCodeModel
 
-open Common
 open Generator.Language
 open Generator.Models
-open Generator.LanguageStatements
-open Generator.GeneralUtils
 open DslCodeBuilder
-open Generator.LanguageRoslynOut
 open type Generator.LanguageHelpers.Structural
 open Generator.LanguageHelpers.Statements
 open Generator.LanguageExpressions
 open Generator.LanguageExpressions.ExpressionHelpers
 open Generator.LanguageHelpers
-open System
 open Generator.JackfruitHelpers
 open DslKeywords
 
-
-let private operationName = "operation"
-let private operationFieldName = "_operation"
-
-let private OutputHeader (outputter: RoslynOut) =
-    outputter.OutputComment(CommentModel.Create "Copyright (c) .NET Foundation and contributors. All rights reserved.")
-
-    outputter.OutputComment(
-        CommentModel.Create "Licensed under the MIT license. See LICENSE file in the project root for full license information."
-    )
-
-    outputter.BlankLine()
-
-    outputter.OutputCompilerDirective(CompilerDirectiveModel.Create (CompilerWarning ""))
-    ()
-    
-let private methodSigFromCommandDef (commandDef: CommandDef) =
-    let isAction = 
-        match commandDef.ReturnType  with
-        | Void -> true
-        | _ -> false
-    let memberTypes = 
-        [ for memberDef in commandDef.Members do 
-            memberDef.TypeName
-            match commandDef.ReturnType with 
-            | CommandReturnType t -> t
-            | Void -> () ]
-    let name = if isAction then "Action" else "Func"
-    GenericNamedItem (name, memberTypes)
 
 let generatedCommandHandlerName (_: CommandDef) = "GeneratedHandler"
 
@@ -53,7 +19,7 @@ let optionSpecificValues (memberDef:MemberDef) = []
 let argumentSpecificValues (memberDef:MemberDef) = []
 
 
-let OutputCommandWrapper (commandDefs: CommandDef list) : Result <NamespaceModel, AppErrors> =
+let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel, AppErrors> =
 
     let methodForCommandDef (parentCommandDef: CommandDef) : IMember list =
         let rec recurse (recurseDepth: int) (commandDef: CommandDef) : IMember list =

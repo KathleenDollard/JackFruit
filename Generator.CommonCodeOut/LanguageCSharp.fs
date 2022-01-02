@@ -40,7 +40,7 @@ type LanguageCSharp() =
 
     override this.TypeAndName typeName name = $"{this.OutputNamedItem typeName} {name}"
     override _.BlockClose _ = "}"
-    override _.ConstructorName cls  = "" // TODOL If this is used, find a way to fix this. cls.ClassName
+    override _.ConstructorName cls _ = cls.ClassName.WithoutGenerics()
 
     override this.Generic typeNames  = 
         match typeNames with 
