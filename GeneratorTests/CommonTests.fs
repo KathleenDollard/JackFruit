@@ -9,7 +9,6 @@ open Generator.Language
 open DslCodeBuilder
 open System.Linq
 open Common
-open type Common.Generic
 
 let NameFromSimpleName (namedItem: NamedItem) =
     match namedItem with
@@ -25,76 +24,6 @@ let NameAndGenericsFromName (namedItem: NamedItem) =
             | SimpleNamedItem gn -> gn
             | _ -> invalidOp "Generic was not a simple name" ]
     | _ -> invalidOp "Generic name not found"
-
-type ``I can create a type name ``() =
-
-    [<Fact>]
-    member _.``without generics explicitly``() =
-        let typeName = "George"
-
-        let actual = Generic typeName
-
-        Assert.IsType<Generic>(actual)
-        Assert.Equal(0, actual.GenericTypes.Count())
-        Assert.Equal(typeName, actual.TypeName)
-        
-    [<Fact>]
-    member _.``without generics implicitly``() =
-        let typeName = "George"
-
-        let actual: Generic = typeName
-
-        Assert.IsType<Generic>(actual)
-        Assert.Equal(0, actual.GenericTypes.Count())
-        Assert.Equal(typeName, actual.TypeName)
-    
-    [<Fact>]
-    member _.``with generics explicitly``() =
-        let typeName = "A"
-        let generictypeName = "B"
-
-        let actual = Generic(typeName, generictypeName)
-
-        Assert.IsType<Generic>(actual)
-        Assert.Equal(1, actual.GenericTypes.Count())
-        Assert.Equal(typeName, actual.TypeName)
-  
-    [<Fact>]
-    member _.``without generics using Of``() =
-        let typeName = "A"
-
-        let actual = Of typeName
-
-        Assert.IsType<Generic>(actual)
-        Assert.Equal(0, actual.GenericTypes.Count())
-        Assert.Equal(typeName, actual.TypeName)     
-  
-    [<Fact>]
-    member _.``with generics using Of``() =
-        let typeName = "A"
-        let genericTypeName = "B"
-
-        let actual = Of (typeName, genericTypeName)
-
-        Assert.IsType<Generic>(actual)
-        Assert.Equal(1, actual.GenericTypes.Count())
-        Assert.Equal(typeName, actual.TypeName)     
-        Assert.Equal(genericTypeName, actual.GenericTypes.First().TypeName)     
-
-    [<Fact(Skip = "To demonstrate why infix style didn't wor out. Text would not be much better")>]
-    member _.``with generics infix``() =
-        let typeName = "A"
-        let genericTypeName = "B"
-
-        //!, %, &, *, +, -, ., /, <, =, >, ?, @, ^, |,
-        // Remove misleading ideas: %, &, *, +, -, ., /, <, =, >, ^, |,
-        //let actual = typeName &<= [genericTypeName ]
-
-        //Assert.IsType<Generic>(actual)
-        //Assert.Equal(1, actual.GenericTypes.Count())
-        //Assert.Equal(typeName, actual.TypeName)     
-        //Assert.Equal(genericTypeName, actual.GenericTypes.First().TypeName)  
-        ()
 
 
 /// The generic parsing uses a generic parser so validation is not done at this point. Instead 

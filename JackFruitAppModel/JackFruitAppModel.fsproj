@@ -11,6 +11,7 @@
 		<Compile Include="ArchetypeMapping.fs" />
 		<Compile Include="JackfruitAppModel.fs" />
 		<Compile Include="Generator.fs" />
+		<Compile Include="ShimGenerator.fs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -20,7 +21,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Common\Common.csproj" />
 		<ProjectReference Include="..\Generator\Generator.fsproj" />
 	</ItemGroup>
 

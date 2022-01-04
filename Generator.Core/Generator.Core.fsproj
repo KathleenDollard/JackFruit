@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="CodeEval\AppErrors.fs" />
+		<Compile Include="CodeEval\RoslynCSharpUtils.fs" />
+		<Compile Include="CodeEval\RoslynVBUtils.fs" />
+		<Compile Include="CodeEval\RoslynUtils.fs" />
+		<Compile Include="CodeEval\XmlCommentPatterns.fs" />
+		<Compile Include="CodeOut\GeneralUtils.fs" />
+		<Compile Include="CodeOut\Utilities.fs" />
+		<Compile Include="CodeOut\Common.fs" />
+		<Compile Include="CodeOut\IWriter.fs" />
+		<Compile Include="CodeOut\DslKeywords.fs" />
+		<Compile Include="CodeOut\Language.fs" />
+		<Compile Include="CodeOut\LanguageExpressions.fs" />
+		<Compile Include="CodeOut\LanguageStatements.fs" />
+		<Compile Include="CodeOut\LanguageHelpers.fs" />
+		<Compile Include="CodeOut\ILanguage.fs" />
+		<Compile Include="CodeOut\LanguageRoslynOut.fs" />
+		<Compile Include="CodeOut\DslCodeBuilder.fs" />
+		<Compile Include="CodeOut\CSharpLanguageExtensions.fs" />
+		<Compile Include="CodeOut\LanguageBase.fs" />
+		<Compile Include="CodeOut\LanguageVisualBasic.fs" />
+		<Compile Include="CodeOut\LanguageCSharp.fs" />
+		<Compile Include="CodeOut\LanguageExpression.fs" />
+		<Compile Include="CodeOut\StringBuilderWriter.fs" />
+		<Compile Include="CodeOut\SpaceStringBuilder.fs" />
+		<Compile Include="CodeOut\ArrayWriter.fs" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
+		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.1.0-1.final" />
+	</ItemGroup>
+
+</Project>

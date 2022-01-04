@@ -74,7 +74,8 @@ let GetCSharpCompilation trees =
         references = [
                 MetadataReference.CreateFromFile(core)
                 MetadataReference.CreateFromFile(runtime)
-                MetadataReference.CreateFromFile(@"ConsoleSupport.dll")],
+                //MetadataReference.CreateFromFile(@"ConsoleSupport.dll")
+                ],
         options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
 
 let GetSemanticModelFromFirstTree trees =

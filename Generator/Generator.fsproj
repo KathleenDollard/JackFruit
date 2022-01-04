@@ -6,6 +6,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Include="ConsoleApplication\ConsoleApplication.fs" />
+		<Compile Include="Common\DescriptionAttribute.fs" />
 		<Compile Include="Models.fs" />
 		<Compile Include="AppModelHelpers.fs" />
 		<Compile Include="AppModel.fs" />
@@ -23,9 +25,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Common\Common.csproj" />
-		<ProjectReference Include="..\Generator.CommonCodeEval\Generator.CommonCodeEval.fsproj" />
-		<ProjectReference Include="..\Generator.CommonCodeOut\Generator.CommonCodeOut.fsproj" />
+	  <ProjectReference Include="..\Generator.Core\Generator.Core.fsproj" />
 	</ItemGroup>
 
 

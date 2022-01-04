@@ -6,6 +6,7 @@
 //  Example: TrimEntries was missing and string split needed the separator as an explicit array.
 //  Nevermind: These are changes in .NET 5 and .NET 6
 
+
 open Microsoft.CodeAnalysis
 open Generator.SourceGenerator
 open Common
