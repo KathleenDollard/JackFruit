@@ -1,6 +1,6 @@
 # JackFruit
 
-This is a prototype and playground. Please do not take it too seriously, it is not my current intention to maintain it!
+This is a prototype and playground. Please do not take it too seriously. It was also a venue for me to learn F#, so the code is not beautiful. 
 
 ## Current requests
 
