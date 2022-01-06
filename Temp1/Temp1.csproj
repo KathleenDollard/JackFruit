@@ -9,7 +9,10 @@
 
   <ItemGroup>
     <PackageReference Include="Jackfruit.AppModel" Version="0.0.1-alpha" />
-    <PackageReference Include="Jackfruit.Generator" Version="0.0.1-alpha" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JackFruit\Jackfruit.csproj" />
   </ItemGroup>
 
 </Project>
