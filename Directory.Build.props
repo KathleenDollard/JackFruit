@@ -3,7 +3,7 @@
 <Project>
   <PropertyGroup>
     <AssemblyVersion>0.0.1</AssemblyVersion>
-    <Version>0.0.2-alpha</Version>
+    <Version>0.0.3-alpha</Version>
     <Authors>Kathleen Dollard</Authors>
     <Company>Microsoft</Company>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>

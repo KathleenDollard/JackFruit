@@ -16,5 +16,6 @@ type CustomGenerator() =
     {
     public class GeneratedClass
         {
+          // Hello world
         }
     }", Encoding.UTF8))

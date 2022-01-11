@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jackfruit.AppModel" Version="0.0.2-alpha" />
+    <PackageReference Include="Jackfruit.AppModel" Version="0.0.3-alpha" />
   </ItemGroup>
 
   <ItemGroup>
