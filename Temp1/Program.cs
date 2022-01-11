@@ -1,7 +1,11 @@
-﻿using ConsoleSupport;
+﻿using Generator.ConsoleSupport;
 
-var app = new ConsoleApplication();
-app.MapInferred("", HelloTo);
+static void Main(string[] args)
+{
+    var app = new ConsoleApplication();
+    app.MapInferred("", HelloTo);
+
+}
 
 static void HelloTo(string who, int howManyTimes)
 {

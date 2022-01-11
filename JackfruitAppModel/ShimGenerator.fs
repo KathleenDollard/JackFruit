@@ -15,6 +15,6 @@ type CustomGenerator() =
     namespace GeneratedNamespace
     {
     public class GeneratedClass
+        {
         }
-    }
     }", Encoding.UTF8))

@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B008B538-CDAE-47C4-BF12-CC5FED56CB80}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
 		nuget.config = nuget.config
 	EndProjectSection
@@ -26,7 +27,9 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "JackfruitAppModel.Tests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Temp1", "Temp1\Temp1.csproj", "{3179248B-6350-4251-9361-0E42732E76C5}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Generator.Core", "Generator.Core\Generator.Core.fsproj", "{3F0ADB6B-BA81-4F02-8F99-CCEA679F9F16}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Generator.Core", "Generator.Core\Generator.Core.fsproj", "{3F0ADB6B-BA81-4F02-8F99-CCEA679F9F16}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ConsoleSupport", "ConsoleSupport\ConsoleSupport.fsproj", "{A3A11094-53DB-4C62-A232-F303259C7C60}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -70,6 +73,10 @@ Global
 		{3F0ADB6B-BA81-4F02-8F99-CCEA679F9F16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F0ADB6B-BA81-4F02-8F99-CCEA679F9F16}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F0ADB6B-BA81-4F02-8F99-CCEA679F9F16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3A11094-53DB-4C62-A232-F303259C7C60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3A11094-53DB-4C62-A232-F303259C7C60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3A11094-53DB-4C62-A232-F303259C7C60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3A11094-53DB-4C62-A232-F303259C7C60}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

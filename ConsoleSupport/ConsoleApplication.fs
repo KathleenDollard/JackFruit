@@ -1,4 +1,4 @@
-﻿namespace Generatorx.ConsoleSupport
+﻿namespace Generator.ConsoleSupport
 
 open System.CommandLine;
 open System.Collections.Generic

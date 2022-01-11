@@ -8,11 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jackfruit.AppModel" Version="0.0.1-alpha" />
+    <PackageReference Include="Jackfruit.AppModel" Version="0.0.2-alpha" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JackFruit\Jackfruit.csproj" />
+    <ProjectReference Include="..\ConsoleSupport\ConsoleSupport.fsproj" />
   </ItemGroup>
 
 </Project>

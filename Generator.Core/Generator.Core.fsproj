@@ -3,16 +3,11 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<AssemblyVersion>0.0.1-alpha</AssemblyVersion>
 		<OutputPath>..\..\packages\jackfruit.generator.core</OutputPath>
 	</PropertyGroup>
 
 	<PropertyGroup>
 		<PackageId>Jackfruit.Generator.Core</PackageId>
-		<Version>0.0.1-alpha</Version>
-		<Authors>Kathleen Dollard</Authors>
-		<Company>Microsoft</Company>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 	<ItemGroup>
