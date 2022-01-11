@@ -31,6 +31,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Generator.Core", "Generator
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ConsoleSupport", "ConsoleSupport\ConsoleSupport.fsproj", "{A3A11094-53DB-4C62-A232-F303259C7C60}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jackfruit.AppModel.Package", "Jackfruit.AppModel.Package\Jackfruit.AppModel.Package.csproj", "{B97A9440-5D54-428E-AF1C-1A4F00C9F85F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,10 @@ Global
 		{A3A11094-53DB-4C62-A232-F303259C7C60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3A11094-53DB-4C62-A232-F303259C7C60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3A11094-53DB-4C62-A232-F303259C7C60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B97A9440-5D54-428E-AF1C-1A4F00C9F85F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B97A9440-5D54-428E-AF1C-1A4F00C9F85F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B97A9440-5D54-428E-AF1C-1A4F00C9F85F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B97A9440-5D54-428E-AF1C-1A4F00C9F85F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
