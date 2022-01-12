@@ -8,11 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jackfruit.AppModel" Version="0.0.3-alpha" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\ConsoleSupport\ConsoleSupport.fsproj" />
+    <ProjectReference Include="..\JackFruitAppModel\JackfruitAppModel.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=netstandard2.0" />
   </ItemGroup>
 
 </Project>
