@@ -5,6 +5,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<AssemblyVersion>0.0.2</AssemblyVersion>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<!-- TODO: OutputPath should always lie inside the cloned repository. -->
 		<OutputPath>..\..\packages\jackfruit.appmodel</OutputPath>
 	</PropertyGroup>
 
@@ -26,6 +27,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!--
+		TODO: Analyzer and source generator assemblies can reference either Microsoft.CodeAnalysis.CSharp or
+		Microsoft.CodeAnalysis.VisualBasic, but must not reference both.
+		-->
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
 		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.1.0-1.final" />
 		<PackageReference Include="System.CommandLine" Version="2.0.0-beta2.22057.1" />
