@@ -13,7 +13,7 @@ open Common
 open Jackfruit.Models
 
 
-[<Generator>]
+[<Generator(LanguageNames.CSharp, LanguageNames.VisualBasic)>]
 type Generator() =
     inherit CliSourceGenerator<TreeNodeType<ArchetypeInfo>>()
 

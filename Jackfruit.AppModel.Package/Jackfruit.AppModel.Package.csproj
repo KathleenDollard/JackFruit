@@ -28,18 +28,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JackFruitAppModel\JackfruitAppModel.fsproj" />
+    <ProjectReference Include="..\JackFruitAppModel.CSharp\JackfruitAppModel.CSharp.fsproj" />
+    <ProjectReference Include="..\JackFruitAppModel.VisualBasic\JackfruitAppModel.VisualBasic.fsproj" />
   </ItemGroup>
 
   <Target Name="PackBuildOutputs" DependsOnTargets="ResolveProjectReferences;SatelliteDllsProjectOutputGroup;SatelliteDllsProjectOutputGroupDependencies">
     <ItemGroup>
       <!-- Code generation for C# projects -->
       <TfmSpecificPackageFile Include="@(SatelliteDllsProjectOutputGroupDependency)" PackagePath="analyzers\dotnet\roslyn4.0\cs\%(SatelliteDllsProjectOutputGroupDependency.DestinationSubDirectory)" Condition=" '%(SatelliteDllsProjectOutputGroupDependency.DestinationSubDirectory)' != '' " />
-      <TfmSpecificPackageFile Include="%(_ResolvedProjectReferencePaths.Identity)" Condition="'%(FileName)' != 'Generator.Core.VisualBasic' AND '%(FileName)' != 'Jackfruit.AppModel.VisualBasic'" PackagePath="analyzers\dotnet\roslyn4.0\cs\" />
+      <TfmSpecificPackageFile Include="%(_ResolvedProjectReferencePaths.Identity)" Condition="'%(FileName)' != 'Generator.Core.VisualBasic' AND '%(FileName)' != 'Generator.VisualBasic' AND '%(FileName)' != 'Jackfruit.AppModel.VisualBasic'" PackagePath="analyzers\dotnet\roslyn4.0\cs\" />
 
       <!-- Code generation for VB projects -->
       <TfmSpecificPackageFile Include="@(SatelliteDllsProjectOutputGroupDependency)" PackagePath="analyzers\dotnet\roslyn4.0\vb\%(SatelliteDllsProjectOutputGroupDependency.DestinationSubDirectory)" Condition=" '%(SatelliteDllsProjectOutputGroupDependency.DestinationSubDirectory)' != '' " />
-      <TfmSpecificPackageFile Include="%(_ResolvedProjectReferencePaths.Identity)" Condition="'%(FileName)' != 'Generator.Core.CSharp' AND '%(FileName)' != 'Jackfruit.AppModel.CSharp'" PackagePath="analyzers\dotnet\roslyn4.0\vb\" />
+      <TfmSpecificPackageFile Include="%(_ResolvedProjectReferencePaths.Identity)" Condition="'%(FileName)' != 'Generator.Core.CSharp' AND '%(FileName)' != 'Generator.CSharp' AND '%(FileName)' != 'Jackfruit.AppModel.CSharp'" PackagePath="analyzers\dotnet\roslyn4.0\vb\" />
 
       <!-- Include files for FSharp.Core -->
       <TfmSpecificPackageFile Include="%(RuntimeCopyLocalItems.Identity)" Condition="'%(RuntimeCopyLocalItems.NuGetPackageId)' == 'FSharp.Core'" PackagePath="analyzers\dotnet\roslyn4.0\cs\" />

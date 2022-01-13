@@ -13,8 +13,6 @@
 
 	<ItemGroup>
 		<Compile Include="CodeEval\AppErrors.fs" />
-		<Compile Include="CodeEval\RoslynCSharpUtils.fs" />
-		<Compile Include="CodeEval\RoslynVBUtils.fs" />
 		<Compile Include="CodeEval\RoslynUtils.fs" />
 		<Compile Include="CodeEval\XmlCommentPatterns.fs" />
 		<Compile Include="CodeOut\GeneralUtils.fs" />
@@ -40,12 +38,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!--
-		TODO: Analyzer and source generator assemblies can reference either Microsoft.CodeAnalysis.CSharp or
-		Microsoft.CodeAnalysis.VisualBasic, but must not reference both.
-		-->
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
-		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.1.0-1.final" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.1.0-1.final" />
 	</ItemGroup>
 
 	<PropertyGroup>
