@@ -30,6 +30,8 @@ type IMember = interface end
 type IStatementLike = interface end
 type IStatement = interface end
 type IExpression = interface end
+type IScoped = 
+    abstract member Scope: Scope
 
 type ICompareExpression = 
     inherit IExpression
