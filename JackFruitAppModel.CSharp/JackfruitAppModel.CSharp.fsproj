@@ -5,8 +5,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<AssemblyVersion>0.0.2</AssemblyVersion>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-		<!-- TODO: OutputPath should always lie inside the cloned repository. -->
-		<OutputPath>..\..\packages\jackfruit.appmodel.csharp</OutputPath>
+		<OutputPath>..\artifacts\packages\jackfruit.appmodel.csharp</OutputPath>
 	</PropertyGroup>
 
 	<PropertyGroup>
