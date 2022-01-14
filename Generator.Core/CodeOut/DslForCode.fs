@@ -80,70 +80,127 @@ type Class(name: string) =
             ImplementedInterfaces = List.append cls1.ImplementedInterfaces cls2.ImplementedInterfaces
             Members =  List.append cls1.Members cls2.Members }  
 
-    //[<CustomOperation("Public", MaintainsVariableSpaceUsingBind = true)>]
-    //member this.setPublic (varModel) =
-    //    this.SetModel varModel { varModel.Model with Scope = Scope.Public }
-
     [<CustomOperation("Public2", MaintainsVariableSpaceUsingBind = true)>]
-    member this.setPublic 
-          ( varModel, 
-            ?modifier1: Modifier, 
-            ?modifier2: Modifier) =
-        let modifiers =
-            [ match modifier1 with | Some m -> m | None -> ()
-              match modifier2 with | Some m -> m | None -> () ]
+    member this.setPublic(varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
         this.SetModel varModel 
             { varModel.Model with 
                 Scope = Scope.Public
-                Modifiers = varModel.Model.Modifiers @ modifiers }
+                Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
 
     [<CustomOperation("Private", MaintainsVariableSpaceUsingBind = true)>]
-    member this.setPrivate (varModel) =
-        this.SetModel varModel { varModel.Model with Scope = Scope.Private }
+    member this.setPrivate (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetModel varModel 
+            { varModel.Model with 
+                Scope = Scope.Private 
+                Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
 
     [<CustomOperation("Internal", MaintainsVariableSpaceUsingBind = true)>]
-    member this.setInternal (varModel) =
-        this.SetModel varModel { varModel.Model with Scope = Scope.Internal }
+    member this.setInternal (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetModel varModel 
+            { varModel.Model with 
+                Scope = Scope.Internal 
+                Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
 
     [<CustomOperation("Friend", MaintainsVariableSpaceUsingBind = true)>]
-    member this.setFriend (varModel) =
-        this.setInternal varModel
+    member this.setFriend (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetModel varModel 
+            { varModel.Model with 
+                Scope = Scope.Internal 
+                Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
 
     [<CustomOperation("Protected", MaintainsVariableSpaceUsingBind = true)>]
-    member this.setProtected (varModel) =
-        this.SetModel varModel { varModel.Model with Scope = Scope.Protected }
+    member this.setProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetModel varModel 
+            { varModel.Model with 
+                Scope = Scope.Protected 
+                Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
 
     [<CustomOperation("ProtectedInternal", MaintainsVariableSpaceUsingBind = true)>]
-    member this.setProtectedInternal (varModel) =
-        this.SetModel varModel { varModel.Model with Scope = Scope.ProtectedInternal }
+    member this.setProtectedInternal (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetModel varModel  
+            { varModel.Model with 
+                Scope = Scope.ProtectedInternal 
+                Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
 
     [<CustomOperation("PrivateProtected", MaintainsVariableSpaceUsingBind = true)>]
-    member this.setPrivateProtected (varModel) =
-        this.SetModel varModel { varModel.Model with Scope = Scope.PrivateProtected }
+    member this.setPrivateProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetModel varModel  
+            { varModel.Model with 
+                Scope = Scope.PrivateProtected 
+                Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
 
+    // KAD!! Test next that you can combine scope and members
 
-
-    //// TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
-    //[<CustomOperation("InheritedFrom", MaintainsVariableSpace = true)>]
-    //member _.inheritedFrom (cls: ClassModel, inheritedFrom: NamedItem) =
-    //    // Consider whether resetting this to None is a valid scenario
-    //    { cls with InheritedFrom = SomeBase inheritedFrom }
+    [<CustomOperation("InheritedFrom", MaintainsVariableSpace = true)>]
+    member this.inheritedFrom (varModel, [<ProjectionParameter>] inheritedFrom) =
+        let inheritedFrom: string = inheritedFrom varModel.Variables
+        this.SetModel varModel { varModel.Model with InheritedFrom = SomeBase inheritedFrom }
 
     //// TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
     //[<CustomOperation("ImplementedInterfaces", MaintainsVariableSpace = true)>]
     //member _.interfaces (cls: ClassModel, [<ParamArray>]interfaces: ImplementedInterface[]) =
     //    { cls with ImplementedInterfaces = List.ofArray interfaces }
 
-    //[<CustomOperation("Generics", MaintainsVariableSpace = true)>]
-    //member _.generics (cls: ClassModel, generics: NamedItem list) =
-    //    let currentName =
-    //        match cls.ClassName with 
-    //        | SimpleNamedItem n -> n
-    //        | GenericNamedItem (n, _ ) -> n
-    //    { cls with ClassName = NamedItem.Create currentName generics }
-
-    //[<CustomOperation("Members", MaintainsVariableSpace = true)>]
-    //member _.addMember (cls: ClassModel, memberModels: IMember list) =
-    //    { cls with Members =  List.append cls.Members memberModels }
+    [<CustomOperation("Members", MaintainsVariableSpace = true)>]
+    member _.addMember (cls: ClassModel, memberModels: IMember list) =
+        { cls with Members =  List.append cls.Members memberModels }
  
+ // Field apparently can't inherit from DslBase??
+ type Field(name: string, typeName: NamedItem) =
+     inherit DslBase<IMember, unit>()
 
+     override _.Empty() =  FieldModel.Create name typeName
+     // KAD: Clean this up. Either put a default in the base or combine the modifier comparison as elsewhere
+     override _.CombineModels cls cls2 = cls
+ 
+     override _.NewMember item = invalidOp "What called this?"
+
+     [<CustomOperation("Public2", MaintainsVariableSpaceUsingBind = true)>]
+     member this.setPublic(varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetModel varModel 
+            { varModel.Model with 
+                Scope = Scope.Public
+                Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
+
+     [<CustomOperation("Private", MaintainsVariableSpaceUsingBind = true)>]
+     member this.setPrivate (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+         this.SetModel varModel 
+             { varModel.Model with 
+                 Scope = Scope.Private 
+                 Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
+  
+     [<CustomOperation("Internal", MaintainsVariableSpaceUsingBind = true)>]
+     member this.setInternal (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+         this.SetModel varModel 
+             { varModel.Model with 
+                 Scope = Scope.Internal 
+                 Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
+  
+     [<CustomOperation("Friend", MaintainsVariableSpaceUsingBind = true)>]
+     member this.setFriend (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+         this.SetModel varModel 
+             { varModel.Model with 
+                 Scope = Scope.Internal 
+                 Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
+  
+     [<CustomOperation("Protected", MaintainsVariableSpaceUsingBind = true)>]
+     member this.setProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+         this.SetModel varModel 
+             { varModel.Model with 
+                 Scope = Scope.Protected 
+                 Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
+  
+     [<CustomOperation("ProtectedInternal", MaintainsVariableSpaceUsingBind = true)>]
+     member this.setProtectedInternal (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+         this.SetModel varModel  
+             { varModel.Model with 
+                 Scope = Scope.ProtectedInternal 
+                 Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
+  
+     [<CustomOperation("PrivateProtected", MaintainsVariableSpaceUsingBind = true)>]
+     member this.setPrivateProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+         this.SetModel varModel  
+             { varModel.Model with 
+                 Scope = Scope.PrivateProtected 
+                 Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
+  

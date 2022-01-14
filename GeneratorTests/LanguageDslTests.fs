@@ -204,15 +204,147 @@ type ``Create classes with``() =
         Assert.Equal(expected, actual.Model)
 
     [<Fact>]
-    member _.``Public Async and Partial class`` () =
+    member _.``Private Async and Partial class`` () =
         let className = "MyClass"
         let expected =  
-            { ClassModel.Create(className, Public) with
+            { ClassModel.Create(className, Private) with
                 Modifiers = [ Async; Partial ] }
         let actual =
             Class(className) {
-                Public2 Async Partial
+                Private Async Partial
+                }
+        Assert.Equal(expected, actual.Model)
+
+    
+    [<Fact>]
+    member _.``Internal Async and Partial class`` () =
+        let className = "MyClass"
+        let expected =  
+            { ClassModel.Create(className, Internal) with
+                Modifiers = [ Async; Partial ] }
+        let actual =
+            Class(className) {
+                Internal Async Partial
+                }
+        Assert.Equal(expected, actual.Model)
+
+    
+    [<Fact>]
+    member _.``Friend Async and Partial class`` () =
+        let className = "MyClass"
+        let expected =  
+            { ClassModel.Create(className, Internal) with
+                Modifiers = [ Async; Partial ] }
+        let actual =
+            Class(className) {
+                Friend Async Partial
+                }
+        Assert.Equal(expected, actual.Model)
+    
+    [<Fact>]
+    member _.``Protected Async and Partial class`` () =
+        let className = "MyClass"
+        let expected =  
+            { ClassModel.Create(className, Protected) with
+                Modifiers = [ Async; Partial ] }
+        let actual =
+            Class(className) {
+                Protected Async Partial
+                }
+        Assert.Equal(expected, actual.Model)
+    
+    [<Fact>]
+    member _.``ProtectedInternal Async and Partial class`` () =
+        let className = "MyClass"
+        let expected =  
+            { ClassModel.Create(className, ProtectedInternal) with
+                Modifiers = [ Async; Partial ] }
+        let actual =
+            Class(className) {
+                ProtectedInternal Async Partial
+                }
+        Assert.Equal(expected, actual.Model)
+    
+    [<Fact>]
+    member _.``PrivateProtected Async and Partial class`` () =
+        let className = "MyClass"
+        let expected =  
+            { ClassModel.Create(className, PrivateProtected) with
+                Modifiers = [ Async; Partial ] }
+        let actual =
+            Class(className) {
+                PrivateProtected Async Partial
+                }
+        Assert.Equal(expected, actual.Model)
+  
+    
+    [<Fact>]
+    member _.``InheritedFrom`` () =
+        let className = "MyClass"
+        let baseName = "MyBaseClass"
+        let expected =  
+            { ClassModel.Create(className, PrivateProtected) with
+                InheritedFrom = SomeBase (NamedItem.Create baseName) }
+        let actual =
+            Class(className) {
+                Public2
+                InheritedFrom baseName
+                }
+        Assert.Equal(expected, actual.Model)
+    
+    [<Fact>]
+     member _.``Add member`` () =
+         let className = "MyClass"
+         let fieldName = "MyField"
+         let typeName = "string"
+         let expectedField =  
+             { FieldModel.Create fieldName  typeName with Scope = Public }
+         let expected =  
+             { ClassModel.Create(className, Public) with
+                 Members = [ expectedField ] }
+         let actual =
+                Field(fieldName, typeName) {
+                    Public2
+                    }
+         let actual =
+             Class(className) {
+                 Public2
+                 Field(fieldName, typeName) {
+                                 Public2
+                                 }
+                 }
+         Assert.Equal(expected, actual.Model)
+
+type ``Create Fields with``() =
+    [<Fact>]
+    member _.``Public`` () =
+        let fieldName = "MyField"
+        let typeName = "string"
+        let expected =  
+            { FieldModel.Create fieldName  typeName with Scope = Public }
+        let actual =
+            Field(fieldName, typeName) {
+                Public2
                 }
         Assert.Equal(expected, actual.Model)
 
 
+type ``Everything``() =
+    [<Fact>]
+    member _.``Everything so far`` () =
+        let usingName = "MyUsing"
+        let namespaceName = "MyNamespace"
+        let className = "MyClass"
+        let expectedClass =  
+            { ClassModel.Create(className, Public) with
+                Modifiers = [ ] }
+        let expected = { NamespaceName = namespaceName
+                         Usings = [ UsingModel.Create usingName ]
+                         Classes = [expectedClass] }
+        let actual =
+            Namespace(namespaceName) { 
+                Using usingName "" 
+                Class(className) {
+                    Public2 
+                    } }
+        Assert.Equal(expected, actual.Model)
