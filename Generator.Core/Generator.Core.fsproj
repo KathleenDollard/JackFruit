@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<OutputPath>..\..\packages\jackfruit.generator.core</OutputPath>
+		<OutputPath>..\artifacts\packages\jackfruit.generator.core</OutputPath>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -12,8 +12,6 @@
 
 	<ItemGroup>
 		<Compile Include="CodeEval\AppErrors.fs" />
-		<Compile Include="CodeEval\RoslynCSharpUtils.fs" />
-		<Compile Include="CodeEval\RoslynVBUtils.fs" />
 		<Compile Include="CodeEval\RoslynUtils.fs" />
 		<Compile Include="CodeEval\XmlCommentPatterns.fs" />
 		<Compile Include="CodeOut\GeneralUtils.fs" />
@@ -38,10 +36,8 @@
 		<Compile Include="CodeOut\ArrayWriter.fs" />
 	</ItemGroup>
 
-
 	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
-		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.1.0-1.final" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.1.0-1.final" />
 	</ItemGroup>
 
 	<PropertyGroup>

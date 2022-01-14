@@ -4,15 +4,12 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<AssemblyVersion>0.0.2</AssemblyVersion>
-		<OutputPath>..\..\packages\jackfruit.appmodel</OutputPath>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<OutputPath>..\artifacts\packages\jackfruit.appmodel</OutputPath>
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<PackageId>Jackfruit.AppModel</PackageId>
 		<Version>0.0.3-alpha</Version>
-		<Authors>Kathleen Dollard</Authors>
-		<Company>Microsoft</Company>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -23,37 +20,14 @@
 		<Compile Include="ShimGenerator.fs" />
 	</ItemGroup>
 
-	<!--<ItemGroup>
-		<ProjectReference Include="..\Generator\Generator.fsproj" />
-	</ItemGroup>-->
-
 	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
-		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.1.0-1.final" />
-		<PackageReference Include="System.CommandLine" Version="2.0.0-beta2.22057.1" />
+		<ProjectReference Include="..\Generator.Core\Generator.Core.fsproj" />
+		<ProjectReference Include="..\Generator\Generator.fsproj" />
 	</ItemGroup>
 
-	<PropertyGroup>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<!-- Do not include the generator as a lib dependency -->
-		<IncludeBuildOutput>false</IncludeBuildOutput>
-	</PropertyGroup>
-
 	<ItemGroup>
-		<!-- Take a private dependency on packages that consumers will not reference. Consumers of this generator 
-		 will not reference it. -->
-		<!-- Set GeneratePathProperty=true so we can reference the binaries via the PKGFSharp_Core property -->
-		<PackageReference Include="FSharp.Core" Version="12.0.1" PrivateAssets="all" GeneratePathProperty="true" />
-		<PackageReference Include="Jackfruit.Generator" Version="0.0.3-alpha" PrivateAssets="all" GeneratePathProperty="true" />
-		<PackageReference Include="Jackfruit.Generator.Core" Version="0.0.3-alpha" PrivateAssets="all" GeneratePathProperty="true" />
-
-		<!-- Package the generator in the analyzer directory of the nuget package -->
-		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-
-		<!-- Package the Newtonsoft.Json dependency alongside the generator assembly -->
-		<None Include="$(PkgFSharp_Core)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-		<None Include="$(PkgJackruit_Generator)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-		<None Include="$(PkgJackruit_Generator_Core)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.1.0-1.final" />
+		<PackageReference Include="System.CommandLine" Version="2.0.0-beta2.22057.1" />
 	</ItemGroup>
 
 </Project>

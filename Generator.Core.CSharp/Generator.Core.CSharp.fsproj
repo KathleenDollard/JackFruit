@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<OutputPath>..\artifacts\packages\jackfruit.generator.core.csharp</OutputPath>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>Jackfruit.Generator.Core.CSharp</PackageId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="CodeEval\RoslynCSharpUtils.fs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Generator.Core\Generator.Core.fsproj" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	</PropertyGroup>
+
+</Project>

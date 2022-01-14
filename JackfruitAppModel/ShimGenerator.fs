@@ -4,7 +4,7 @@ open Microsoft.CodeAnalysis;
 open Microsoft.CodeAnalysis.Text;
 open System.Text;
 
-[<Generator>]
+[<Generator(LanguageNames.CSharp)>]
 type CustomGenerator() =
     interface ISourceGenerator with
         member this.Initialize (context: GeneratorInitializationContext) =
