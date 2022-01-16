@@ -16,8 +16,6 @@
 		<Compile Include="Models.fs" />
 		<Compile Include="ArchetypeMapping.fs" />
 		<Compile Include="JackfruitAppModel.fs" />
-		<Compile Include="Generator.fs" />
-		<Compile Include="ShimGenerator.fs" />
 	</ItemGroup>
 
 	<ItemGroup>

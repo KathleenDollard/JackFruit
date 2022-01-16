@@ -17,6 +17,7 @@ let testNamespace = "TestCode"
 let HandlerSource = ReadCodeFromFile "..\..\..\TestHandlers.cs"
 //let OneMapping = AddMapStatementToTestCode ["""var x = new ConsoleSupport.BuilderInferredParser(); x.MapInferred("", Handlers.A);"""]
 
+let eval = EvalCSharp()
 
 let AddMapStatementToTestCode (statements:string list) =
     let methods = 
@@ -94,7 +95,7 @@ let InvocationsAndModelFrom source =
 
     ModelFrom [CSharpCode source; CSharpCode HandlerSource]
     |> Result.map updateModel
-    |> Result.map (InvocationsFromModel "MapInferred")
+    |> Result.map (eval.InvocationsFromModel "MapInferred")
     |> Result.map (fun invocations -> (invocations, model))
 
 

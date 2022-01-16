@@ -1,6 +1,6 @@
 ﻿module Generator.LanguageExpression
 
-open Generator.Language
+open Generator.LanguageModel
 open Common
 
 let x = 42

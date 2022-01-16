@@ -13,9 +13,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Include="GeneratorVB.fs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Generator.Core.VisualBasic\Generator.Core.VisualBasic.fsproj" />
+		<ProjectReference Include="..\Generator.VisualBasic\Generator.VisualBasic.fsproj" />
 		<ProjectReference Include="..\JackfruitAppModel\JackfruitAppModel.fsproj" />
-		<ProjectReference Include="..\Generator.Core\Generator.Core.VisualBasic.fsproj" />
-		<ProjectReference Include="..\Generator\Generator.VisualBasic.fsproj" />
 	</ItemGroup>
 
 	<ItemGroup>

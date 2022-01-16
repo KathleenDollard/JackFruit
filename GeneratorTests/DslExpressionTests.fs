@@ -2,7 +2,7 @@
 
 
 open Xunit
-open Generator.Language
+open Generator.LanguageModel
 open Common
 open Generator.LanguageExpressions
 open Generator.LanguageExpressions.ExpressionHelpers

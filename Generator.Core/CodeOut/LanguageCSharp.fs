@@ -1,7 +1,7 @@
 ﻿namespace Generator
 
 open System
-open Generator.Language
+open Generator.LanguageModel
 open Common
 open Utilities
 open Generator.LanguageRoslynOut

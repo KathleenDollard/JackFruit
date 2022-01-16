@@ -1,7 +1,7 @@
 ﻿module Prototype
 
 open Xunit
-open Generator.Language
+open Generator.LanguageModel
 open Generator.GeneralUtils
 open System
 open Common

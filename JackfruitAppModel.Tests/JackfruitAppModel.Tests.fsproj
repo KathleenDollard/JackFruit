@@ -38,6 +38,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Generator\Generator.fsproj" />
 		<ProjectReference Include="..\GeneratorTests\GeneratorTests.fsproj" />
+		<ProjectReference Include="..\JackFruitAppModel.CSharp\JackfruitAppModel.CSharp.fsproj" />
 		<ProjectReference Include="..\JackfruitAppModel\JackfruitAppModel.fsproj" />
 	</ItemGroup>
 

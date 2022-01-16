@@ -1,6 +1,6 @@
 ﻿module rec Generator.CSharpLanguageExtensions
 
-//open Generator.Language
+//open Generator.LanguageModel
 //open System
 //open Common
 //open System.Runtime.CompilerServices

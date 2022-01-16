@@ -4,7 +4,7 @@
 open Generator.LanguageExpressions
 open Generator.LanguageStatements
 open System
-open Generator.Language
+open Generator.LanguageModel
 open Common
 open DslKeywords
 

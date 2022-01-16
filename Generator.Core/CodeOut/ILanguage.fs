@@ -1,7 +1,7 @@
 ﻿namespace Generator
 
 open Common
-open Generator.Language
+open Generator.LanguageModel
 open Generator.LanguageStatements
 open Generator.LanguageExpressions
 

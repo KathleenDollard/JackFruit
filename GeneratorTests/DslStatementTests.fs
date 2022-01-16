@@ -2,10 +2,10 @@
 
 open Xunit
 open Common
-open Generator.Language
+open Generator.LanguageModel
 open DslKeywords
 open DslCodeBuilder
-open Generator.Language
+open Generator.LanguageModel
 open Generator.LanguageExpressions
 open Generator.LanguageExpressions.ExpressionHelpers
 open Generator.LanguageHelpers

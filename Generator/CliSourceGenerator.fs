@@ -8,7 +8,7 @@ open Generator.Transforms
 open System.Linq
 open LanguageRoslynOut
 open Models
-open Language
+open Generator.LanguageModel
 
 let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel (writer: IWriter) =
     let outputter = RoslynOut(language, writer)

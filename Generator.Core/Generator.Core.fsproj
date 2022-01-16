@@ -12,6 +12,7 @@
 
 	<ItemGroup>
 		<Compile Include="CodeEval\AppErrors.fs" />
+		<Compile Include="CodeEval\EvalBase.fs" />
 		<Compile Include="CodeEval\RoslynUtils.fs" />
 		<Compile Include="CodeEval\XmlCommentPatterns.fs" />
 		<Compile Include="CodeOut\GeneralUtils.fs" />

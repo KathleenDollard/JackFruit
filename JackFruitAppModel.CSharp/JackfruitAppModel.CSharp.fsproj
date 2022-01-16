@@ -13,9 +13,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Include="ShimGenerator.fs" />
+	  <Compile Include="GeneratorCSharp.fs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Generator.Core.CSharp\Generator.Core.CSharp.fsproj" />
+		<ProjectReference Include="..\Generator.Core\Generator.Core.fsproj" />
+		<ProjectReference Include="..\Generator.CSharp\Generator.CSharp.fsproj" />
+		<ProjectReference Include="..\Generator\Generator.fsproj" />
 		<ProjectReference Include="..\JackfruitAppModel\JackfruitAppModel.fsproj" />
-		<ProjectReference Include="..\Generator.Core\Generator.Core.CSharp.fsproj" />
-		<ProjectReference Include="..\Generator\Generator.CSharp.fsproj" />
 	</ItemGroup>
 
 	<ItemGroup>

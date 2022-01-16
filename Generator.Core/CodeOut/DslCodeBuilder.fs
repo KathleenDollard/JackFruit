@@ -1,7 +1,7 @@
 ﻿module DslCodeBuilder
 
 open System
-open Generator.Language
+open Generator.LanguageModel
 open Generator.LanguageStatements
 open Common
 open FSharp.Core

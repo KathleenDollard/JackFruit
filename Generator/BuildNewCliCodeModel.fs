@@ -1,6 +1,6 @@
 ﻿module Generator.BuildNewCliCodeModel
 
-open Generator.Language
+open Generator.LanguageModel
 open Generator.Models
 open DslCodeBuilder
 open type Generator.LanguageHelpers.Structural

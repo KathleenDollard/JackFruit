@@ -2,7 +2,7 @@
 
 open Generator
 open Common
-open Generator.Language
+open Generator.LanguageModel
 open System
 
 

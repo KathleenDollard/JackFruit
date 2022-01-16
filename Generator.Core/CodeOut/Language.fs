@@ -1,11 +1,10 @@
-﻿module rec Generator.Language
+﻿module rec Generator.LanguageModel
 
 open Generator
 open Common
 open DslKeywords
 open Generator.GeneralUtils
 open System
-
 
 type Modifier =
     | Static
