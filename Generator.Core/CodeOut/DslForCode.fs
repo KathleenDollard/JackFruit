@@ -1,7 +1,7 @@
 ﻿module DslForCode
 
 open Dsl
-open Generator.Language
+open Generator.LanguageModel
 open Common
 open System
 open DslKeywords

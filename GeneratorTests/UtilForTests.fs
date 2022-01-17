@@ -217,33 +217,33 @@ let MethodSymbolFromMethodCall (model: SemanticModel) (expression: SyntaxNode) =
 
      
      
-let MethodSymbolFromMethodDeclaration (model: SemanticModel) (expression: SyntaxNode) =
-    let handler =
-        model.GetDeclaredSymbol expression
+//let MethodSymbolFromMethodDeclaration (model: SemanticModel) (expression: SyntaxNode) =
+//    let handler =
+//        model.GetDeclaredSymbol expression
 
-    let symbol =
-        match handler with
-        | null -> invalidOp "Delegate not found"
-        | _ -> handler
+//    let symbol =
+//        match handler with
+//        | null -> invalidOp "Delegate not found"
+//        | _ -> handler
 
-    match symbol with
-    | :? IMethodSymbol as m -> Some m
-    | _ -> None
+//    match symbol with
+//    | :? IMethodSymbol as m -> Some m
+//    | _ -> None
 
-let MethodSymbolFromMethodCall (model: SemanticModel) (expression: SyntaxNode) =
-    let handler =
-        model.GetSymbolInfo expression
+//let MethodSymbolFromMethodCall (model: SemanticModel) (expression: SyntaxNode) =
+//    let handler =
+//        model.GetSymbolInfo expression
 
-    match handler.Symbol with 
-    | null when handler.CandidateSymbols.IsEmpty -> None
-    | null -> 
-        match handler.CandidateSymbols.[0] with 
-        | :? IMethodSymbol as m -> Some m
-        | _ -> None
-    | _ -> 
-        match handler.Symbol with
-        | :? IMethodSymbol as m -> Some m
-        | _ -> None
+//    match handler.Symbol with 
+//    | null when handler.CandidateSymbols.IsEmpty -> None
+//    | null -> 
+//        match handler.CandidateSymbols.[0] with 
+//        | :? IMethodSymbol as m -> Some m
+//        | _ -> None
+//    | _ -> 
+//        match handler.Symbol with
+//        | :? IMethodSymbol as m -> Some m
+//        | _ -> None
          
 let MethodSymbolsFromSource source =
     let code = AddMethodsToClass source
