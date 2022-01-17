@@ -5,6 +5,7 @@ open FsUnit.Xunit
 open FsUnit.CustomMatchers
 open Generator.RoslynUtils
 open Microsoft.CodeAnalysis
+open Generator.Tests.UtilsForTests
 
 type ``When building a SyntaxTree``() =
 

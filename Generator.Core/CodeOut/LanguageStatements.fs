@@ -2,7 +2,7 @@
 
 open Generator
 open Common
-open Generator.Language
+open Generator.LanguageModel
 
 
 // There are some tradeoffs on If. This version makes the If, ElseIf, and Else entirely 

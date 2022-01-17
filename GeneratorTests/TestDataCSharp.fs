@@ -2,7 +2,7 @@
 /// These are expected to be used with "with" syntax to add more specific local test cases
 module Generator.Tests.TestData
 
-open Generator.Language
+open Generator.LanguageModel
 open Common
 open Generator.LanguageExpressions
 open Generator.LanguageStatements

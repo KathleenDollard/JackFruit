@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<AssemblyVersion>0.0.2</AssemblyVersion>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<OutputPath>..\artifacts\packages\jackfruit.appmodel.csharp</OutputPath>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<Version>0.0.3-alpha</Version>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Include="ShimGenerator.fs" />
+	  <Compile Include="GeneratorCSharp.fs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Generator.Core.CSharp\Generator.Core.CSharp.fsproj" />
+		<ProjectReference Include="..\Generator.Core\Generator.Core.fsproj" />
+		<ProjectReference Include="..\Generator.CSharp\Generator.CSharp.fsproj" />
+		<ProjectReference Include="..\Generator\Generator.fsproj" />
+		<ProjectReference Include="..\JackfruitAppModel\JackfruitAppModel.fsproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="4.1.0-1.final" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
+		<PackageReference Include="System.CommandLine" Version="2.0.0-beta2.22057.1" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+	</PropertyGroup>
+
+	<Target Name="GetDependencyTargetPaths">
+		<ItemGroup>
+			<TargetPathWithTargetPlatformMoniker Include="$(OutputPath)FSharp.Core.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(OutputPath)Generator.Core.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(OutputPath)Generator.Core.CSharp.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(OutputPath)Generator.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(OutputPath)Generator.CSharp.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(OutputPath)JackfruitAppModel.dll" IncludeRuntimeDependency="false" />
+		</ItemGroup>
+	</Target>
+
+</Project>

@@ -6,7 +6,7 @@ open FsUnit.CustomMatchers
 open Generator.GeneralUtils
 open Generator
 open Generator.Tests.TestData
-open Generator.Language
+open Generator.LanguageModel
 open Common
 open Generator.LanguageExpressions
 open Generator.LanguageStatements

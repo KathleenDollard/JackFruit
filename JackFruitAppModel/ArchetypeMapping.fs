@@ -7,6 +7,7 @@ open Generator.RoslynUtils
 open Microsoft.CodeAnalysis
 open Generator
 open Common
+open Generator.CodeEval
 
 
 let (|Command|Arg|Option|) (part: string) =
@@ -125,24 +126,24 @@ let ParseArchetypeInfo archetype handler =
       Handler = handler }
 
 
-let ExpresionOption expression =
-    if IsNullLiteral expression then
+let ExpresionOption (evalLanguage: EvalBase) expression =
+    if evalLanguage.IsNullLiteral expression then
         None
     else
         Some expression
 
 
-let ArchetypeInfoListFrom invocations =
+let ArchetypeInfoListFrom (evalLanguage: EvalBase) (invocations: (string * SyntaxNode list) list) : Result<ArchetypeInfo list, AppErrors> =
         let archetypeInfoWithResults =
             let mutable pos = 0
             [ for invoke in invocations do
                 let pos = pos + 1
                 match invoke with
                 | (_, [ a; d ]) ->
-                    let archetype = StringFrom a
-                    let expression = ExpressionFrom d
+                    let archetype = evalLanguage.StringFrom a
+                    let expression = evalLanguage.ExpressionFrom d
                     match (archetype, expression) with
-                    | Ok arch, Ok expr -> Ok (ParseArchetypeInfo arch (ExpresionOption expr))
+                    | Ok arch, Ok expr -> Ok (ParseArchetypeInfo arch (ExpresionOption evalLanguage expr))
                     | Error _, _ ->  Error (Generator.AppModelIssue $"Unexpected expression for frchetype at {pos}")
                     | Ok arch, Error _ ->  Error (Generator.AppModelIssue $"Unexpected expression for handler {arch}")
                 | _ -> Error Generator.UnexpectednumberOfArguments ]
