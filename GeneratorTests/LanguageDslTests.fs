@@ -283,7 +283,7 @@ type ``Create classes with``() =
         let className = "MyClass"
         let baseName = "MyBaseClass"
         let expected =  
-            { ClassModel.Create(className, PrivateProtected) with
+            { ClassModel.Create(className, Public) with
                 InheritedFrom = SomeBase (NamedItem.Create baseName) }
         let actual =
             Class(className) {
@@ -292,41 +292,41 @@ type ``Create classes with``() =
                 }
         Assert.Equal(expected, actual.Model)
     
-    [<Fact>]
-     member _.``Add member`` () =
-         let className = "MyClass"
-         let fieldName = "MyField"
-         let typeName = "string"
-         let expectedField =  
-             { FieldModel.Create fieldName  typeName with Scope = Public }
-         let expected =  
-             { ClassModel.Create(className, Public) with
-                 Members = [ expectedField ] }
-         let actual =
-                Field(fieldName, typeName) {
-                    Public2
-                    }
-         let actual =
-             Class(className) {
-                 Public2
-                 Field(fieldName, typeName) {
-                                 Public2
-                                 }
-                 }
-         Assert.Equal(expected, actual.Model)
+    //[<Fact>]
+    // member _.``Add member`` () =
+    //     let className = "MyClass"
+    //     let fieldName = "MyField"
+    //     let typeName = "string"
+    //     let expectedField =  
+    //         { FieldModel.Create fieldName  typeName with Scope = Public }
+    //     let expected =  
+    //         { ClassModel.Create(className, Public) with
+    //             Members = [ expectedField ] }
+    //     let actual =
+    //            Field(fieldName, typeName) {
+    //                Public2
+    //                }
+    //     let actual =
+    //         Class(className) {
+    //             Public2
+    //             Field(fieldName, typeName) {
+    //                             Public2
+    //                             }
+    //             }
+    //     Assert.Equal(expected, actual.Model)
 
-type ``Create Fields with``() =
-    [<Fact>]
-    member _.``Public`` () =
-        let fieldName = "MyField"
-        let typeName = "string"
-        let expected =  
-            { FieldModel.Create fieldName  typeName with Scope = Public }
-        let actual =
-            Field(fieldName, typeName) {
-                Public2
-                }
-        Assert.Equal(expected, actual.Model)
+//type ``Create Fields with``() =
+//    [<Fact>]
+//    member _.``Public`` () =
+//        let fieldName = "MyField"
+//        let typeName = "string"
+//        let expected =  
+//            { FieldModel.Create fieldName  typeName with Scope = Public }
+//        let actual =
+//            Field(fieldName, typeName) {
+//                Public2
+//                }
+//        Assert.Equal(expected, actual.Model)
 
 
 type ``Everything``() =

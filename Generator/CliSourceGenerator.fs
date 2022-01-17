@@ -41,7 +41,8 @@ type CliSourceGenerator<'T>() =
         member this.Execute(context) =
             let syntaxTrees = List.ofSeq context.Compilation.SyntaxTrees
             let semanticModel = context.Compilation.GetSemanticModel(syntaxTrees.First())
-            let language: ILanguage = match context.Compilation with
+            let language: ILanguage = 
+                match context.Compilation with
                 | :? CSharpCompilation -> LanguageCSharp()
                 | :? VisualBasicCompilation -> LanguageVisualBasic()
                 | _ -> invalidOp "Unexpected language encountered (not C# or VB)"

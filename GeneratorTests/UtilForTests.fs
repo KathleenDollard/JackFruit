@@ -11,6 +11,7 @@ open Generator.NewMapping
 open Generator
 open System.Threading
 open System.Reflection
+open Generator.RoslynCSharpUtils
 
 let testNamespace = "TestCode"
 let private seperator = "\r\n"
@@ -131,8 +132,44 @@ let ModelFrom(sources: Source list) =
     match result with 
     | Ok trees -> GetSemanticModelFromFirstTree trees
     | Error err -> Error err
-        
+   
+
+let MethodDeclarationNodesFrom (syntaxTree: CSharpSyntaxTree) = 
+    Ok 
+        [ for node in syntaxTree.GetRoot().DescendantNodes() do
+           match node with 
+           | MethodDeclaration (_, _) -> node
+           | _ -> () ] 
      
+     
+let MethodSymbolFromMethodDeclaration (model: SemanticModel) (expression: SyntaxNode) =
+    let handler =
+        model.GetDeclaredSymbol expression
+
+    let symbol =
+        match handler with
+        | null -> invalidOp "Delegate not found"
+        | _ -> handler
+
+    match symbol with
+    | :? IMethodSymbol as m -> Some m
+    | _ -> None
+
+let MethodSymbolFromMethodCall (model: SemanticModel) (expression: SyntaxNode) =
+    let handler =
+        model.GetSymbolInfo expression
+
+    match handler.Symbol with 
+    | null when handler.CandidateSymbols.IsEmpty -> None
+    | null -> 
+        match handler.CandidateSymbols.[0] with 
+        | :? IMethodSymbol as m -> Some m
+        | _ -> None
+    | _ -> 
+        match handler.Symbol with
+        | :? IMethodSymbol as m -> Some m
+        | _ -> None
+         
 let MethodSymbolsFromSource source =
     let code = AddMethodsToClass source
     let modelResult = ModelFrom [ CSharpCode code ]
@@ -140,7 +177,11 @@ let MethodSymbolsFromSource source =
         match modelResult with 
         | Ok model -> model
         | Error _ -> invalidOp "Test failed during SemanticModel creation"
-    let declarationsResults = MethodDeclarationNodesFrom model.SyntaxTree
+    let tree = 
+        match model.SyntaxTree with 
+        | :? CSharpSyntaxTree as t -> t
+        | _ -> invalidOp "Unexpected syntax tree type"
+    let declarationsResults = RoslynCSharpUtils.MethodDeclarationNodesFrom (tree)
     let declarations =
          match declarationsResults with 
          | Ok d -> d
