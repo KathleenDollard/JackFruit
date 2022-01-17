@@ -16,6 +16,11 @@ type Modifier =
     | Readonly
     static member Contains modifier list =
         List.exists (fun x -> x = modifier) list
+    static member CombineModifiers (modifier1: Modifier option) (modifier2: Modifier option) =
+        [ match modifier1 with | Some m -> m | None -> ()
+          match modifier2 with | Some m -> m | None -> () ]        
+
+
 
         
 type ParameterStyle =
@@ -29,6 +34,8 @@ type IMember = interface end
 type IStatementLike = interface end
 type IStatement = interface end
 type IExpression = interface end
+type IScoped = 
+    abstract member Scope: Scope
 
 type ICompareExpression = 
     inherit IExpression

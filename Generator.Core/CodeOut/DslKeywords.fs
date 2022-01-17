@@ -13,6 +13,22 @@ type AsWord =
 type ToWord =
     | To
 
+//// As soon as we stript the old builder, remove "Word" from the _members_ here
+//type StaticWord =
+//    | StaticWord
+
+//type AbstractWord =
+//    | AbstractWord
+
+//type SealedWord =
+//    | SealedWord
+
+//type AsyncWord =
+//    | AsyncWord
+
+//type PartialWord =
+//    | PartialWord
+
 
 type IModifierWord = interface end
 type IClassModifierWord = interface inherit IModifierWord end

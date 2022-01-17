@@ -154,6 +154,7 @@ let ModelFrom(sources: Source list) =
     | Ok trees -> GetSemanticModelFromFirstTree trees
     | Error err -> Error err
  
+
 let MethodDeclarationNodesFrom (syntaxTree: CSharpSyntaxTree) = 
     Ok 
         [ for node in syntaxTree.GetRoot().DescendantNodes() do
@@ -213,7 +214,37 @@ let MethodSymbolFromMethodCall (model: SemanticModel) (expression: SyntaxNode) =
 //            | Some method -> method 
 //            | None -> invalidOp "Test failed during Method symbol lookup" ]
 //    model, methods
+
      
+     
+let MethodSymbolFromMethodDeclaration (model: SemanticModel) (expression: SyntaxNode) =
+    let handler =
+        model.GetDeclaredSymbol expression
+
+    let symbol =
+        match handler with
+        | null -> invalidOp "Delegate not found"
+        | _ -> handler
+
+    match symbol with
+    | :? IMethodSymbol as m -> Some m
+    | _ -> None
+
+let MethodSymbolFromMethodCall (model: SemanticModel) (expression: SyntaxNode) =
+    let handler =
+        model.GetSymbolInfo expression
+
+    match handler.Symbol with 
+    | null when handler.CandidateSymbols.IsEmpty -> None
+    | null -> 
+        match handler.CandidateSymbols.[0] with 
+        | :? IMethodSymbol as m -> Some m
+        | _ -> None
+    | _ -> 
+        match handler.Symbol with
+        | :? IMethodSymbol as m -> Some m
+        | _ -> None
+         
 let MethodSymbolsFromSource source =
     let code = AddMethodsToClass source
     let modelResult = ModelFrom [ CSharpCode code ]
@@ -226,6 +257,7 @@ let MethodSymbolsFromSource source =
         | :? CSharpSyntaxTree as t -> t
         | _ -> invalidOp "Unexpected syntax tree type"
     let declarationsResults = MethodDeclarationNodesFrom tree
+
     let declarations =
          match declarationsResults with 
          | Ok d -> d

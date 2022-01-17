@@ -5,9 +5,11 @@ open System
 type Scope =
     | Unknown
     | Public
-    | Private
     | Internal
     | Protected
+    | Private
+    | ProtectedInternal
+    | PrivateProtected
 
 type Operator =
     | Equals

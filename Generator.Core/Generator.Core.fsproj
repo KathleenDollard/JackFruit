@@ -26,6 +26,8 @@
 		<Compile Include="CodeOut\LanguageHelpers.fs" />
 		<Compile Include="CodeOut\ILanguage.fs" />
 		<Compile Include="CodeOut\LanguageRoslynOut.fs" />
+		<Compile Include="CodeOut\DslBase.fs" />
+		<Compile Include="CodeOut\DslForCode.fs" />
 		<Compile Include="CodeOut\DslCodeBuilder.fs" />
 		<Compile Include="CodeOut\CSharpLanguageExtensions.fs" />
 		<Compile Include="CodeOut\LanguageBase.fs" />

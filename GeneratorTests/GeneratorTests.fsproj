@@ -12,6 +12,7 @@
 		<Compile Include="MapData.fs" />
 		<Compile Include="UtilForTests.fs" />
 		<Compile Include="GeneralUtilsTests.fs" />
+		<Compile Include="LanguageDslTests.fs" />
 
 		<Compile Include="LanguageCSharpTests.fs" />
 		<Compile Include="OutputMapingTests.fs" />

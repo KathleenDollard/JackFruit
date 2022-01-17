@@ -69,7 +69,6 @@ open Generator
 //    | :? VisualBasic.VisualBasicSyntaxTree as tree -> RoslynVBUtils.InvocationsFrom tree name
 //    | _ -> invalidOp "Invalid node type"
 
-
 //let MethodDeclarationsFrom (syntaxTree: SyntaxTree) = 
 //    match syntaxTree with 
 //    | :? CSharp.CSharpSyntaxTree as tree -> RoslynCSharpUtils.MethodDeclarationsFrom tree
@@ -91,3 +90,4 @@ open Generator
 
 //let InvocationsFromModel name (model:SemanticModel) =
 //    InvocationsFrom name model.SyntaxTree
+
