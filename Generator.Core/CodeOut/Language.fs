@@ -113,7 +113,13 @@ type ConstructorModel =
       Modifiers: Modifier list
       Parameters: ParameterModel list
       Statements: IStatement list}
-    static member Create className =
+    static member Create() =
+        { Scope = Public
+          Modifiers = []
+          Parameters = []
+          Statements = [] }
+    // TODO: Remove the following overload when it won't break too much
+    static member Create (className) =
         { Scope = Public
           Modifiers = []
           Parameters = []

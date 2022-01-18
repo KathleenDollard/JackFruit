@@ -23,6 +23,7 @@
 		<Compile Include="DslStatementTests.fs" />
 		<Compile Include="DslStructuralTests.fs" />
 		<Compile Include="Prototype.fs" />
+		<Compile Include="PrototypeNew.fs" />
 		<Compile Include="CliOutputTests.fs" />
 	</ItemGroup>
 

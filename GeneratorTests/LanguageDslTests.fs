@@ -1,20 +1,14 @@
 ﻿namespace LanguageDslTests
 
 open Xunit
-open FsUnit.Xunit
-open FsUnit.CustomMatchers
-open Generator.GeneralUtils
 open Generator
-open Generator.Tests.TestData
 open Generator.LanguageModel
 open Common
-open Generator.LanguageExpressions
-open Generator.LanguageStatements
-open Generator.LanguageRoslynOut
-open Generator.LanguageHelpers
-open System.Collections.Generic
 open DslForCode
+open Generator.LanguageHelpers
+open Generator.LanguageHelpers.Statements
 open DslKeywords
+open Generator.LanguageStatements
 
 
 type ``Create namespaces with``() =
@@ -31,7 +25,7 @@ type ``Create namespaces with``() =
         // KAD-Don: The return here is the wrapped model. While I understand why, it's problematic
         let actual =
             Namespace(namespaceName) { 
-                Using usingName "" }
+                Using usingName }
         Assert.Equal(expected, actual.Model)
 
     [<Fact>]
@@ -277,7 +271,6 @@ type ``Create classes with``() =
                 }
         Assert.Equal(expected, actual.Model)
   
-    
     [<Fact>]
     member _.``InheritedFrom`` () =
         let className = "MyClass"
@@ -292,41 +285,477 @@ type ``Create classes with``() =
                 }
         Assert.Equal(expected, actual.Model)
     
-    //[<Fact>]
-    // member _.``Add member`` () =
-    //     let className = "MyClass"
-    //     let fieldName = "MyField"
-    //     let typeName = "string"
-    //     let expectedField =  
-    //         { FieldModel.Create fieldName  typeName with Scope = Public }
-    //     let expected =  
-    //         { ClassModel.Create(className, Public) with
-    //             Members = [ expectedField ] }
-    //     let actual =
-    //            Field(fieldName, typeName) {
-    //                Public2
-    //                }
-    //     let actual =
-    //         Class(className) {
-    //             Public2
-    //             Field(fieldName, typeName) {
-    //                             Public2
-    //                             }
-    //             }
-    //     Assert.Equal(expected, actual.Model)
+    [<Fact>]
+    member _.``Add member`` () =
+        let className = "MyClass"
+        let methodName = "MyField"
+        let typeName = "string"
+        let expectedField =  
+            { FieldModel.Create methodName  typeName with Scope = Public }
+        let expected =  
+            { ClassModel.Create(className, Public) with
+                Members = [ expectedField ] }
+        let actual =
+               Field(methodName, typeName) {
+                   Public2
+                   }
+        let actual =
+            Class(className) {
+                Public2
+                Field(methodName, typeName) {
+                                Public2
+                                }
+                }
+        Assert.Equal(expected, actual.Model)
 
-//type ``Create Fields with``() =
-//    [<Fact>]
-//    member _.``Public`` () =
-//        let fieldName = "MyField"
-//        let typeName = "string"
-//        let expected =  
-//            { FieldModel.Create fieldName  typeName with Scope = Public }
-//        let actual =
-//            Field(fieldName, typeName) {
-//                Public2
-//                }
-//        Assert.Equal(expected, actual.Model)
+
+type ``Create Fields with a ``() =
+    [<Fact>]
+    member _.``Public string`` () =
+        let fieldName = "MyField"
+        let typeName = "string"
+        let expected =  
+            { FieldModel.Create fieldName  typeName with Scope = Public }
+        let actual =
+            Field(fieldName, typeName) {
+                Public2
+                }
+        Assert.Equal(expected, actual.Model :?> FieldModel)
+
+    [<Fact>]
+    member _.``Private string`` () =
+        let fieldName = "MyField"
+        let typeName = "string"
+        let expected =  
+            { FieldModel.Create fieldName  typeName with Scope = Public }
+        let actual =
+            Field(fieldName, typeName) {
+                Public2
+                }
+        Assert.Equal(expected, actual.Model :?> FieldModel)
+
+    [<Fact>]
+    member _.``Internal string`` () =
+        let fieldName = "MyField"
+        let typeName = "string"
+        let expected =  
+            { FieldModel.Create fieldName  typeName with Scope = Internal }
+        let actual =
+            Field(fieldName, typeName) {
+                Internal
+                }
+        Assert.Equal(expected, actual.Model :?> FieldModel)
+
+    [<Fact>]
+    member _.``Friend string`` () =
+        let fieldName = "MyField"
+        let typeName = "string"
+        let expected =  
+            { FieldModel.Create fieldName  typeName with Scope = Internal }
+        let actual =
+            Field(fieldName, typeName) {
+                Friend
+                }
+        Assert.Equal(expected, actual.Model :?> FieldModel)
+
+    [<Fact>]
+    member _.``Protected string`` () =
+        let fieldName = "MyField"
+        let typeName = "string"
+        let expected =  
+            { FieldModel.Create fieldName  typeName with Scope = Protected }
+        let actual =
+            Field(fieldName, typeName) {
+                Protected
+                }
+        Assert.Equal(expected, actual.Model :?> FieldModel)
+
+    [<Fact>]
+    member _.``ProtectedInternal string`` () =
+        let fieldName = "MyField"
+        let typeName = "string"
+        let expected =  
+            { FieldModel.Create fieldName  typeName with Scope = ProtectedInternal }
+        let actual =
+            Field(fieldName, typeName) {
+                ProtectedInternal
+                }
+        Assert.Equal(expected, actual.Model :?> FieldModel)
+
+    [<Fact>]
+    member _.``PrivateProtected string`` () =
+        let fieldName = "MyField"
+        let typeName = "string"
+        let expected =  
+            { FieldModel.Create fieldName  typeName with Scope = PrivateProtected }
+        let actual =
+            Field(fieldName, typeName) {
+                PrivateProtected
+                }
+        Assert.Equal(expected, actual.Model :?> FieldModel)
+
+    [<Fact>]
+    member _.``PrivateProtected int`` () =
+        let fieldName = "MyField"
+        let typeName = "int"
+        let expected =  
+            { FieldModel.Create fieldName  typeName with Scope = PrivateProtected }
+        let actual =
+            Field(fieldName, typeName) {
+                PrivateProtected
+                }
+        Assert.Equal(expected, actual.Model :?> FieldModel)
+   
+    [<Fact>]
+    member _.``Add field to class`` () =
+        let className = "MyClass"
+        let fieldName = "MyField"
+        let typeName = "string"
+        let expectedField =  
+            { FieldModel.Create fieldName  typeName with Scope = Public }
+        let expected =  
+            { ClassModel.Create(className, Public) with
+                Members = [ expectedField ] }
+        let actual =
+            Class(className) {
+                Public2
+                Field(fieldName, typeName) {
+                                Public2
+                                }
+                }
+        Assert.Equal(expected, actual.Model)
+
+
+type ``Create Property with a ``() =
+    [<Fact>]
+    member _.``Public string`` () =
+        let propertyName = "MyProperty"
+        let typeName = "string"
+        let expected =  
+            { PropertyModel.Create propertyName  typeName with Scope = Public }
+        let actual =
+            Property(propertyName, typeName) {
+                Public2
+                }
+        Assert.Equal(expected, actual.Model :?> PropertyModel)
+
+    [<Fact>]
+    member _.``Private string`` () =
+        let propertyName = "MyProperty"
+        let typeName = "string"
+        let expected =  
+            { PropertyModel.Create propertyName  typeName with Scope = Public }
+        let actual =
+            Property(propertyName, typeName) {
+                Public2
+                }
+        Assert.Equal(expected, actual.Model :?> PropertyModel)
+
+    [<Fact>]
+    member _.``Internal string`` () =
+        let propertyName = "MyProperty"
+        let typeName = "string"
+        let expected =  
+            { PropertyModel.Create propertyName  typeName with Scope = Internal }
+        let actual =
+            Property(propertyName, typeName) {
+                Internal
+                }
+        Assert.Equal(expected, actual.Model :?> PropertyModel)
+
+    [<Fact>]
+    member _.``Friend string`` () =
+        let propertyName = "MyProperty"
+        let typeName = "string"
+        let expected =  
+            { PropertyModel.Create propertyName  typeName with Scope = Internal }
+        let actual =
+            Property(propertyName, typeName) {
+                Friend
+                }
+        Assert.Equal(expected, actual.Model :?> PropertyModel)
+
+    [<Fact>]
+    member _.``Protected string`` () =
+        let propertyName = "MyProperty"
+        let typeName = "string"
+        let expected =  
+            { PropertyModel.Create propertyName  typeName with Scope = Protected }
+        let actual =
+            Property(propertyName, typeName) {
+                Protected
+                }
+        Assert.Equal(expected, actual.Model :?> PropertyModel)
+
+    [<Fact>]
+    member _.``ProtectedInternal string`` () =
+        let propertyName = "MyProperty"
+        let typeName = "string"
+        let expected =  
+            { PropertyModel.Create propertyName  typeName with Scope = ProtectedInternal }
+        let actual =
+            Property(propertyName, typeName) {
+                ProtectedInternal
+                }
+        Assert.Equal(expected, actual.Model :?> PropertyModel)
+
+    [<Fact>]
+    member _.``PrivateProtected string`` () =
+        let propertyName = "MyProperty"
+        let typeName = "string"
+        let expected =  
+            { PropertyModel.Create propertyName  typeName with Scope = PrivateProtected }
+        let actual =
+            Property(propertyName, typeName) {
+                PrivateProtected
+                }
+        Assert.Equal(expected, actual.Model :?> PropertyModel)
+
+    [<Fact>]
+    member _.``PrivateProtected int`` () =
+        let propertyName = "MyProperty"
+        let typeName = "int"
+        let expected =  
+            { PropertyModel.Create propertyName  typeName with Scope = PrivateProtected }
+        let actual =
+            Property(propertyName, typeName) {
+                PrivateProtected
+                }
+        Assert.Equal(expected, actual.Model :?> PropertyModel)
+
+    [<Fact>]
+    member _.``Add property to class`` () =
+        let className = "MyClass"
+        let propertyName = "MyProperty"
+        let typeName = "string"
+        let expectedProperty =  
+            { PropertyModel.Create propertyName  typeName with Scope = Public }
+        let expected =  
+            { ClassModel.Create(className, Public) with
+                Members = [ expectedProperty ] }
+        let actual =
+            Class(className) {
+                Public2
+                Property(propertyName, typeName) {
+                                Public2
+                                }
+                }
+        Assert.Equal(expected, actual.Model)
+        
+type ``Create Methods with a ``() =
+    [<Fact>]
+    member _.``Public string`` () =
+        let methodName = "MyMethod"
+        let typeName = "string"
+        let expected =  
+            { MethodModel.Create methodName with Scope = Public }
+        let actual =
+            Method(methodName) {
+                Public2
+                }
+        Assert.Equal(expected, actual.Model :?> MethodModel)
+
+    [<Fact>]
+    member _.``Private string`` () =
+        let methodName = "MyMethod"
+        let expected =  
+            { MethodModel.Create methodName with Scope = Public }
+        let actual =
+            Method(methodName) {
+                Public2
+                }
+        Assert.Equal(expected, actual.Model :?> MethodModel)
+
+    [<Fact>]
+    member _.``Internal string`` () =
+        let methodName = "MyMethod"
+        let expected =  
+            { MethodModel.Create methodName with Scope = Internal }
+        let actual =
+            Method(methodName) {
+                Internal
+                }
+        Assert.Equal(expected, actual.Model :?> MethodModel)
+
+    [<Fact>]
+    member _.``Friend string`` () =
+        let methodName = "MyMethod"
+        let expected =  
+            { MethodModel.Create methodName with Scope = Internal }
+        let actual =
+            Method(methodName) {
+                Friend
+                }
+        Assert.Equal(expected, actual.Model :?> MethodModel)
+
+    [<Fact>]
+    member _.``Protected string`` () =
+        let methodName = "MyMethod"
+        let expected =  
+            { MethodModel.Create methodName with Scope = Protected }
+        let actual =
+            Method(methodName) {
+                Protected
+                }
+        Assert.Equal(expected, actual.Model :?> MethodModel)
+
+    [<Fact>]
+    member _.``ProtectedInternal string`` () =
+        let methodName = "MyMethod"
+        let expected =  
+            { MethodModel.Create methodName with Scope = ProtectedInternal }
+        let actual =
+            Method(methodName) {
+                ProtectedInternal
+                }
+        Assert.Equal(expected, actual.Model :?> MethodModel)
+
+    [<Fact>]
+    member _.``PrivateProtected string`` () =
+        let methodName = "MyMethod"
+        let expected =  
+            { MethodModel.Create methodName with Scope = PrivateProtected }
+        let actual =
+            Method(methodName) {
+                PrivateProtected
+                }
+        Assert.Equal(expected, actual.Model :?> MethodModel)
+
+    [<Fact>]
+    member _.``Add method to clsss`` () =
+        let className = "MyClass"
+        let methodName = "MyMethod"
+        let expectedMethod =  
+             { MethodModel.Create methodName with Scope = Public }
+        let expected =  
+             { ClassModel.Create(className, Public) with
+                 Members = [ expectedMethod ] }
+        let actual =
+             Class(className) {
+                 Public2
+                 Method(methodName) {
+                                 Public2
+                                 }
+                 }
+        Assert.Equal(expected, actual.Model)
+ 
+    [<Fact>]
+    member _.``Add statement to method`` () =
+        let methodName = "MyMethod"
+        let varName = "myVar"
+        let expected =  
+             { MethodModel.Create methodName with
+                Scope = Public 
+                Statements = [ AssignmentModel.Create varName (Literal 42) ] }
+        let actual =
+            Method(methodName) {
+                Public2
+                Assign varName To 42
+                }
+        Assert.Equal(expected, actual.Model :?> MethodModel)
+
+
+type ``Create Constructors with a ``() =
+    [<Fact>]
+    member _.``Public string`` () =
+        let expected =  
+            { ConstructorModel.Create() with Scope = Public }
+        let actual =
+            Constructor() {
+                Public2
+                }
+        Assert.Equal(expected, actual.Model :?> ConstructorModel)
+
+    [<Fact>]
+    member _.``Private string`` () =
+        let expected =  
+            { ConstructorModel.Create() with Scope = Public }
+        let actual =
+            Constructor() {
+                Public2
+                }
+        Assert.Equal(expected, actual.Model :?> ConstructorModel)
+
+    [<Fact>]
+    member _.``Internal string`` () =
+        let expected =  
+            { ConstructorModel.Create() with Scope = Internal }
+        let actual =
+            Constructor() {
+                Internal
+                }
+        Assert.Equal(expected, actual.Model :?> ConstructorModel)
+
+    [<Fact>]
+    member _.``Friend string`` () =
+        let expected =  
+            { ConstructorModel.Create() with Scope = Internal }
+        let actual =
+            Constructor() {
+                Friend
+                }
+        Assert.Equal(expected, actual.Model :?> ConstructorModel)
+
+    [<Fact>]
+    member _.``Protected string`` () =
+        let expected =  
+            { ConstructorModel.Create() with Scope = Protected }
+        let actual =
+            Constructor() {
+                Protected
+                }
+        Assert.Equal(expected, actual.Model :?> ConstructorModel)
+
+    [<Fact>]
+    member _.``ProtectedInternal string`` () =
+        let expected =  
+            { ConstructorModel.Create() with Scope = ProtectedInternal }
+        let actual =
+            Constructor() {
+                ProtectedInternal
+                }
+        Assert.Equal(expected, actual.Model :?> ConstructorModel)
+
+    [<Fact>]
+    member _.``PrivateProtected string`` () =
+        let expected =  
+            { ConstructorModel.Create() with Scope = PrivateProtected }
+        let actual =
+            Constructor() {
+                PrivateProtected
+                }
+        Assert.Equal(expected, actual.Model :?> ConstructorModel)
+
+    [<Fact>]
+    member _.``Add method to clsss`` () =
+        let className = "MyClass"
+        let expectedConstructor =  
+            { ConstructorModel.Create() with Scope = Public }
+        let expected =  
+            { ClassModel.Create(className, Public) with
+                Members = [ expectedConstructor ] }
+        let actual =
+            Class(className) {
+                Public2
+                Constructor() {
+                                Public2
+                                }
+                }
+        Assert.Equal(expected, actual.Model)
+    
+    [<Fact>]
+    member _.``Add statement to constructor`` () =
+        let varName = "myVar"
+        let expected =  
+             { ConstructorModel.Create() with
+                Scope = Public 
+                Statements = [ AssignmentModel.Create varName (Literal 42) ] }
+        let actual =
+            Constructor() {
+                Public2
+                Assign varName To 42
+                }
+        Assert.Equal(expected, actual.Model :?> ConstructorModel)
 
 
 type ``Everything``() =
