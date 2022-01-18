@@ -8,17 +8,22 @@ open Common
 
 [<AbstractClass>]
 type LanguageBase() =
+    abstract UnknownKeyword: string with get
+    default _.UnknownKeyword = "<UNKNOWN>"
 
     abstract PrivateKeyword: string with get
     abstract PublicKeyword: string with get
     abstract InternalKeyword: string with get
     abstract ProtectedKeyword: string with get
+    abstract ProtectedInternalKeyword: string with get
+    abstract PrivateProtectedKeyword: string with get
 
     abstract StaticKeyword: string with get
     abstract AsyncKeyword: string with get
     abstract PartialKeyword: string with get
     abstract AbstractKeyword: string with get
     abstract ReadonlyKeyword: string with get
+    abstract SealedKeyword: string with get
 
     abstract TrueKeyword: string with get
     abstract FalseKeyword: string with get
@@ -144,7 +149,9 @@ type LanguageBase() =
                 | Partial -> this.PartialKeyword
                 | Abstract -> this.AbstractKeyword
                 | Readonly -> this.ReadonlyKeyword
-            ] 
+                | Extension -> "" // extensions need special handling
+                | Sealed -> this.SealedKeyword
+           ] 
         String.Join(", ", modifierList)
 
     member this.ScopeOutput scope =
@@ -153,6 +160,9 @@ type LanguageBase() =
         | Private -> this.PrivateKeyword
         | Internal -> this.InternalKeyword
         | Protected -> this.ProtectedKeyword
+        | ProtectedInternal -> this.ProtectedInternalKeyword
+        | PrivateProtected -> this.PrivateProtectedKeyword
+        | Unknown -> this.UnknownKeyword
 
     member this.OutputParameters (parameters: ParameterModel list) = 
         let getParameter (param:ParameterModel) =
@@ -224,6 +234,7 @@ type LanguageBase() =
             match asLiteralModel with 
             | TrueLiteral -> this.TrueKeyword
             | FalseLiteral -> this.FalseKeyword
+        | _ -> invalidOp "This expression type is not yet implemented"
 
     member this.OutputAssignment assignment =
         $"{assignment.Variable} = {assignment.Value}"

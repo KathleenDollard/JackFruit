@@ -33,7 +33,7 @@ namespace ConsoleSupport
             return this;
         }
 
-        public ConsoleApplication MapInferred(string def, Delegate del)
+        public ConsoleApplication MapInferred(string def, Delegate? del)
         {
             // Currently used for code gen,  expect future implementation, 
             return this;

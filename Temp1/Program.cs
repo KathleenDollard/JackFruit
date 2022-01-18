@@ -1,12 +1,5 @@
 ﻿using Generator.ConsoleSupport;
 
-static void Main(string[] args)
-{
-    var app = new ConsoleApplication();
-    app.MapInferred("", HelloTo);
-
-}
-
 static void HelloTo(string who, int howManyTimes)
 {
     howManyTimes = howManyTimes <= 0 ? 0 : howManyTimes;
@@ -14,4 +7,13 @@ static void HelloTo(string who, int howManyTimes)
     {
         Console.WriteLine($"Hello {who}");
     }
+} 
+
+// KAD-Chet: Why are there errors on the next line
+static void Main(string[] args)
+{
+    var app = new ConsoleApplication();
+    app.MapInferred("", HelloTo);
+
 }
+

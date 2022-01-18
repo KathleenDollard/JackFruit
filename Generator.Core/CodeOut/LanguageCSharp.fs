@@ -14,11 +14,15 @@ type LanguageCSharp() =
     override _.PublicKeyword = "public"
     override _.InternalKeyword = "internal"
     override _.ProtectedKeyword = "protected"
+    override _.ProtectedInternalKeyword = "protected internal"
+    override _.PrivateProtectedKeyword = "private protected"
+
     override _.StaticKeyword = "static"
     override _.AsyncKeyword = "async"
     override _.PartialKeyword = "partial"
     override _.AbstractKeyword = "abstract"
     override _.ReadonlyKeyword = "readonly"
+    override _.SealedKeyword = "sealed"
     override _.UsingKeyword = "using"
     override _.NamespaceKeyword = "namespace"
     override _.ClassKeyword = "class"
@@ -76,6 +80,7 @@ type LanguageCSharp() =
             match method.ReturnType with 
             | ReturnType t -> this.OutputNamedItem t
             | Void -> "void"
+            | ReturnTypeUnknown -> "<UNKNOWN>"
        [$"{this.ScopeOutput method.Scope}{this.OutputModifiers method.Modifiers} {returnType} {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters})"; "{"]
     override _.MethodClose _ = [ "}" ]
 

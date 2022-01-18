@@ -19,7 +19,7 @@ type AppModel(evalLanguage: EvalBase) =
         
     let GetCommandArchetype parts =
         let commandArchetpes =
-                [for part in parts do
+            [for part in parts do
                 match part with  
                 | CommandArchetype c -> c
                 | _ -> ()]

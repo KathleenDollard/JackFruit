@@ -40,7 +40,8 @@ type CliSourceGenerator<'T>() =
             let syntaxTrees = List.ofSeq context.Compilation.SyntaxTrees
             let semanticModel = context.Compilation.GetSemanticModel(syntaxTrees.First())
 
-            let language: ILanguage = match context.Compilation.Language with
+            let language: ILanguage = 
+                match context.Compilation.Language with
                 | LanguageNames.CSharp -> LanguageCSharp()
                 | LanguageNames.VisualBasic -> LanguageVisualBasic()
 

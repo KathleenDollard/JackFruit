@@ -14,11 +14,16 @@ type LanguageVisualBasic() =
     override _.PublicKeyword = "Public"
     override _.InternalKeyword = "Friend"
     override _.ProtectedKeyword = "Protected"
+    override _.ProtectedInternalKeyword = "Protected Friend"
+    override _.PrivateProtectedKeyword = "PrivateProtected"
+
     override _.StaticKeyword = "Shared"
     override _.AsyncKeyword = "Async"
     override _.PartialKeyword = "Partial"
     override _.AbstractKeyword = "MustInherit"
     override _.ReadonlyKeyword = "Readonly"
+    override _.SealedKeyword = "NotInheritable"
+
     override _.UsingKeyword = "Imports"
     override _.NamespaceKeyword = "Namespace"
     override _.ClassKeyword = "Class"
