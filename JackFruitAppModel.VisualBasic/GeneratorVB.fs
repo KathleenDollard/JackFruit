@@ -14,7 +14,7 @@ open Jackfruit.Models
 open Generator
 
 
-[<Generator(LanguageNames.CSharp, LanguageNames.VisualBasic)>]
+[<Generator(LanguageNames.VisualBasic)>]
 type Generator() =
     inherit CliSourceGenerator<TreeNodeType<ArchetypeInfo>>()
 

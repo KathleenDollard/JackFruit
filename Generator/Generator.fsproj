@@ -12,6 +12,7 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
+		<!--<Compile Include="BuildNewCliCodeModel - Copy.fs" />-->
 		<Compile Include="Common\DescriptionAttribute.fs" />
 		<Compile Include="Models.fs" />
 		<Compile Include="AppModelHelpers.fs" />

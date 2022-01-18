@@ -1,8 +1,8 @@
-﻿module Generator.BuildNewerCliCodeModel
+﻿module Generator.BuildNewCliCodeModel
 
 open Generator.LanguageModel
 open Generator.Models
-open DslForCode
+open DslCodeBuilder
 open type Generator.LanguageHelpers.Structural
 open Generator.LanguageHelpers.Statements
 open Generator.LanguageExpressions
@@ -46,12 +46,12 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
             [ Class className {
                 Public()
                 Property ("Command", "Command") {
-                    Public2
+                    Public()
                 }
                 CommandConstructor commandDef
                 for mbr in commandDef.Members do
                     Property (mbr.NameAsProperty, mbr.TypeName) {
-                        Public2
+                        Public()
                     }
                 }
                 
@@ -65,17 +65,17 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
     try
         // KAD: Figure out right namespace: Should probably collect the correct namespace from the initial code. 
         let nspace = Namespace ("CliDefinition") {
-            Using "System" 
-            Using "System.CommandLine"
-            Using "System.CommandLine.Invocation"
-            Using "System.Threading.Tasks"
+            UsingModel.Create "System" 
+            UsingModel.Create "System.CommandLine"
+            UsingModel.Create "System.CommandLine.Invocation"
+            UsingModel.Create "System.Threading.Tasks"
             
             for commandDef in commandDefs do 
                 for cls in CommandClass commandDef do
                     cls
 
             }
-        Ok nspace.Model
+        Ok nspace
 
     with
     | ex -> Error (Other $"Error creating code model {ex.Message}")

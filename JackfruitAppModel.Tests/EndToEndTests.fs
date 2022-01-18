@@ -15,7 +15,7 @@ type TestGenerator() =
     inherit Jackfruit.Generator()
 
     override _.CodeModelBuilder commandDef =
-        BuildNewCliCodeModel.OutputCommandWrapper commandDef
+        BuildNewerCliCodeModel.OutputCommandWrapper commandDef
 
 [<Generator>]
 type End2End() =
