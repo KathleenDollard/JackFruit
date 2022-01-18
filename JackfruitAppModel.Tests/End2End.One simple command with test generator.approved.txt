@@ -15,6 +15,6 @@ namespace CliDefinition
          Command.Add(oneOption);
          command.SetHandler(Handlers.A, oneOption);
       }
-      public string oneOption {get; set;}
+      public Option<string> oneOption {get; set;}
    }
 }

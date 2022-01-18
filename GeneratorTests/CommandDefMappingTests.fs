@@ -6,7 +6,7 @@ open Generator.Tests.UtilsForTests
 open Generator.Tests
 open Generator.NewMapping
 open Generator
-open BuildCliCodeModel
+open BuildNewerCliCodeModel
 open Generator.LanguageModel
 open ApprovalTests
 open ApprovalTests.Reporters

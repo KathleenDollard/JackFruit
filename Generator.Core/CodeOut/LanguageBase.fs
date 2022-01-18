@@ -162,7 +162,7 @@ type LanguageBase() =
         | Protected -> this.ProtectedKeyword
         | ProtectedInternal -> this.ProtectedInternalKeyword
         | PrivateProtected -> this.PrivateProtectedKeyword
-        | Unknown -> this.UnknownKeyword
+        | Unknown -> this.PublicKeyword
 
     member this.OutputParameters (parameters: ParameterModel list) = 
         let getParameter (param:ParameterModel) =

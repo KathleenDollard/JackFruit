@@ -1,1 +1,20 @@
-﻿
+﻿using System;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.Threading.Tasks;
+namespace CliDefinition
+{
+   
+   public class ACli
+   {
+      public Command Command {get; set;}
+      public ACli()
+      {
+         Command = new Command("A");
+         oneOption = new Option<string>("one");
+         Command.Add(oneOption);
+         command.SetHandler(MyCommand, oneOption);
+      }
+      public Option<string> oneOption {get; set;}
+   }
+}

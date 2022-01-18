@@ -4,7 +4,7 @@ open Xunit
 open Generator.Tests
 open Generator
 open Generator.LanguageRoslynOut
-open Generator.BuildCliCodeModel
+open Generator.BuildNewerCliCodeModel
 open ApprovalTests
 open ApprovalTests.Reporters
 

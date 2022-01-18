@@ -7,7 +7,7 @@ namespace TestCode
 
         public void MethodA()
         {
-            MapInferred("", Handlers.A);
+            MapInferred("dotnet tool install", Handlers.A);
         }
         public static void MapInferred(string archetype, Delegate handler) { }
     }

@@ -37,12 +37,12 @@ type ``When creating simple code``() =
                 Using "System.Linq" ""
 
                 Class(className) {
-                    Public()
+                    Public2
 
                     Field("A", "string") { Private }
 
                     Constructor() 
-                        { Public()
+                        { Public2
                           Parameter(paramName, propertyType)
                           Assign propertyName To paramName
                         }
@@ -50,7 +50,7 @@ type ``When creating simple code``() =
                     Property(propertyName, "int") { Public2 }
 
                     Method(methodName)
-                        { Public()
+                        { Public2
                           ReturnType methodReturn
                           AssignWithVar "x" To "0" 
                           If (comparison) {

@@ -23,7 +23,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
 
     let CommandConstructor (commandDef: CommandDef) =
         Constructor() {
-            Public()
+            Public2
             Assign "Command" To (New "Command" [ StringLiteral commandDef.Name ])
             for mbr in commandDef.Members do
                 Assign mbr.NameAsProperty To (New mbr.SymbolType [ StringLiteral mbr.Name ])
@@ -44,13 +44,13 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
             let className = $"{commandDef.Name}Cli"
                 
             [ Class className {
-                Public()
+                Public2
                 Property ("Command", "Command") {
                     Public2
                 }
                 CommandConstructor commandDef
                 for mbr in commandDef.Members do
-                    Property (mbr.NameAsProperty, mbr.TypeName) {
+                    Property (mbr.NameAsProperty, mbr.SymbolType) {
                         Public2
                     }
                 }

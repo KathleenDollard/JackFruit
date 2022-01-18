@@ -232,8 +232,8 @@ type NamespaceModel =
 type ScopeAndModifiers =
     { Scope: Scope
       Modifiers: Modifier list }
-    interface IMember
-    interface IStatement
+    //interface IMember
+    //interface IStatement
 
 type System.String with 
     member this.AsFieldName() =
