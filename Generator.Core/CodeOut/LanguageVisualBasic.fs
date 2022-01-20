@@ -34,6 +34,7 @@ type LanguageVisualBasic() =
     override _.AwaitKeyword = "Await"
     override _.NewKeyword = "New"
     override _.NullKeyword = "Nothing"
+    override _.ThisKeyword = "Me"
     override _.TrueKeyword = "True"
     override _.FalseKeyword = "False"
 
@@ -70,13 +71,13 @@ type LanguageVisualBasic() =
     override this.MethodOpen  method  = 
         let modifiers = $"{this.ScopeOutput method.Scope}{this.OutputModifiers method.Modifiers}"
         [ match method.ReturnType with 
-            | Void -> $" Sub {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters})"
+            | ReturnTypeVoid -> $" Sub {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters})"
             | _ -> $" Function {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters}) As {method.ReturnType}" ]
         // TODO: Add implements to the basic data
 
     override _.MethodClose method  = 
         [ match method.ReturnType with 
-             | Void -> "End Sub"
+             | ReturnTypeVoid -> "End Sub"
              | _ -> "End Function" ]
 
     override this.AutoProperty property  = 

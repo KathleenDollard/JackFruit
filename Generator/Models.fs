@@ -5,6 +5,7 @@ open System.CommandLine
 open System.Collections.Generic
 open Generator.GeneralUtils 
 open Common
+open Generator.LanguageModel
 
 
 type ItemReturn<'T> =
@@ -12,13 +13,13 @@ type ItemReturn<'T> =
 | UsePreviousValue
 
 
-type CommandReturnType =
-    | Void
-    | CommandReturnType of t: NamedItem
-    static member Create typeName =
-        match typeName with 
-            | "void" -> Void
-            | _ -> CommandReturnType (NamedItem.Create typeName)
+//type CommandReturnType =
+//    | Void
+//    | CommandReturnType of t: NamedItem
+//    static member Create typeName =
+//        match typeName with 
+//            | "void" -> Void
+//            | _ -> CommandReturnType (NamedItem.Create typeName)
 
 
 /// MemberKind indicates the System.CommandLine symbol used
@@ -62,7 +63,7 @@ type MemberDefUsage =
 type CommandDefUsage =
     | UserMethod of Method: IMethodSymbol * SemanticModel: SemanticModel
     // Set Handler is just to support the work Kevin Bost did in 2021. Might be deleted in future
-    | SetHandlerMethod of Method: IMethodSymbol * SemanticModel: SemanticModel * Symbol: Symbol
+    //| SetHandlerMethod of Method: IMethodSymbol * SemanticModel: SemanticModel * Symbol: Symbol
     | Arbitrary of Name: string // might just be used in testing
 
 /// The main structure for command members during transformation.
@@ -210,7 +211,7 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: NamedItem, me
 
 
 /// The main structure for commands during transformations
-and CommandDef(commandId: string, path: string list, returnType: CommandReturnType, commandDefUsage: CommandDefUsage) =
+and CommandDef(commandId: string, path: string list, returnType: ReturnType, commandDefUsage: CommandDefUsage) =
 
     let pocket = Dictionary<string, obj>()
 
@@ -248,9 +249,15 @@ and CommandDef(commandId: string, path: string list, returnType: CommandReturnTy
         match commandDefUsage with 
         | UserMethod (m, _) -> 
             m.ToDisplayString().SubstringBefore("(", m.ToDisplayString())
-        | SetHandlerMethod (_, _, _) -> invalidOp "SetHandler handlers are not yet supported"
         | Arbitrary n -> n
 
+    member this.ParameterTypes : NamedItem list =
+       match commandDefUsage with 
+        | UserMethod (m, _) -> 
+            [ for p in m.Parameters do 
+                NamedItem.Create (p.Type.ToDisplayString()) ]
+        | Arbitrary n -> []
+        
 
     /// All commands need to be in either the flat list or in a tree based on 
     /// subcommands. They should not be in both. AppModels, other than the 
@@ -312,7 +319,7 @@ and CommandDef(commandId: string, path: string list, returnType: CommandReturnTy
     /// the environment return, and thus this is often unit (null)
     ///
     /// This always comes from the method and cannot be changed by transformers
-    member _.ReturnType: CommandReturnType = returnType
+    member _.ReturnType: ReturnType = returnType
 
     /// Used by the generator to determine whether to output SetHandler.
     /// When GenerateSetHandler is set to false, any tree structure is unused

@@ -377,7 +377,7 @@ type ``When creating a method``() =
     [<Fact>]
     member _.``Can create a method``() =
         let name = "A"
-        let returnType = Void
+        let returnType = ReturnTypeVoid
         let codeModel = 
             Method (SimpleNamedItem name) {
                 ReturnType returnType

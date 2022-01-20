@@ -13,7 +13,7 @@ namespace CliDefinition
          Command = new Command("dotnet");
          projectOption = new Option<string>("project");
          Command.Add(projectOption);
-         command.SetHandler(DotnetHandlers.Dotnet, projectOption);
+         Command.SetHandler(DotnetHandlers.Dotnet, projectOption);
       }
       public Option<string> projectOption {get; set;}
    }
@@ -24,7 +24,7 @@ namespace CliDefinition
       public addCli()
       {
          Command = new Command("add");
-         command.SetHandler();
+         Command.SetHandler();
       }
    }
    
@@ -50,7 +50,7 @@ namespace CliDefinition
          Command.Add(interactiveOption);
          prereleaseOption = new Option<bool>("prerelease");
          Command.Add(prereleaseOption);
-         command.SetHandler(DotnetHandlers.AddPackage, packageNameOption, versionOption, frameworkOption, noRestoreOption, sourceOption, packageDirectoryOption, interactiveOption, prereleaseOption);
+         Command.SetHandler(DotnetHandlers.AddPackage, packageNameOption, versionOption, frameworkOption, noRestoreOption, sourceOption, packageDirectoryOption, interactiveOption, prereleaseOption);
       }
       public Option<string> packageNameOption {get; set;}
       public Option<string> versionOption {get; set;}

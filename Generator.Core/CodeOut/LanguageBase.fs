@@ -38,6 +38,7 @@ type LanguageBase() =
     abstract AwaitKeyword: string with get
     abstract NewKeyword: string with get
     abstract NullKeyword: string with get
+    abstract ThisKeyword: string with get
 
     abstract EqualsOperator: string with get
     abstract NotEqualsOperator: string with get
@@ -228,7 +229,8 @@ type LanguageBase() =
             | SymbolLiteral x ->
                 match x with 
                 | Symbol s -> s
-            | NullLiteral _ -> this.NullKeyword // TODO: Watch for issues with this. Comparisons with Null from Nullable can be flipped from C#
+            | NullLiteral -> this.NullKeyword // TODO: Watch for issues with this. Comparisons with Null from Nullable can be flipped from C#
+            | ThisLiteral _ -> this.ThisKeyword
             | UnknownLiteral x -> $"**Unknown<{x}>**"
         | :? CompareLiteralsModel as asLiteralModel ->
             match asLiteralModel with 

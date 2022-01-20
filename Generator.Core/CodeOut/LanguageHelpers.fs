@@ -100,6 +100,11 @@ let Literal (value: obj) : IExpression =
     | SymbolLiteral x -> x
     | _ -> UnknownLiteral value
 
+let DelegateSignature (paramTypes: NamedItem list) (returnType: ReturnType) : NamedItem =
+    match returnType with
+    | ReturnTypeVoid -> NamedItem.Create ("Action", paramTypes)
+    | ReturnTypeUnknown -> NamedItem.Create("Unknown")
+    | ReturnType t -> NamedItem.Create ("Func", (List.append paramTypes [t]))
 
 
 type Structural =

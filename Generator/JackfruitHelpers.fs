@@ -15,6 +15,7 @@ type CommandDef with
 type MemberDef with
     member this.NameAsVariable = $"{this.Name}{this.KindName}"
     member this.NameAsProperty = $"{this.Name}{this.KindName}"
+    member this.NameAsResult = $"{this.Name}{this.KindName}Result"
     member this.SymbolType = GenericNamedItem (this.KindName, [ this.TypeName ])
 
 

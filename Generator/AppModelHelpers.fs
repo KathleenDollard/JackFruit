@@ -100,6 +100,6 @@ let DescriptionFromSymbol (commandDef: CommandDef) =
         UsePreviousValue
 
     match commandDef.CommandDefUsage with 
-    | SetHandlerMethod (_, _, symbol) -> descriptionFromSymbol symbol
+    | UserMethod (_, _) -> UsePreviousValue
     | _ -> UsePreviousValue
 

@@ -31,7 +31,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                 | Some desc -> Assign $"{mbr.NameAsProperty}.Description" To mbr.Description
                 | None -> ()
                 Invoke "Command" "Add" [ Literal mbr.NameAsProperty ] 
-            Invoke commandDef.VariableName "SetHandler" [
+            Invoke "Command" "SetHandler" [
                 SymbolLiteral (Symbol commandDef.HandlerMethodName)
                 for mbr in commandDef.Members do (Literal (mbr.NameAsVariable))]
             }
@@ -42,7 +42,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
         let rec recurse (recurseDepth: int) (commandDef: CommandDef) =
             if recurseDepth > 10 then invalidOp "Runaway recursion suspected!"
             let className = $"{commandDef.Name}Cli"
-                
+            
             [ Class className {
                 Public2
                 Property ("Command", "Command") {

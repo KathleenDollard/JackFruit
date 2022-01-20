@@ -160,6 +160,3 @@ type NamedItem =
         |> MapTree fMap 
     static member op_Implicit(name: string) : NamedItem = 
         NamedItem.Create name
-
-
-        

@@ -54,7 +54,7 @@ type ParameterModel =
     { ParameterName: string
       Type: NamedItem
       Style: ParameterStyle }
-    interface IStatement
+    //interface IStatement
     static member Create name paramType =
         { ParameterName = name
           Type = paramType
@@ -62,13 +62,13 @@ type ParameterModel =
 
 
 type ReturnType =
-    | Void
+    | ReturnTypeVoid
     | ReturnTypeUnknown
     | ReturnType of t: NamedItem
-    interface IStatement
+    //interface IStatement
     static member Create typeName =
         match typeName with 
-            | "void" -> Void
+            | "void" -> ReturnTypeVoid
             | _ -> ReturnType (NamedItem.Create typeName)
     static member op_Implicit(typeName: string) : ReturnType = 
         ReturnType.Create typeName

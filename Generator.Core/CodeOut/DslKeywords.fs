@@ -15,7 +15,7 @@ type ToWord =
 
 //// As soon as we stript the old builder, remove "Word" from the _members_ here
 //type StaticWord =
-//    | StaticWord
+//    | StaticWord F
 
 //type AbstractWord =
 //    | AbstractWord

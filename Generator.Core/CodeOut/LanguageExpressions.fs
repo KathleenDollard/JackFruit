@@ -49,6 +49,7 @@ type LiteralsModel =
     | DoubleLiteral of d: Double
     | SymbolLiteral of s: Symbol
     | NullLiteral
+    | ThisLiteral
     | UnknownLiteral of x: obj
     interface IExpression
 

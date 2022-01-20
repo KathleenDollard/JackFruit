@@ -13,7 +13,7 @@ namespace CliDefinition
          Command = new Command("A");
          oneOption = new Option<string>("one");
          Command.Add(oneOption);
-         command.SetHandler(Handlers.A, oneOption);
+         Command.SetHandler(Handlers.A, oneOption);
       }
       public Option<string> oneOption {get; set;}
    }
