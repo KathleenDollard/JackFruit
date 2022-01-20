@@ -6,6 +6,8 @@ open Common
 open System
 open DslKeywords
 open Generator.LanguageStatements
+open Generator.LanguageExpressions
+open Generator.LanguageHelpers
 
 
 [<AbstractClass>]
@@ -16,6 +18,14 @@ type StatementBuilderBase<'T>() =
 type MethodBase<'T>() =
     inherit StatementBuilderBase<'T>()
 
+    member _.NewParameter parameterName parameterType style =
+        { ParameterName = parameterName
+          Type = parameterType
+          Style = 
+            match style with 
+            | Some s -> s
+            | None -> Normal }
+
 type Namespace(name: string) =
     inherit DslBase<NamespaceModel, ClassModel>()
 
@@ -25,17 +35,17 @@ type Namespace(name: string) =
         { this.Empty() with Classes = [ item ] }
 
     override _.CombineModels nspace nspace2 : NamespaceModel =
-        let newName = 
-            if String.IsNullOrWhiteSpace nspace.NamespaceName then nspace2.NamespaceName
-            else nspace.NamespaceName
+        //let newName = 
+        //    if String.IsNullOrWhiteSpace nspace.NamespaceName then nspace2.NamespaceName
+        //    else nspace.NamespaceName
         { nspace with 
-            NamespaceName = newName
+            NamespaceName = nspace.NamespaceName // always set to this value
             Usings =  List.append nspace.Usings nspace2.Usings
             Classes = List.append nspace.Classes nspace2.Classes }  
 
-    [<CustomOperation("Name", MaintainsVariableSpaceUsingBind = true)>]
-    member this.setName (varModel, [<ProjectionParameter>] name)   =
-        this.SetModel varModel { varModel.Model with NamespaceName = name varModel.Variables }
+    //[<CustomOperation("Name", MaintainsVariableSpaceUsingBind = true)>]
+    //member this.setName (varModel, [<ProjectionParameter>] name)   =
+    //    this.SetModel varModel { varModel.Model with NamespaceName = name varModel.Variables }
 
     [<CustomOperation("Using", MaintainsVariableSpaceUsingBind = true)>]
     member this.setUsing (varModel, [<ProjectionParameter>] using)   =
@@ -72,10 +82,10 @@ type Class(name: string) =
         { this.Empty() with Members = [ item ] }
 
     override _.CombineModels cls1 cls2 =
-        let newName = 
-            match cls1.ClassName with
-            | SimpleNamedItem n when String.IsNullOrWhiteSpace(n) -> cls2.ClassName
-            | _ -> cls1.ClassName
+        //let newName = 
+        //    match cls1.ClassName with
+        //    | SimpleNamedItem n when String.IsNullOrWhiteSpace(n) -> cls2.ClassName
+        //    | _ -> cls1.ClassName
         let newScope = 
             match cls1.Scope with 
             | Unknown -> cls2.Scope
@@ -87,7 +97,7 @@ type Class(name: string) =
             | (NoBase, SomeBase baseClass) -> SomeBase baseClass
             | (_, SomeBase baseClass) -> SomeBase baseClass
         { cls1 with 
-            ClassName = newName
+            ClassName = cls1.ClassName   // Always set to this
             Scope = newScope
             Modifiers = List.append cls1.Modifiers cls2.Modifiers
             InheritedFrom = newInheritedFrom
@@ -122,9 +132,6 @@ type Class(name: string) =
     member this.setPrivateProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
         this.setScope varModel Scope.PrivateProtected modifier1 modifier2
 
-
-    // KAD!! Test next that you can combine scope and members
-
     [<CustomOperation("InheritedFrom", MaintainsVariableSpace = true)>]
     member this.inheritedFrom (varModel, [<ProjectionParameter>] inheritedFrom) =
         let inheritedFrom: string = inheritedFrom varModel.Variables
@@ -139,26 +146,21 @@ type Class(name: string) =
     member _.addMember (cls: ClassModel, memberModels: IMember list) =
         { cls with Members =  List.append cls.Members memberModels }
  
+
 type Field(name: string, typeName: NamedItem) =
     inherit DslBase<IMember, unit>()
 
-     //member private this.SetScopeAndModifiers 
-     //       (varModel: M<IMember, 'Vars0>) 
-     //       (scope: Scope) 
-     //       (modifier1: Modifier option) 
-     //       (modifier2: Modifier option) =
-     //   let fld = varModel.Model :?> FieldModel 
-     //   let newField: FieldModel = 
-     //       { fld with 
-     //           Scope = scope
-     //           Modifiers = fld.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
-     //   this.SetModel varModel newField
-    member private this.setScope varModel scope modifier1 modifier2 =
-        let fld = varModel.Model :?> FieldModel
-        this.SetModel varModel 
-            { varModel.Model with 
+     member private this.SetScopeAndModifiers 
+            (varModel: M<IMember, 'Vars0>) 
+            (scope: Scope) 
+            (modifier1: Modifier option) 
+            (modifier2: Modifier option) =
+        let fld = varModel.Model :?> FieldModel 
+        let newField: FieldModel = 
+            { fld with 
                 Scope = scope
-                Modifiers = varModel.Model.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
+                Modifiers = fld.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
+        this.SetModel varModel newField
 
 
     override _.Empty() =  FieldModel.Create name typeName
@@ -166,13 +168,13 @@ type Field(name: string, typeName: NamedItem) =
     override _.CombineModels mbr1 mbr2 =
         let fld1 = mbr1 :?> FieldModel
         let fld2 = mbr2 :?> FieldModel
-        let newName = 
-            if String.IsNullOrWhiteSpace(fld1.FieldName) then fld1.FieldName
-            else fld2.FieldName
-        let newType = 
-            match fld1.FieldType with
-            | SimpleNamedItem n when String.IsNullOrWhiteSpace(n) -> fld2.FieldType
-            | _ -> fld1.FieldType
+        //let newName = 
+        //    if String.IsNullOrWhiteSpace(fld1.FieldName) then fld1.FieldName
+        //    else fld2.FieldName
+        //let newType = 
+        //    match fld1.FieldType with
+        //    | SimpleNamedItem n when String.IsNullOrWhiteSpace(n) -> fld2.FieldType
+        //    | _ -> fld1.FieldType
         let newInitialValue =
             match fld1.InitialValue with
             | None -> fld2.InitialValue
@@ -182,8 +184,8 @@ type Field(name: string, typeName: NamedItem) =
             | Unknown -> fld2.Scope
             | _ -> fld1.Scope  
         { fld1 with 
-            FieldName = newName
-            FieldType = newType
+            FieldName = fld1.FieldName //Always set to this
+            FieldType = fld1.FieldType //Always set to thi
             Scope = newScope
             Modifiers = List.append fld1.Modifiers fld2.Modifiers
             InitialValue = newInitialValue }  
@@ -192,31 +194,37 @@ type Field(name: string, typeName: NamedItem) =
 
     [<CustomOperation("Public2", MaintainsVariableSpaceUsingBind = true)>]
     member this.setPublic(varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
-        this.setScope varModel Scope.Public modifier1 modifier2
+        this.SetScopeAndModifiers varModel Scope.Public modifier1 modifier2
     
     [<CustomOperation("Private", MaintainsVariableSpaceUsingBind = true)>]
     member this.setPrivate (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
-        this.setScope varModel Scope.Private modifier1 modifier2
+        this.SetScopeAndModifiers varModel Scope.Private modifier1 modifier2
     
     [<CustomOperation("Internal", MaintainsVariableSpaceUsingBind = true)>]
     member this.setInternal (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
-        this.setScope varModel Scope.Internal modifier1 modifier2
+        this.SetScopeAndModifiers varModel Scope.Internal modifier1 modifier2
     
     [<CustomOperation("Friend", MaintainsVariableSpaceUsingBind = true)>]
     member this.setFriend (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
-        this.setScope varModel Scope.Internal modifier1 modifier2
+        this.SetScopeAndModifiers varModel Scope.Internal modifier1 modifier2
     
     [<CustomOperation("Protected", MaintainsVariableSpaceUsingBind = true)>]
     member this.setProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
-        this.setScope varModel Scope.Protected modifier1 modifier2
+        this.SetScopeAndModifiers varModel Scope.Protected modifier1 modifier2
     
     [<CustomOperation("ProtectedInternal", MaintainsVariableSpaceUsingBind = true)>]
     member this.setProtectedInternal (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
-        this.setScope varModel Scope.ProtectedInternal modifier1 modifier2
+        this.SetScopeAndModifiers varModel Scope.ProtectedInternal modifier1 modifier2
     
     [<CustomOperation("PrivateProtected", MaintainsVariableSpaceUsingBind = true)>]
     member this.setPrivateProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
-        this.setScope varModel Scope.PrivateProtected modifier1 modifier2
+        this.SetScopeAndModifiers varModel Scope.PrivateProtected modifier1 modifier2
+
+    [<CustomOperation("InitialValue", MaintainsVariableSpace = true)>]
+    member this.initialValue ((varModel: M<IMember, 'Vars0>), [<ProjectionParameter>] initialValue) =
+        let initialValue: string = initialValue varModel.Variables
+        let fld = varModel.Model :?> FieldModel 
+        this.SetModel varModel { fld with InitialValue = Some (Literal initialValue) }
  
 type Property(name: string, typeName: NamedItem) =
     inherit DslBase<IMember, unit>()
@@ -238,20 +246,20 @@ type Property(name: string, typeName: NamedItem) =
     override _.CombineModels mbr1 mbr2 = 
         let prop1 = mbr1 :?> PropertyModel
         let prop2 = mbr2 :?> PropertyModel
-        let newName = 
-            if String.IsNullOrWhiteSpace(prop1.PropertyName) then prop1.PropertyName
-            else prop2.PropertyName
-        let newType = 
-            match prop1.Type with
-            | SimpleNamedItem n when String.IsNullOrWhiteSpace(n) -> prop2.Type
-            | _ -> prop1.Type
+        //let newName = 
+        //    if String.IsNullOrWhiteSpace(prop1.PropertyName) then prop1.PropertyName
+        //    else prop2.PropertyName
+        //let newType = 
+        //    match prop1.Type with
+        //    | SimpleNamedItem n when String.IsNullOrWhiteSpace(n) -> prop2.Type
+        //    | _ -> prop1.Type
         let newScope = 
             match prop1.Scope with 
             | Unknown -> prop2.Scope
             | _ -> prop1.Scope  
         { prop1 with 
-            PropertyName = newName
-            Type = newType
+            PropertyName = prop1.PropertyName // Always set via constructor
+            Type = prop1.Type // Always set via constructor
             Scope = newScope
             Modifiers = List.append prop1.Modifiers prop2.Modifiers
             GetStatements = prop1.GetStatements @ prop2.GetStatements
@@ -304,16 +312,15 @@ type Method(name: string) =
                Modifiers = method.Modifiers @ Modifier.CombineModifiers modifier1 modifier2 }
        this.SetModel varModel newMethod
 
-
     override _.Empty() =  MethodModel.Create name
 
     override _.CombineModels mbr1 mbr2 = 
         let method1 = mbr1 :?> MethodModel
         let method2 = mbr2 :?> MethodModel
-        let newName = 
-            match method1.MethodName with
-            | SimpleNamedItem n when String.IsNullOrWhiteSpace(n) -> method2.MethodName
-            | _ -> method1.MethodName
+        //let newName = 
+        //    match method1.MethodName with
+        //    | SimpleNamedItem n when String.IsNullOrWhiteSpace(n) -> method2.MethodName
+        //    | _ -> method1.MethodName
         let newReturnType = 
             match method1.ReturnType with
             | ReturnTypeUnknown -> method2.ReturnType
@@ -323,7 +330,7 @@ type Method(name: string) =
             | Unknown -> method2.Scope
             | _ -> method1.Scope  
         { method1 with 
-            MethodName = newName
+            MethodName = method1.MethodName // Always set in constructor
             ReturnType = newReturnType
             Scope = newScope
             Modifiers = method1.Modifiers@  method2.Modifiers
@@ -362,7 +369,22 @@ type Method(name: string) =
     [<CustomOperation("PrivateProtected", MaintainsVariableSpaceUsingBind = true)>]
     member this.setPrivateProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
         this.SetScopeAndModifiers varModel Scope.PrivateProtected modifier1 modifier2
- 
+
+    [<CustomOperation("ReturnType", MaintainsVariableSpaceUsingBind = true)>]
+    member this.setReturnType (varModel: M<IMember, 'Vars0>, [<ProjectionParameter>] returnType) =
+        let returnType: ReturnType = returnType varModel.Variables
+        let method = varModel.Model :?> MethodModel 
+        //let returnType = ReturnType.Create returnType
+        this.SetModel varModel { method with ReturnType = returnType }
+
+    [<CustomOperation("Parameter", MaintainsVariableSpaceUsingBind = true)>]
+    member this.setParameter (varModel: M<IMember, 'Vars0>, [<ProjectionParameter>] parameterName, parameterType, (?style: ParameterStyle))   =
+        let parameterName: string = parameterName varModel.Variables
+        let method = varModel.Model :?> MethodModel 
+        let newParameter = this.NewParameter parameterName parameterType style
+        this.SetModel varModel (method.AddParameter newParameter)
+       
+        
 type Constructor() =
     inherit MethodBase<IMember>()
 
@@ -393,8 +415,6 @@ type Constructor() =
             Modifiers = method1.Modifiers@  method2.Modifiers
             Parameters = method1.Parameters @ method1.Parameters
             Statements = method1.Statements @ method2.Statements }  
-
-
 
     override this.NewMember item =
         let method = this.Empty() :?> ConstructorModel
@@ -428,6 +448,13 @@ type Constructor() =
     [<CustomOperation("PrivateProtected", MaintainsVariableSpaceUsingBind = true)>]
     member this.setPrivateProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
         this.SetScopeAndModifiers varModel Scope.PrivateProtected modifier1 modifier2
+
+    [<CustomOperation("Parameter", MaintainsVariableSpaceUsingBind = true)>]
+    member this.setUsing ((varModel: M<IMember, 'Vars0>), [<ProjectionParameter>] parameterName, parameterType, (?style: ParameterStyle))   =
+        let parameterName: string = parameterName varModel.Variables
+        let method = varModel.Model :?> ConstructorModel 
+        let newParameter = this.NewParameter parameterName parameterType style
+        this.SetModel varModel (method.AddParameter newParameter)
   
 
 type If(condition: ICompareExpression) =

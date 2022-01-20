@@ -30,6 +30,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
         let operationAsParam = "operation"
         let operationType = DelegateSignature commandDef.ParameterTypes commandDef.ReturnType
         let handlerName = "Command.Handler"
+        let invokeReturnType = ReturnType.ReturnType (NamedItem.Create ("Task", ["int"]))
                 
         [ Class className {
             Public2
@@ -39,7 +40,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
 
             Constructor() {
                 Public2
-                Parameter (operationAsParam, operationType)
+                Parameter operationAsParam operationType
                 Assign operationAsField To operationAsParam
                 Assign Command To (New Command [ StringLiteral commandDef.Name ])
                 for mbr in commandDef.Members do
@@ -56,7 +57,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                     Property (mbr.NameAsProperty, mbr.SymbolType) { Public2 }
                 Method (mbr.NameAsResult) { 
                     Public2 
-                    Parameter ("context", "InvocationContext")
+                    Parameter "context" "InvocationContext"
                     // TODO: Work on the following line
                     ReturnType (ReturnType.ReturnType mbr.TypeName)
                     // TODO: Work on Symbol in the following line
@@ -65,7 +66,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
 
             Method("InvokeAsync") {
                 Public2
-                ReturnType (ReturnType.ReturnType (NamedItem.Create ("Task", ["int"])))
+                ReturnType invokeReturnType
                 Invoke "" operationAsField [ 
                     for mbr in commandDef.Members do
                         Invoke "" mbr.NameAsResult [ SymbolLiteral (Symbol "context") ] ]
