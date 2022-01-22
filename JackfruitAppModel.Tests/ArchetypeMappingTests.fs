@@ -13,6 +13,7 @@ open Microsoft.CodeAnalysis
 open Generator.Tests
 open Jackfruit.UtilsForTests
 open Jackfruit.Tests
+open Generator
 
 
 type ``When parsing archetypes``() =
@@ -205,28 +206,30 @@ type ``When parsing archetypes``() =
 
 
 type ``When creating archetypeInfo from mapping``() =
+    let eval = EvalCSharp()
+
     let CommandNamesFromSource source =
-        let commandNames archInfoList =
+        let getCommandNames (archInfoList: ArchetypeInfo list) =
             [ for archInfo in archInfoList do
                 archInfo.Path |> List.last ]
 
         let result = 
             ModelFrom [(CSharpCode source); (CSharpCode HandlerSource)]
-            |> Result.bind (InvocationsFromModel "MapInferred")
-            |> Result.bind ArchetypeInfoListFrom 
-            |> Result.map commandNames
+            |> Result.bind (eval.InvocationsFromModel "MapInferred")
+            |> Result.bind (ArchetypeInfoListFrom eval)
+            |> Result.map getCommandNames
 
         match result with 
-        | Ok n -> n
+        | Ok n ->  n
         | Error err -> invalidOp $"Test failed with {err}"
-
+     
 
     [<Fact>]
     member _.``None are found when there are none``() =
         let source = MapData.NoMapping.CliCode
 
+        let expected = MapData.NoMapping.CommandNames
         let actual = CommandNamesFromSource source
-
         actual |> should matchList MapData.NoMapping.CommandNames
 
     [<Fact>]

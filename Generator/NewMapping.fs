@@ -2,6 +2,7 @@
 
 open Microsoft.CodeAnalysis
 open Generator.Models
+open Generator.LanguageModel
 open Common
 
 let CommandDefFromMethod model (info: AppModelCommandInfo) =
@@ -22,8 +23,8 @@ let CommandDefFromMethod model (info: AppModelCommandInfo) =
     let returnType = 
         match info.Method with 
         // Don: Why do we need the parens here? The error is "successive args..." when there is only one arg [Consider issue]
-        | Some m -> CommandReturnType.Create (m.ReturnType.ToDisplayString())
-        | None -> CommandReturnType.Void
+        | Some m -> ReturnType.Create (m.ReturnType.ToDisplayString())
+        | None -> ReturnTypeVoid
 
     let commandDef = CommandDef(id, info.Path, returnType, usage)
 

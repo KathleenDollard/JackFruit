@@ -1,48 +1,51 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
 
-    <IsPackable>false</IsPackable>
-    <GenerateProgramFile>false</GenerateProgramFile>
-  </PropertyGroup>
+		<IsPackable>false</IsPackable>
+		<GenerateProgramFile>false</GenerateProgramFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="UtilForTests.fs" />
-    <Compile Include="MapData.fs" />
-    <Compile Include="ArchetypeMappingTests.fs" />
-    <Compile Include="AppModelTests.fs" />
-    <Content Include="TestHandlers.cs" />
-    <Compile Include="EndToEndTests.fs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Include="UtilForTests.fs" />
+		<Compile Include="MapData.fs" />
+		<Compile Include="ArchetypeMappingTests.fs" />
+		<Compile Include="AppModelTests.fs" />
+		<Content Include="TestHandlers.cs" />
+		<Compile Include="EndToEndTests.fs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="FsUnit.xUnit" Version="4.1.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0-preview-20211130-02" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21568.1" />
-    <PackageReference Include="xunit" Version="2.4.2-pre.12" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="3.1.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="ApprovalTests" Version="5.7.1" />
+		<PackageReference Include="FsUnit.xUnit" Version="4.1.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0-preview-20211130-02" />
+		<PackageReference Include="System.CommandLine" Version="2.0.0-beta2.22057.1" />
+		<PackageReference Include="xunit" Version="2.4.2-pre.12" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="coverlet.collector" Version="3.1.0">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="4.1.0-1.final" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0-1.final" />
+		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.1.0-1.final" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ConsoleSupport\ConsoleSupport.csproj" />
-    <ProjectReference Include="..\Generator\Generator.fsproj" />
-    <ProjectReference Include="..\GeneratorTests\GeneratorTests.fsproj" />
-    <ProjectReference Include="..\JackfruitAppModel\JackfruitAppModel.fsproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Generator\Generator.fsproj" />
+		<ProjectReference Include="..\GeneratorTests\GeneratorTests.fsproj" />
+		<ProjectReference Include="..\JackFruitAppModel.CSharp\JackfruitAppModel.CSharp.fsproj" />
+		<ProjectReference Include="..\JackfruitAppModel\JackfruitAppModel.fsproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Update="TestHandlers.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Update="TestHandlers.cs">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
 </Project>

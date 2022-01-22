@@ -1,32 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<OutputPath>..\artifacts\packages\jackfruit.generator</OutputPath>
+		<NoWarn>3391</NoWarn>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="Models.fs" />
-    <Compile Include="AppModelHelpers.fs" />
-    <Compile Include="AppModel.fs" />
-    <Compile Include="Transform.fs" />
+	<PropertyGroup>
+		<PackageId>Jackfruit.Generator</PackageId>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<!--<Compile Include="BuildNewCliCodeModel - Copy.fs" />-->
+		<Compile Include="Common\DescriptionAttribute.fs" />
+		<Compile Include="Models.fs" />
+		<Compile Include="AppModelHelpers.fs" />
+		<Compile Include="AppModel.fs" />
+		<Compile Include="Transform.fs" />
 
-    <Compile Include="NewMapping.fs" />
-    <Compile Include="JackfruitHelpers.fs" />
-    <Compile Include="BuildCliCodeModel.fs" />
-    <Compile Include="BuildNewCliCodeModel.fs" />
-    <Compile Include="CliSourceGenerator.fs" />
-  </ItemGroup>
+		<Compile Include="NewMapping.fs" />
+		<Compile Include="JackfruitHelpers.fs" />
+		<Compile Include="BuildCodeModel.fs" />
+		<!--<Compile Include="BuildCliCodeModel.fs" />-->
+		<Compile Include="BuildNewCliCodeModel.fs" />
+		<Compile Include="CliSourceGenerator.fs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21568.1" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="System.CommandLine" Version="2.0.0-beta2.22057.1" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\Generator.CommonCodeEval\Generator.CommonCodeEval.fsproj" />
-    <ProjectReference Include="..\Generator.CommonCodeOut\Generator.CommonCodeOut.fsproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Generator.Core\Generator.Core.fsproj" />
+	</ItemGroup>
 
+	<PropertyGroup>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	</PropertyGroup>
 
 </Project>

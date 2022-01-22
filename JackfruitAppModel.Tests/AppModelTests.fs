@@ -19,9 +19,11 @@ open Jackfruit.Tests
 open Common
 open ApprovalTests.Reporters
 open ApprovalTests
+open Generator
 
 
 type ``Can retrieve method for archetype``() =
+    let eval = EvalCSharp()
 
     let ArchetypeList source =
         let result = ModelFrom [(CSharpCode source); (CSharpCode HandlerSource)]
@@ -31,8 +33,8 @@ type ``Can retrieve method for archetype``() =
             | Error err -> invalidOp $"Test failed during model creation with {err}"
         
         let archListResult = 
-            InvocationsFromModel "MapInferred" model
-            |> Result.bind ArchetypeInfoListFrom
+            eval.InvocationsFromModel "MapInferred" model
+            |> Result.bind (ArchetypeInfoListFrom eval)
 
         match archListResult with 
         | Ok list -> list, model
@@ -73,6 +75,7 @@ type ``Can retrieve method for archetype``() =
 
 type ``Can build CommandDef from archetype``() =
 
+    let eval = EvalCSharp()
 
     let ArchetypeTree source =
         let result = ModelFrom [(CSharpCode source); (CSharpCode HandlerSource)]
@@ -82,8 +85,8 @@ type ``Can build CommandDef from archetype``() =
             | Error err -> invalidOp $"Test failed during model creation with {err}"
         
         let archListResult = 
-            InvocationsFromModel "MapInferred" model
-            |> Result.bind ArchetypeInfoListFrom
+            eval.InvocationsFromModel "MapInferred" model
+            |> Result.bind (ArchetypeInfoListFrom eval)
             |> Result.bind ArchetypeInfoTreeFrom
 
         match archListResult with 
@@ -92,7 +95,7 @@ type ``Can build CommandDef from archetype``() =
 
     let GetCommandDefs(code: string) =
         let (archetypeTreeList, model) = ArchetypeTree code
-        let appModel = Jackfruit.AppModel() :> Generator.AppModel<TreeNodeType<ArchetypeInfo>>
+        let appModel = Jackfruit.AppModel(eval) :> Generator.AppModel<TreeNodeType<ArchetypeInfo>>
         [ match CommandDefsFrom model appModel archetypeTreeList with
             | Ok nodeDefs -> nodeDefs
             | Error e -> invalidOp "Error when building CommandDef"]
@@ -100,7 +103,7 @@ type ``Can build CommandDef from archetype``() =
     let TestArchetypeHandlerRetrieval (code: string) (expectedCommandDefs: CommandDef list) =
         //let code = AddMethodsToClassWithBuilder code
         let (archetypeTreeList, model) = ArchetypeTree code
-        let appModel = Jackfruit.AppModel() :> Generator.AppModel<TreeNodeType<ArchetypeInfo>>
+        let appModel = Jackfruit.AppModel(eval) :> Generator.AppModel<TreeNodeType<ArchetypeInfo>>
         let commandDefs =
             [ match CommandDefsFrom model appModel archetypeTreeList with
                 | Ok nodeDefs -> for def in nodeDefs do def 

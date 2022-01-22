@@ -1,8 +1,8 @@
-﻿module Generator.BuildNewCliCodeModel
+﻿module Generator.BuildNewerCliCodeModel
 
-open Generator.Language
+open Generator.LanguageModel
 open Generator.Models
-open DslCodeBuilder
+open DslForCode
 open type Generator.LanguageHelpers.Structural
 open Generator.LanguageHelpers.Statements
 open Generator.LanguageExpressions
@@ -23,7 +23,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
 
     let CommandConstructor (commandDef: CommandDef) =
         Constructor() {
-            Public()
+            Public2
             Assign "Command" To (New "Command" [ StringLiteral commandDef.Name ])
             for mbr in commandDef.Members do
                 Assign mbr.NameAsProperty To (New mbr.SymbolType [ StringLiteral mbr.Name ])
@@ -31,7 +31,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                 | Some desc -> Assign $"{mbr.NameAsProperty}.Description" To mbr.Description
                 | None -> ()
                 Invoke "Command" "Add" [ Literal mbr.NameAsProperty ] 
-            Invoke commandDef.VariableName "SetHandler" [
+            Invoke "Command" "SetHandler" [
                 SymbolLiteral (Symbol commandDef.HandlerMethodName)
                 for mbr in commandDef.Members do (Literal (mbr.NameAsVariable))]
             }
@@ -42,16 +42,16 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
         let rec recurse (recurseDepth: int) (commandDef: CommandDef) =
             if recurseDepth > 10 then invalidOp "Runaway recursion suspected!"
             let className = $"{commandDef.Name}Cli"
-                
+            
             [ Class className {
-                Public()
+                Public2
                 Property ("Command", "Command") {
-                    Public()
+                    Public2
                 }
                 CommandConstructor commandDef
                 for mbr in commandDef.Members do
-                    Property (mbr.NameAsProperty, mbr.TypeName) {
-                        Public()
+                    Property (mbr.NameAsProperty, mbr.SymbolType) {
+                        Public2
                     }
                 }
                 
@@ -65,17 +65,17 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
     try
         // KAD: Figure out right namespace: Should probably collect the correct namespace from the initial code. 
         let nspace = Namespace ("CliDefinition") {
-            UsingModel.Create "System" 
-            UsingModel.Create "System.CommandLine"
-            UsingModel.Create "System.CommandLine.Invocation"
-            UsingModel.Create "System.Threading.Tasks"
+            Using "System" 
+            Using "System.CommandLine"
+            Using "System.CommandLine.Invocation"
+            Using "System.Threading.Tasks"
             
             for commandDef in commandDefs do 
                 for cls in CommandClass commandDef do
                     cls
 
             }
-        Ok nspace
+        Ok nspace.Model
 
     with
     | ex -> Error (Other $"Error creating code model {ex.Message}")

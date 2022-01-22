@@ -6,7 +6,7 @@ open Microsoft.CodeAnalysis;
 open System.Collections.Immutable
 open System.Threading
 open Xunit
-open Microsoft.CSharp.RuntimeBinder
+//open Microsoft.CSharp.RuntimeBinder
 open Microsoft.CodeAnalysis
 open Microsoft.CodeAnalysis.CSharp
 open System.Linq

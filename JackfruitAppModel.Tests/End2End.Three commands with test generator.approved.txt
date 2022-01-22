@@ -13,9 +13,9 @@ namespace CliDefinition
          Command = new Command("dotnet");
          projectOption = new Option<string>("project");
          Command.Add(projectOption);
-         command.SetHandler(DotnetHandlers.Dotnet, projectOption);
+         Command.SetHandler(DotnetHandlers.Dotnet, projectOption);
       }
-      public string projectOption {get; set;}
+      public Option<string> projectOption {get; set;}
    }
    
    public class addCli
@@ -24,7 +24,7 @@ namespace CliDefinition
       public addCli()
       {
          Command = new Command("add");
-         command.SetHandler();
+         Command.SetHandler();
       }
    }
    
@@ -50,15 +50,15 @@ namespace CliDefinition
          Command.Add(interactiveOption);
          prereleaseOption = new Option<bool>("prerelease");
          Command.Add(prereleaseOption);
-         command.SetHandler(DotnetHandlers.AddPackage, packageNameOption, versionOption, frameworkOption, noRestoreOption, sourceOption, packageDirectoryOption, interactiveOption, prereleaseOption);
+         Command.SetHandler(DotnetHandlers.AddPackage, packageNameOption, versionOption, frameworkOption, noRestoreOption, sourceOption, packageDirectoryOption, interactiveOption, prereleaseOption);
       }
-      public string packageNameOption {get; set;}
-      public string versionOption {get; set;}
-      public string frameworkOption {get; set;}
-      public bool noRestoreOption {get; set;}
-      public string sourceOption {get; set;}
-      public string packageDirectoryOption {get; set;}
-      public bool interactiveOption {get; set;}
-      public bool prereleaseOption {get; set;}
+      public Option<string> packageNameOption {get; set;}
+      public Option<string> versionOption {get; set;}
+      public Option<string> frameworkOption {get; set;}
+      public Option<bool> noRestoreOption {get; set;}
+      public Option<string> sourceOption {get; set;}
+      public Option<string> packageDirectoryOption {get; set;}
+      public Option<bool> interactiveOption {get; set;}
+      public Option<bool> prereleaseOption {get; set;}
    }
 }

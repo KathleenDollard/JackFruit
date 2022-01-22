@@ -4,7 +4,7 @@ open Xunit
 open Generator.Tests
 open Generator
 open Generator.LanguageRoslynOut
-open Generator.BuildCliCodeModel
+open Generator.BuildNewerCliCodeModel
 open ApprovalTests
 open ApprovalTests.Reporters
 
@@ -24,7 +24,7 @@ type ``When creating a code from model``() =
         let writerResult = outputter.Output codeModel
         let code =
             match writerResult with 
-            | Error _ -> invalidOp "Unexpected error in test"
+            | Error e -> invalidOp "Unexpected error in test"
             | Ok writer -> 
                 writer.Output
 

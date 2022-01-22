@@ -7,41 +7,58 @@ namespace CliDefinition
    
    public class dotnetCli
    {
-      public Command DotnetCommand()
+      public Command Command {get; set;}
+      public dotnetCli()
       {
-         var command = new Command("dotnet");
-         var projectOption = new Option<string>("project");
-         command.Add(projectOption);
-         command.SetHandler(DotnetHandlers.Dotnet, projectOption);
-         return command;
+         Command = new Command("dotnet");
+         projectOption = new Option<string>("project");
+         Command.Add(projectOption);
+         Command.SetHandler(DotnetHandlers.Dotnet, projectOption);
       }
-      public Command AddCommand()
+      public Option<string> projectOption {get; set;}
+   }
+   
+   public class addCli
+   {
+      public Command Command {get; set;}
+      public addCli()
       {
-         var command = new Command("add");
-         command.SetHandler();
-         return command;
+         Command = new Command("add");
+         Command.SetHandler();
       }
-      public Command PackageCommand()
+   }
+   
+   public class packageCli
+   {
+      public Command Command {get; set;}
+      public packageCli()
       {
-         var command = new Command("package");
-         var packageNameOption = new Option<string>("packageName");
-         command.Add(packageNameOption);
-         var versionOption = new Option<string>("version");
-         command.Add(versionOption);
-         var frameworkOption = new Option<string>("framework");
-         command.Add(frameworkOption);
-         var noRestoreOption = new Option<bool>("noRestore");
-         command.Add(noRestoreOption);
-         var sourceOption = new Option<string>("source");
-         command.Add(sourceOption);
-         var packageDirectoryOption = new Option<string>("packageDirectory");
-         command.Add(packageDirectoryOption);
-         var interactiveOption = new Option<bool>("interactive");
-         command.Add(interactiveOption);
-         var prereleaseOption = new Option<bool>("prerelease");
-         command.Add(prereleaseOption);
-         command.SetHandler(DotnetHandlers.AddPackage, packageNameOption, versionOption, frameworkOption, noRestoreOption, sourceOption, packageDirectoryOption, interactiveOption, prereleaseOption);
-         return command;
+         Command = new Command("package");
+         packageNameOption = new Option<string>("packageName");
+         Command.Add(packageNameOption);
+         versionOption = new Option<string>("version");
+         Command.Add(versionOption);
+         frameworkOption = new Option<string>("framework");
+         Command.Add(frameworkOption);
+         noRestoreOption = new Option<bool>("noRestore");
+         Command.Add(noRestoreOption);
+         sourceOption = new Option<string>("source");
+         Command.Add(sourceOption);
+         packageDirectoryOption = new Option<string>("packageDirectory");
+         Command.Add(packageDirectoryOption);
+         interactiveOption = new Option<bool>("interactive");
+         Command.Add(interactiveOption);
+         prereleaseOption = new Option<bool>("prerelease");
+         Command.Add(prereleaseOption);
+         Command.SetHandler(DotnetHandlers.AddPackage, packageNameOption, versionOption, frameworkOption, noRestoreOption, sourceOption, packageDirectoryOption, interactiveOption, prereleaseOption);
       }
+      public Option<string> packageNameOption {get; set;}
+      public Option<string> versionOption {get; set;}
+      public Option<string> frameworkOption {get; set;}
+      public Option<bool> noRestoreOption {get; set;}
+      public Option<string> sourceOption {get; set;}
+      public Option<string> packageDirectoryOption {get; set;}
+      public Option<bool> interactiveOption {get; set;}
+      public Option<bool> prereleaseOption {get; set;}
    }
 }

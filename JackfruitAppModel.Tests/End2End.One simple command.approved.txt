@@ -7,13 +7,14 @@ namespace CliDefinition
    
    public class ACli
    {
-      public Command ACommand()
+      public Command Command {get; set;}
+      public ACli()
       {
-         var command = new Command("A");
-         var oneOption = new Option<string>("one");
-         command.Add(oneOption);
-         command.SetHandler(Handlers.A, oneOption);
-         return command;
+         Command = new Command("A");
+         oneOption = new Option<string>("one");
+         Command.Add(oneOption);
+         Command.SetHandler(Handlers.A, oneOption);
       }
+      public Option<string> oneOption {get; set;}
    }
 }

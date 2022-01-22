@@ -1,8 +1,6 @@
 ﻿module Generator.SourceGenerator
 
 open Microsoft.CodeAnalysis
-open Microsoft.CodeAnalysis.CSharp
-open Microsoft.CodeAnalysis.VisualBasic
 open Generator
 open Generator.NewMapping
 open Generator.BuildCliCodeModel
@@ -10,7 +8,7 @@ open Generator.Transforms
 open System.Linq
 open LanguageRoslynOut
 open Models
-open Language
+open Generator.LanguageModel
 
 let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel (writer: IWriter) =
     let outputter = RoslynOut(language, writer)
@@ -41,9 +39,12 @@ type CliSourceGenerator<'T>() =
         member this.Execute(context) =
             let syntaxTrees = List.ofSeq context.Compilation.SyntaxTrees
             let semanticModel = context.Compilation.GetSemanticModel(syntaxTrees.First())
-            let language: ILanguage = match context.Compilation with
-                | :? CSharpCompilation -> LanguageCSharp()
-                | :? VisualBasicCompilation -> LanguageVisualBasic()
+
+            let language: ILanguage = 
+                match context.Compilation.Language with
+                | LanguageNames.CSharp -> LanguageCSharp()
+                | LanguageNames.VisualBasic -> LanguageVisualBasic()
+
                 | _ -> invalidOp "Unexpected language encountered (not C# or VB)"
 
             let appModel = this.GetAppModel syntaxTrees semanticModel

@@ -12,6 +12,7 @@
 		<Compile Include="MapData.fs" />
 		<Compile Include="UtilForTests.fs" />
 		<Compile Include="GeneralUtilsTests.fs" />
+		<Compile Include="LanguageDslTests.fs" />
 
 		<Compile Include="LanguageCSharpTests.fs" />
 		<Compile Include="OutputMapingTests.fs" />
@@ -22,14 +23,18 @@
 		<Compile Include="DslStatementTests.fs" />
 		<Compile Include="DslStructuralTests.fs" />
 		<Compile Include="Prototype.fs" />
+		<Compile Include="PrototypeNew.fs" />
+		<Compile Include="CliOutputTestsNewer.fs" />
 		<Compile Include="CliOutputTests.fs" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="ApprovalTests" Version="5.7.1" />
 		<PackageReference Include="FsUnit.xUnit" Version="4.1.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="4.1.0-1.final" />
+		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.1.0-1.final" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0-preview-20211130-02" />
-		<PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21568.1" />
+		<PackageReference Include="System.CommandLine" Version="2.0.0-beta2.22057.1" />
 		<PackageReference Include="xunit" Version="2.4.2-pre.12" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -43,10 +48,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Generator.CommonCodeEval\Generator.CommonCodeEval.fsproj" />
-		<ProjectReference Include="..\Generator.CommonCodeOut\Generator.CommonCodeOut.fsproj" />
+		<ProjectReference Include="..\Generator.Core.CSharp\Generator.Core.CSharp.fsproj" />
 		<ProjectReference Include="..\Generator\Generator.fsproj" />
-		<ProjectReference Include="..\Jackfruit\Jackfruit.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -4,6 +4,7 @@ open Generator.Models
 open Generator.Tests.UtilsForTests
 open System
 open Common
+open Generator.LanguageModel
 
 type  Data =
     { MapInferredStatements: string
@@ -40,7 +41,7 @@ let NoMapping =
       CommandDefs = [ ] }
 
 let OneMapping =
-    let commandDef = CommandDef("A", [""], CommandReturnType.Void, Arbitrary "MyCommand")
+    let commandDef = CommandDef("A", [""], ReturnType.ReturnTypeVoid, Arbitrary "MyCommand")
     let members = [ MemberDef("one",commandDef, (SimpleNamedItem "string"), ArbitraryMember, true) ]
     commandDef.Members <- members
 
@@ -52,7 +53,7 @@ let OneMapping =
         
 
 let ThreeMappings =
-    let package = CommandDef("package", [ "dotnet"; "add"; "package" ], CommandReturnType.Void, Arbitrary "MyCommand")
+    let package = CommandDef("package", [ "dotnet"; "add"; "package" ], ReturnType.ReturnTypeVoid, Arbitrary "MyCommand")
     package.Members <-
         [ MemberDef("packageName", package, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("version", package, (SimpleNamedItem "string"), ArbitraryMember, true)
@@ -63,10 +64,10 @@ let ThreeMappings =
           MemberDef("interactive",  package, (SimpleNamedItem "bool"), ArbitraryMember, true)
           MemberDef("prerelease",  package, (SimpleNamedItem "bool"), ArbitraryMember, true) ] 
    
-    let add = CommandDef("add", [ "dotnet"; "add" ], CommandReturnType.Void, Arbitrary "MyCommand")
+    let add = CommandDef("add", [ "dotnet"; "add" ], ReturnType.ReturnTypeVoid, Arbitrary "MyCommand")
     add.SubCommands <- [package]
 
-    let dotnet = CommandDef("dotnet", [ "dotnet" ], CommandReturnType.Void, Arbitrary "MyCommand")
+    let dotnet = CommandDef("dotnet", [ "dotnet" ], ReturnType.ReturnTypeVoid, Arbitrary "MyCommand")
     dotnet.Members <-
         [ MemberDef("project", dotnet, (SimpleNamedItem "string"), ArbitraryMember, true) ]
     dotnet.SubCommands <- [add]
