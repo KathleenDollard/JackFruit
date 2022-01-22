@@ -177,11 +177,11 @@ type FieldModel =
 type InheritedFrom =
     | SomeBase of BaseClass: NamedItem
     | NoBase
-    interface IMember
+    //interface IMember
 
-type ImplementedInterface =
-    | ImplementedInterface of Name: NamedItem
-    interface IMember
+//type ImplementedInterface =
+//    | ImplementedInterface of Name: NamedItem
+//    //interface IMember
         
  
 type ClassModel = 
@@ -189,7 +189,7 @@ type ClassModel =
       Scope: Scope
       Modifiers: Modifier list
       InheritedFrom: InheritedFrom
-      ImplementedInterfaces: ImplementedInterface list
+      ImplementedInterfaces: NamedItem list
       Members: IMember list}
     static member Create(className, scope) =
         { ClassName = className

@@ -6,7 +6,7 @@ open Generator.GeneralUtils
 open System
 open Common
 open DslKeywords
-open DslCodeBuilder
+open DslForCode
 open Generator.LanguageExpressions.ExpressionHelpers
 open Generator.LanguageHelpers
 open type Generator.LanguageHelpers.Structural
@@ -37,20 +37,20 @@ type ``When creating simple code``() =
                 Using "System.Linq"
 
                 Class(className) {
-                    Public()
+                    Public2
 
                     Field("A", "string") { Private }
 
                     Constructor() 
-                        { Public()
-                          Parameter(paramName, propertyType)
+                        { Public2
+                          Parameter paramName propertyType
                           Assign propertyName To paramName
                         }
 
-                    Property(propertyName, "int") { Public() }
+                    Property(propertyName, "int") { Public2 }
 
                     Method(methodName)
-                        { Public()
+                        { Public2
                           ReturnType methodReturn
                           AssignWithVar "x" To "0" 
                           If (comparison) {

@@ -131,10 +131,10 @@ type Structural =
     static member Protected ([<ParamArray>] modifiers: Modifier[]) =
         { Scope = Scope.Protected; Modifiers = List.ofArray modifiers }
 
-    static member InheritsFrom (baseClass: NamedItem) = 
-        SomeBase baseClass
-    static member ImplementsInterfaces ([<ParamArray>] interfaces: NamedItem[]) = 
-        [ for i in interfaces do ImplementedInterface i ]
+    //static member InheritsFrom (baseClass: NamedItem) = 
+    //    SomeBase baseClass
+    //static member ImplementsInterfaces ([<ParamArray>] interfaces: NamedItem[]) = 
+    //    [ for i in interfaces do ImplementsInterface i ]
        
 
     static member Parameter(name: string, typeName: NamedItem, ?style: ParameterStyle) =

@@ -43,7 +43,7 @@ type ``When creating simple code``() =
 
                     Constructor() 
                         { Public2
-                          Parameter(paramName, propertyType)
+                          Parameter paramName propertyType
                           Assign propertyName To paramName
                         }
 

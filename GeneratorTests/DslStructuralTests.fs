@@ -5,7 +5,7 @@ open Xunit
 open Generator.LanguageModel
 open Common
 open DslKeywords
-open DslCodeBuilder
+open DslForCode
 open Generator.LanguageHelpers
 open Generator.LanguageHelpers.Statements
 open type Generator.LanguageHelpers.Structural
@@ -37,7 +37,7 @@ type ``When creating a namespace``() =
              Namespace(nspace) {
                 Using ""
                 }
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
 
 
     [<Fact>]
@@ -53,7 +53,7 @@ type ``When creating a namespace``() =
                 Using usingName
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
  
 
     [<Fact>]
@@ -67,10 +67,10 @@ type ``When creating a namespace``() =
               Classes = [] }
         let actual = 
              Namespace(nspace) {
-                Using (usingName, Alias, alias)
+                Using usingName alias
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
 
 
     [<Fact>]
@@ -92,11 +92,11 @@ type ``When creating a namespace``() =
             Namespace(nspace) 
                 {
                     Using usingName0
-                    Using (usingName1, alias = usingAlias1)
+                    Using usingName1 usingAlias1
                     Using usingName2
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
 
         
     [<Fact>]
@@ -118,10 +118,10 @@ type ``When creating a namespace``() =
             Namespace(nspace) {
                 let x = 42
                 Class(className) {
-                        Public() }
+                        Public2 }
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
 
         
     [<Fact>]
@@ -143,12 +143,12 @@ type ``When creating a namespace``() =
         let actual = 
             Namespace(nspace) {
                 Class(className) {
-                    Public() }
+                    Public2 }
                 Using usingName
 
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
 
 
 type ``When creating a class``() =
@@ -165,10 +165,10 @@ type ``When creating a class``() =
               Members = [] }
         let actual = 
             Class(className) { 
-                Public()
+                Public2
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
 
 
     [<Fact>]
@@ -177,15 +177,15 @@ type ``When creating a class``() =
         let expected =
             { ClassName = className
               Scope = Scope.Public
-              Modifiers = [Modifier.Static; Async; Partial]
+              Modifiers = [Modifier.Static; Partial]
               InheritedFrom = NoBase
               ImplementedInterfaces = []
               Members = [] }
         let actual = Class(className) { 
-                Public(Static ,Async, Partial)
+                Public2 Static Partial
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
 
 
     // using inline data hacks because VS is terrible at displaying other theory approaches in VS 2019
@@ -204,20 +204,20 @@ type ``When creating a class``() =
         let tupleFromCodeModel (codeModel: ClassModel) = 
             codeModel.Scope, codeModel.Modifiers
         let data = 
-            [ (Scope.Public, []), Class("A") { Public() }
-              (Scope.Public, [Modifier.Async]), Class("A") { Public (Async) }
-              (Scope.Public, [Modifier.Abstract]), Class("A") { Public (Abstract) }
-              (Scope.Public, [Modifier.Static; Abstract; Partial]), Class("A") { Public(Static, Abstract, Partial)}
-              (Scope.Public, [Modifier.Abstract; Async; Partial; Sealed]), Class("A") { Public(Abstract, Async, Partial, Sealed)}
-              (Scope.Private, []), Class("A") { Private() }
-              (Scope.Internal, [Modifier.Async]), Class("A") { Internal(Async) }
-              (Scope.Protected, [Modifier.Abstract]), Class("A") { Protected(Abstract) }
-              (Scope.Private, [Modifier.Static; Abstract; Partial]), Class("A") { Private(Static, Abstract, Partial)}
-              (Scope.Protected, [Modifier.Abstract; Async; Partial; Sealed]), Class("A") { Protected (Abstract, Async, Partial, Sealed)}
+            [ (Scope.Public, []), Class("A") { Public2 }
+              (Scope.Public, [Modifier.Async]), Class("A") { Public2 Async }
+              (Scope.Public, [Modifier.Abstract]), Class("A") { Public2 Abstract }
+              (Scope.Public, [Modifier.Static; Partial]), Class("A") { Public2 Static Partial }
+              (Scope.Public, [Modifier.Async; Partial]), Class("A") { Public2 Async Partial }
+              (Scope.Private, []), Class("A") { Private }
+              (Scope.Internal, [Modifier.Async]), Class("A") { Internal Async }
+              (Scope.Protected, [Modifier.Abstract]), Class("A") { Protected Abstract }
+              (Scope.Private, [Modifier.Static; Partial]), Class("A") { Private Static Partial }
+              (Scope.Protected, [Modifier.Async; Sealed]), Class("A") { Protected Async Sealed }
             ]
 
         match data[pos] with 
-        | expected, actual -> Assert.Equal(expected, tupleFromCodeModel actual)
+        | expected, actual -> Assert.Equal(expected, tupleFromCodeModel actual.Model)
   
   
     [<Fact>]
@@ -235,10 +235,10 @@ type ``When creating a class``() =
               ImplementedInterfaces = []
               Members = [] }
         let actual = Class(genericName) {
-                    Public()
+                    Public2
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
 
     [<Fact>]
     member _.``Can create class with stringified generic types``() =
@@ -255,10 +255,10 @@ type ``When creating a class``() =
               ImplementedInterfaces = []
               Members = [] }
         let actual = Class(genericName) {
-                    Public()
+                    Public2
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
 
 
     [<Fact>]
@@ -274,10 +274,10 @@ type ``When creating a class``() =
               Members = [] }
         let actual = 
             Class(className) {
-                InheritsFrom (SimpleNamedItem genericName)
+                InheritedFrom genericName
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
 
 
     [<Fact>]
@@ -285,20 +285,22 @@ type ``When creating a class``() =
         let className = "George"
         let interfaceNames = ["A"; "B"]
         let expectedInterfaces = 
-            [ for n in interfaceNames do ImplementedInterface (NamedItem.Create(n, [])) ]
+            [ for n in interfaceNames do NamedItem.Create(n, []) ]
         let expected =
             { ClassName = className
-              Scope = Unknown
+              Scope = Scope.Public
               Modifiers = []
               InheritedFrom = NoBase
               ImplementedInterfaces = expectedInterfaces
               Members = [] }
         let actual = 
             Class(className) {
-                ImplementsInterfaces [| for i in interfaceNames do NamedItem.Create(i, []) |]
+                Public2
+                ImplementsInterface interfaceNames[0]
+                ImplementsInterface interfaceNames[1 ]
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
 
     
     [<Fact>]
@@ -320,13 +322,13 @@ type ``When creating a class``() =
               Members = [ expectedField ] }
         let actual = 
             Class(className) {
-                Public()  
+                Public2  
                 Field(fieldName, fieldType) {
                         Private
                         }
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, actual.Model)
 
 
 type ``When creating a field``() =
@@ -337,11 +339,11 @@ type ``When creating a field``() =
         let fieldType = SimpleNamedItem "int"
         let codeModel = 
             Field(name, fieldType) {
-                Public
+                Public2
                 }
 
-        Assert.Equal(name, codeModel.FieldName)
-        Assert.Equal(fieldType, codeModel.FieldType)
+        Assert.Equal(name, (codeModel.Model :?> FieldModel).FieldName)
+        Assert.Equal(fieldType,  (codeModel.Model :?> FieldModel).FieldType)
   
      
 type ``When creating a property``() =
@@ -352,11 +354,11 @@ type ``When creating a property``() =
         let propertyType = SimpleNamedItem "int"
         let codeModel = 
             Property(name, propertyType) {
-                Public()
+                Public2
                 }
 
-        Assert.Equal(name, codeModel.PropertyName)
-        Assert.Equal(propertyType, codeModel.Type)
+        Assert.Equal(name,  (codeModel.Model :?> PropertyModel).PropertyName)
+        Assert.Equal(propertyType, (codeModel.Model :?> PropertyModel).Type)
 
 
 type ``When creating a constructor``() =
@@ -366,10 +368,10 @@ type ``When creating a constructor``() =
         let expected = { ConstructorModel.Scope = Scope.Private; Modifiers = []; Parameters = []; Statements = [] }
         let actual = 
             Constructor() {
-                Private()
+                Private
                 }
 
-        Assert.Equal(expected, actual)
+        Assert.Equal(expected, (actual.Model :?> ConstructorModel))
 
         
 type ``When creating a method``() =
@@ -379,11 +381,11 @@ type ``When creating a method``() =
         let name = "A"
         let returnType = ReturnTypeVoid
         let codeModel = 
-            Method (SimpleNamedItem name) {
+            Method name {
                 ReturnType returnType
-                Public()
+                Public2
                 }
         
-        Assert.Equal(name, NameFromSimpleName codeModel.MethodName)
-        Assert.Equal(returnType, codeModel.ReturnType)
+        Assert.Equal(name, NameFromSimpleName (codeModel.Model :?> MethodModel).MethodName)
+        Assert.Equal(returnType, (codeModel.Model :?> MethodModel).ReturnType)
         

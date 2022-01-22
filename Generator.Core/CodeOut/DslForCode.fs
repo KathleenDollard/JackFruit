@@ -132,19 +132,19 @@ type Class(name: string) =
     member this.setPrivateProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
         this.setScope varModel Scope.PrivateProtected modifier1 modifier2
 
-    [<CustomOperation("InheritedFrom", MaintainsVariableSpace = true)>]
+    [<CustomOperation("InheritedFrom", MaintainsVariableSpaceUsingBind = true)>]
     member this.inheritedFrom (varModel, [<ProjectionParameter>] inheritedFrom) =
         let inheritedFrom: string = inheritedFrom varModel.Variables
         this.SetModel varModel { varModel.Model with InheritedFrom = SomeBase inheritedFrom }
 
-    //// TODO: Passing a named item will be quite messy. This problemw will recur. Harder if we can't get overloads
-    //[<CustomOperation("ImplementedInterfaces", MaintainsVariableSpace = true)>]
-    //member _.interfaces (cls: ClassModel, [<ParamArray>]interfaces: ImplementedInterface[]) =
-    //    { cls with ImplementedInterfaces = List.ofArray interfaces }
+    [<CustomOperation("ImplementsInterface", MaintainsVariableSpaceUsingBind = true)>]
+    member this.interfaces (varModel, [<ProjectionParameter>] interfaceToImplement) =
+        let implement = interfaceToImplement varModel.Variables
+        this.SetModel varModel { varModel.Model with ImplementedInterfaces = varModel.Model.ImplementedInterfaces @ [implement] }
 
-    [<CustomOperation("Members", MaintainsVariableSpace = true)>]
-    member _.addMember (cls: ClassModel, memberModels: IMember list) =
-        { cls with Members =  List.append cls.Members memberModels }
+    //[<CustomOperation("Members", MaintainsVariableSpaceUsingBind = true)>]
+    //member this.addMember (varModel, memberModels: IMember list) =
+    //    this.SetModel varModel { cls with Members =  List.append cls.Members memberModels }
  
 
 type Field(name: string, typeName: NamedItem) =
@@ -334,7 +334,7 @@ type Method(name: string) =
             ReturnType = newReturnType
             Scope = newScope
             Modifiers = method1.Modifiers@  method2.Modifiers
-            Parameters = method1.Parameters @ method1.Parameters
+            Parameters = method1.Parameters @ method2.Parameters
             Statements = method1.Statements @ method2.Statements}  
 
 
@@ -413,7 +413,7 @@ type Constructor() =
         { method1 with 
             Scope = newScope
             Modifiers = method1.Modifiers@  method2.Modifiers
-            Parameters = method1.Parameters @ method1.Parameters
+            Parameters = method1.Parameters @ method2.Parameters
             Statements = method1.Statements @ method2.Statements }  
 
     override this.NewMember item =
@@ -450,7 +450,7 @@ type Constructor() =
         this.SetScopeAndModifiers varModel Scope.PrivateProtected modifier1 modifier2
 
     [<CustomOperation("Parameter", MaintainsVariableSpaceUsingBind = true)>]
-    member this.setUsing ((varModel: M<IMember, 'Vars0>), [<ProjectionParameter>] parameterName, parameterType, (?style: ParameterStyle))   =
+    member this.setParameter ((varModel: M<IMember, 'Vars0>), [<ProjectionParameter>] parameterName, parameterType, (?style: ParameterStyle))   =
         let parameterName: string = parameterName varModel.Variables
         let method = varModel.Model :?> ConstructorModel 
         let newParameter = this.NewParameter parameterName parameterType style

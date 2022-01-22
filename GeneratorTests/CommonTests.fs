@@ -6,7 +6,7 @@ open FsUnit.CustomMatchers
 open Generator.RoslynUtils
 open Microsoft.CodeAnalysis
 open Generator.LanguageModel
-open DslCodeBuilder
+open DslForCode
 open System.Linq
 open Common
 

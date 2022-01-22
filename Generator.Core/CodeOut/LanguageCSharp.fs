@@ -67,8 +67,7 @@ type LanguageCSharp() =
               | SomeBase t -> this.OutputNamedItem t
               | NoBase -> () 
                     
-              for i in cls.ImplementedInterfaces do
-                let (ImplementedInterface name) = i
+              for name in cls.ImplementedInterfaces do
                 this.OutputNamedItem name ]
               |> addColonIfNeeded
               |> String.concat ", " 

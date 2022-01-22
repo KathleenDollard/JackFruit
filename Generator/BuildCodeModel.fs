@@ -34,6 +34,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                 
         [ Class className {
             Public2
+            ImplementsInterface "ICommandHandler"
             // TODO: Make this property Get only
             Property (operationAsField, operationType) { Private }
             Property (Command, Command) { Public2 }
@@ -53,6 +54,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                 }
 
             for mbr in commandDef.Members do
+                let propertyAccess = Literal mbr.NameAsProperty
                 if mbr.GenerateSymbol then 
                     Property (mbr.NameAsProperty, mbr.SymbolType) { Public2 }
                 Method (mbr.NameAsResult) { 
@@ -61,7 +63,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                     // TODO: Work on the following line
                     ReturnType (ReturnType.ReturnType mbr.TypeName)
                     // TODO: Work on Symbol in the following line
-                    Return (Invoke "context.ParseResult" $"GetValueFor{mbr.SymbolType}<{mbr.TypeName}>" [ SymbolLiteral (Symbol mbr.NameAsProperty) ] )
+                    Return (Invoke "context.ParseResult" $"GetValueFor{mbr.KindName}<{mbr.TypeName}>" [ propertyAccess ] )
                     }
 
             Method("InvokeAsync") {
