@@ -49,7 +49,7 @@ namespace Jackfruit
                .AddCommonAlias("r", "runtime")
                .AddCommonAlias("i", "interactive");
 
-            app.MapInferred("", Dotnet.RunRoot);
+            app.MapInferred("", Dotnet.RunDotnet);
             app.MapInferred("add <PROJECT>", null); // null means command won't be run alone. If you need types, use a dummy delegate
             app.MapInferred("add package <PACKAGE_NAME>", Dotnet.RunAddPackage);
             app.MapInferred("add reference <PROJECT_PATH>", Dotnet.RunAddReference);

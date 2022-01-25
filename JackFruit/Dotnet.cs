@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Generator.Common;
+using System.IO;
 
 namespace Jackfruit
 {
@@ -23,38 +24,50 @@ namespace Jackfruit
 
     public class Dotnet
     {
-        public static int RunRoot(DirectoryInfo additionalprobingpath,
-                                  FileInfo additionalDeps,
-                                  FileInfo depsfile,
-                                  string fxVersion,
-                                  RollForward rollForward,
-                                  FileInfo runtimeconfig)
+        public static int RunDotnet(DirectoryInfo? additionalprobingpath,
+                                  FileInfo? additionalDeps,
+                                  FileInfo? depsfile,
+                                  string? fxVersion,
+                                  RollForward? rollForward,
+                                  FileInfo? runtimeconfig)
         {
             return 42;
         }
+
+        public static void RunAdd()
+        {}
+
 
         /// <summary>
         /// "Build a.NET project."
         /// </summary>
         /// <param name="project">The project to build</param>
-        /// <param name="packageName"></param>
+        /// <param name="packageName" >ARG This is the package name</param>
         /// <param name="version"></param>
         /// <param name="framework"></param>
         /// <param name="noRestore"></param>
-        /// <param name="source"></param>
+        /// <param name="source" lessLikelyToClobber="">-s | This is the NuGet source</param>
         /// <param name="packageDirectory"></param>
         /// <param name="interactive"></param>
         /// <param name="prerelease"></param>
         /// <returns></returns>
-        public static int RunAddPackage(FileInfo project, 
-                                        string packageName, 
-                                        string version,
-                                        string framework,
-                                        bool noRestore,
-                                        string source,
-                                        DirectoryInfo packageDirectory,
-                                        bool interactive,
-                                        bool prerelease)
+        public static int RunAddPackage(
+                                        [Description("asdfjl lkjsdf lkfj.kmsdf.kj lkjsadalfkj lasdk.f dfb")]A
+                                        FileInfo? project, 
+                                        [adfsadfas as asdf asd sdafg asdfg sdf ]
+                                        [Description("asdfjl lkjsdf lkfj.kmsdf.kj lkjsadalfkj lasdk.f dfb")]
+                                        string?  packageName,
+                                        [Description("asdfjl lkjsdf lkfj.kmsdf.kj lkjsadalfkj lasdk.f dfb")]
+                                        string? version,
+                                        [Description("asdfjl lkjsdf lkfj.kmsdf.kj lkjsadalfkj lasdk.f dfb")]
+                                        [adfsadfas as asdf asd sdafg asdfg sdf] string? framework,
+                                        bool? noRestore,
+                                        [adfsadfas as asdf asd sdafg asdfg sdf] string? source,
+                                        [Description("asdfjl lkjsdf lkfj.kmsdf.kj lkjsadalfkj lasdk.f dfb")]
+                                        DirectoryInfo? packageDirectory,
+                                        bool? interactive,
+                                        [Description("asdfjl lkjsdf lkfj.kmsdf.kj lkjsadalfkj lasdk.f dfb")]
+                                        bool? prerelease)
         {
             return 43;
         }
@@ -62,24 +75,24 @@ namespace Jackfruit
         public static int RunAddReference(FileInfo project,
                                           DirectoryInfo ProjectPath, 
                                           string framework,
-                                          bool interactive)
+                                          bool? interactive)
         {
             return 44;
         }
 
         public static int RunBuild(FileInfo projecOrSolution,
-                                   bool useCurrentRuntime,
+                                   bool? useCurrentRuntime,
                                    string framework,
                                    string configuration,
                                    string runtime,
                                    string versionSuffix,
-                                   bool noRestore,
-                                   bool interactive,
-                                   Verbosity verbosity,
+                                   bool? noRestore,
+                                   bool? interactive,
+                                   Verbosity? verbosity,
                                    DirectoryInfo output,
-                                   bool noIncremental,
-                                   bool noDependencies,
-                                   bool nologo)
+                                   bool? noIncremental,
+                                   bool? noDependencies,
+                                   bool? nologo)
         {
             return 45;
         }

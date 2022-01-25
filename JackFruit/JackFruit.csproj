@@ -16,5 +16,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Generator\Generator.fsproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="NewFolder\" />
+  </ItemGroup>
 
 </Project>
