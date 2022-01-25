@@ -11,7 +11,7 @@ using System.ComponentModel;
 
 namespace Jackfruit
 {
-    // These classes is GENERATED
+    // These classes are GENERATED
     public partial class MyApp
     {
         public MyApp()
