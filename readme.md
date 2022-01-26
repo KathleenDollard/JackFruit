@@ -1,6 +1,65 @@
 # JackFruit
 
-This is a prototype and playground. Please do not take it too seriously. It was also a venue for me to learn F#, so the code is not beautiful. 
+This is a prototype of generating System.CommandLine and an experiment with extensible source generation. It is a prototype and playground. Please do not take it too seriously. It was also a venue for me to learn F#, so the code is not beautiful. 
+
+The approach is using F# features to make working with the Roslyn source tree easier. Yes, this is a project to use F# to create something it cannot consuume. We expect a separate project will provide a Computation Expression DSL to work with System.CommandLine from F#.
+
+## 2022-01-25 meeting notes
+
+@JonSequitur, @Keboo, @baronfel and @KathleenDollard
+
+* We will abandon the archetype tree based approach to creating the command/subcommand shape
+   * Abandon: `app.AddCommand("tool install", RunToolInstall)`
+   * In favor of: 
+ 
+```C#
+App.AddCommand(RunDotnet);
+App.Dotnet.AddSubCommand(RunTool);
+App.Dotnet.Tool.AddSubCommand(RunToolInstall);
+```
+
+* We may also abandon archetype based definition of details (such as a string with arguments in angle brackets) and if we support it, expect it to be secondary to other mechanisms
+
+* There are multiple ways to supply details that fall into categories around responsibility, and details (concerns) may not all belong in the same place. At least: 
+   * _The handler method is a shim that represents the CLI and I want to insulate it and my app code so future changes I make to my CLI have no impact beyond this method_
+      * With this perspective, XML Comments and attributes on handler parameters are appropriate
+   * _I want my handler to be normal code, containing no aspects of the CLI_
+      * With this perspective, archetype and direct (runtime) access to SCL objects are appropriate
+      * If this is done widely, we need to differentiate common SCL properties from uncommon ones that look common (Arity and Required) probably via the IntelliSense description
+   * _I do not want to see this concern except when I am specifically working on it_
+      * The most likely concern for this category is Description which has a massive impact on code readability and may rarely be worked on. 
+      * With this perspective, a separate dictionary will be appropriate. This could either be per specific concern, or for many concerns
+      
+* There was agreement on common abbreviations having first class support
+   * We did not discuss whether this should go further with type validation, such as a specific enum for verbosity
+   
+* We has a great discussion around extensibility (some of this was after the meeting). I added a section on that.
+
+## Extensibility notes
+The use case I have in mind for extensibility is support for validation, where we really haven’t worked yet. It seems reasonable for users to want a simple way to indicate range, for example. And we know people struggle a bit with interdependent CLI arguments. 
+
+The general pattern for extensibility would be for an extending generator to have a dependency on this generator and then extend as discussed in this section. The API for extensibility has not yet been considered, but the architecture was created with multiple extensibility points in mind.
+
+The parts of the generator designed for extension are:
+
+* Reading source (or something) to determine the basic shape of the CLI – it created the initial shape of the Generation Domain Model (GenModel)
+   * This will eventually be the SCL commands/sub-commands, along with options and arguments, although they are not differentiated at this point
+* Transformations that provide details on SCL components, including differentiating options and arguments
+* The GenModel itself
+* Generation – layout of output code
+* User extension point of direct access to SCL objects at runtime
+
+We are happy with the initial explicit shape creation from the 1/25/2022 meeting with adding SubCommands to the generated wrapper. Shape creation is the relationship of commands and subcommands with a method group we can extract option/argument types and names from. We may want an extension point for the class and name of the method (or property) that is called to give the method group. For example, we may want people to have a base other than CliApp. Folks can also entirely replace this layer.
+
+Details are supplied via transformations which are a planned extension point. This would be the place to put extended XML Comment support and ensure attribute support is generalized. The intention is adequate support that variations (a different attribute) would not require knowledge of Roslyn. The hope is if people come up with additional sources, the details of what is extracted can be separated so transforms remain generalized.
+
+The current GenModel is a mimic of the SCL models, because the current generation just outputs their creation. It is expected that extensions addressing new concerns, like validation, will want to extend the model to include supporting information. The GenModel classes are not be sealed, and will have an open attitude to derived classes.
+
+I think support will be easier for everyone if the code generated by the core generator is distinct from the code generated by extended generators where practical. We can’t enforce this, but we can encourage it by supplying and API with a method for adding code to the end of the constructor and the end of the class. We can discuss whether the handler wrapper should be extensible and whether this leaves anything out. For example, are there legitimate reasons people will want to customize constructor parameters, because this may significantly alter generation. To avoid the base generator code creation step from becoming too complicated, at some point, perhaps if someone wants DI in their generated wrapper, they can take over all of the creation.
+
+The design of the output is that the SCL objects are readily available. This means that some extension can be done at runtime via normal C# code techniques.
+
+Feedback regarding whether these extension points will manage a particular use case is the most important current feedback. You can open an issue with the scenario or any other communication route.
 
 ## Current requests
 
