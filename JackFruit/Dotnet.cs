@@ -52,17 +52,16 @@ namespace Jackfruit
         /// <param name="prerelease"></param>
         /// <returns></returns>
         public static int RunAddPackage(
-                                        [Description("asdfjl lkjsdf lkfj.kmsdf.kj lkjsadalfkj lasdk.f dfb")]A
+                                        [Description("asdfjl lkjsdf lkfj.kmsdf.kj lkjsadalfkj lasdk.f dfb")]
                                         FileInfo? project, 
-                                        [adfsadfas as asdf asd sdafg asdfg sdf ]
                                         [Description("asdfjl lkjsdf lkfj.kmsdf.kj lkjsadalfkj lasdk.f dfb")]
                                         string?  packageName,
                                         [Description("asdfjl lkjsdf lkfj.kmsdf.kj lkjsadalfkj lasdk.f dfb")]
                                         string? version,
                                         [Description("asdfjl lkjsdf lkfj.kmsdf.kj lkjsadalfkj lasdk.f dfb")]
-                                        [adfsadfas as asdf asd sdafg asdfg sdf] string? framework,
+                                        string? framework,
                                         bool? noRestore,
-                                        [adfsadfas as asdf asd sdafg asdfg sdf] string? source,
+                                        string? source,
                                         [Description("asdfjl lkjsdf lkfj.kmsdf.kj lkjsadalfkj lasdk.f dfb")]
                                         DirectoryInfo? packageDirectory,
                                         bool? interactive,

@@ -12,6 +12,42 @@ using Jackfruit;
 
 namespace Jackfruit
 {
+    public static class ExtenionPoints
+    {
+        //Moved this to an extension method for now that returned T rather than CommandBase
+        //Just to make the code compile; will need to revisit
+        public static T AddSubCommand<T>(this T command, Delegate codeToRun, string arctype)
+            where T : CommandBase
+        {
+            //TODO: Is this even possible to do generically?
+            return command;
+        }
+    }
+
+    public class Strategy4
+    {
+        public Strategy4()
+        {
+            var app = new MyApp();
+            app.AddCommand(Dotnet.RunDotnet);
+            app.Dotnet.AddSubCommand(Dotnet.RunAdd).Customize("<PROJECT>");
+            app.Dotnet.Add.AddSubCommand(Dotnet.RunAddReference).Customize("package <PACKAGE_NAME>");
+            app.Dotnet.Add.AddSubCommand(Dotnet.RunAddPackage).Customize(
+                            "<PROJECT_OR_SOLUTION>" +
+                            "--runtime <RUNTIME_IDENTIFIER>" +
+                            "--output <OUTPUT_DIR>");
+
+            app.AddCommonAliases(new List<(string alias, string optionName)>
+            { ("o", "output"),
+              ("f", "framework"),
+              ("v", "verbosity"),
+              ("n", "no-restore"),
+              ("c", "configuration"),
+              ("r", "runtime"),
+              ("i", "interactive") });
+        }
+    }
+
     public partial class MyApp : CliApp { }
 
     public class Strategy1
@@ -47,7 +83,8 @@ namespace Jackfruit
             var app = new MyApp();
             app.AddCommand(Dotnet.RunDotnet);
             app.Dotnet.AddSubCommand(Dotnet.RunAdd);
-            app.Dotnet.Add.AddSubCommand(Dotnet.RunAddReference).Customize(CustomizeAddReference);
+            app.Dotnet.Add.AddSubCommand(Dotnet.RunAddReference)
+                .Customize(CustomizeAddReference);
             app.Dotnet.Add.AddSubCommand(Dotnet.RunAddPackage);
 
             app.AddCommonAliases(new List<(string alias, string optionName)>
