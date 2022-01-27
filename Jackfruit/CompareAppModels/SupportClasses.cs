@@ -10,8 +10,6 @@ namespace Jackfruit
 {
     public abstract class CommandBase : ICommandHandler
     {
-        public CommandBase AddSubCommand(Delegate codeToRun, string? archetype = null) { return null; }
-
         public abstract Task<int> InvokeAsync(InvocationContext context);
     }
 
@@ -33,10 +31,10 @@ namespace Jackfruit
     public enum AliasSource
     {
         Archetype = 0b_0001,  // Should archetype be included? It implies it could be entered and ignored
-        Dictionary = 0b_0010, 
+        Dictionary = 0b_0010,
         XmlComment = 0b_0100, // convention:  param name="pname"> -x | My description</param>
         Attribute = 0b_1000,
-        Lookup = 0b_0000_0001,v
+        Lookup = 0b_0000_0001,
         All = 0b1111_0001
     }
 

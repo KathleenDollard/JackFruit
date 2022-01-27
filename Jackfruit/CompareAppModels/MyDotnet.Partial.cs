@@ -22,7 +22,7 @@ namespace Jackfruit
         public DotnetCommandWrapper Dotnet { get; }
     }
 
-    public class DotnetCommandWrapper : CommandBase
+    public partial class DotnetCommandWrapper : CommandBase
     {
         public Command Command { get; }
         public Option<DirectoryInfo> AdditionalprobingpathOption { get; }
@@ -68,9 +68,19 @@ namespace Jackfruit
                 RuntimeconfigOptionResult(context));
             return Task.FromResult(context.ExitCode);
         }
+
+        private Action<DotnetCommandWrapper> CustomizeAction { get; set; }
+
+        public DotnetCommandWrapper AddSubCommand(Delegate codeToRun) { return this; }
+
+        public DotnetCommandWrapper Customize(Action<DotnetCommandWrapper> customizeAction)
+        {
+            CustomizeAction = customizeAction;
+            return this;
+        }
     }
 
-    public class AddCommandWrapper : CommandBase
+    public partial class AddCommandWrapper : CommandBase
     {
         public Command Command { get; }
         public Option<DirectoryInfo> AdditionalprobingpathOption { get; }
@@ -92,9 +102,18 @@ namespace Jackfruit
         {
             return Task.FromResult(0);
         }
+
+        public AddCommandWrapper AddSubCommand(Delegate codeToRun) { return this; }
+
+
+        public AddCommandWrapper Customize(Action<AddCommandWrapper> customizeAction)
+        {
+            customizeAction?.Invoke(this);
+            return this;
+        }
     }
 
-    public class PackageCommandWrapper : CommandBase
+    public partial class PackageCommandWrapper : CommandBase
     {
         public Command Command { get; }
         public Argument<FileInfo> ProjectArgument { get; }
@@ -152,7 +171,7 @@ namespace Jackfruit
         }
     }
 
-    public class ReferenceCommandWrapper : CommandBase
+    public partial class ReferenceCommandWrapper : CommandBase
     {
         public Command Command { get; }
         public Argument<FileInfo> ProjectArgument { get; }
@@ -195,7 +214,7 @@ namespace Jackfruit
         }
     }
 
-    public class BuildCommandWrapper : CommandBase
+    public partial class BuildCommandWrapper : CommandBase
     {
         public Command Command { get; }
         public Argument<FileInfo> ProjectOrSolutionArgument { get; }
@@ -246,19 +265,19 @@ namespace Jackfruit
             Command.Handler = this;
         }
 
-       public FileInfo? ProjecOrSolutionResult(InvocationContext context) => null;
-       public bool? UseCurrentRuntimeResult(InvocationContext context) => null;
-       public string? FrameworkResult(InvocationContext context) => null;
-       public string? ConfigurationResult(InvocationContext context) => null;
-       public string? RuntimeResult(InvocationContext context) => null;
-       public string? VersionSuffixResult(InvocationContext context) => null;
-       public bool? NoRestoreResult(InvocationContext context) => null;
-       public bool? InteractiveResult(InvocationContext context) => null;
-       public Verbosity? VerbosityResult(InvocationContext context) => null;
-       public DirectoryInfo? OutputResult(InvocationContext context) => null;
-       public bool? NoIncrementalResult(InvocationContext context) => null;
-       public bool? NoDependenciesResult(InvocationContext context) => null;
-       public bool? NologoResult(InvocationContext context) => null;
+        public FileInfo? ProjecOrSolutionResult(InvocationContext context) => null;
+        public bool? UseCurrentRuntimeResult(InvocationContext context) => null;
+        public string? FrameworkResult(InvocationContext context) => null;
+        public string? ConfigurationResult(InvocationContext context) => null;
+        public string? RuntimeResult(InvocationContext context) => null;
+        public string? VersionSuffixResult(InvocationContext context) => null;
+        public bool? NoRestoreResult(InvocationContext context) => null;
+        public bool? InteractiveResult(InvocationContext context) => null;
+        public Verbosity? VerbosityResult(InvocationContext context) => null;
+        public DirectoryInfo? OutputResult(InvocationContext context) => null;
+        public bool? NoIncrementalResult(InvocationContext context) => null;
+        public bool? NoDependenciesResult(InvocationContext context) => null;
+        public bool? NologoResult(InvocationContext context) => null;
 
 
         public override Task<int> InvokeAsync(InvocationContext context)
