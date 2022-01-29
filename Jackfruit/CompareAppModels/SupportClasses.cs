@@ -68,15 +68,28 @@ namespace Jackfruit
         public Dictionary<Symbol, bool> IsArgument { get; set; }
         public Dictionary<Symbol, string> OptionArgumentName { get; set; }
 
-        // This is compile time extensible
+        /// <summary>
+        /// The name of your command delegate may differ from the command name
+        /// based on a pattern.Pattern portions are removed to determine the '
+        /// command name. The default supported patterns are "YourName", 
+        /// "RunYourName", and "YourNameHandler", all of which result in 
+        /// command named YourName. Use AddDelegatePattern for additional 
+        /// patterns with an asterisk where the name appears, like "Patternn*".
+        /// </summary>
+        /// <param name="pattern"></param>
         public void AddDelegatePattern(string pattern) { }
 
-        // This isn't compile time extensible
-        public List<string> delegatePatterns = new()
-        {
-            "Run*",
-            "*"
-        };
+        /// <summary>
+        /// The name of your command delegate may differ from the command name
+        /// based on a pattern.Pattern portions are removed to determine the '
+        /// command name. The default supported patterns are "YourName", 
+        /// "RunYourName", and "YourNameHandler", all of which result in 
+        /// command named YourName. Use RemoveDelegatePattern to remove 
+        /// one of these patterns: "Run*" or "*Handler".
+        /// </summary>
+        /// <param name="pattern"></param>
+        public void RemoveDelegatePattern(string pattern) { }
+
 
         public DescriptionSource DescriptionSources = DescriptionSource.All;
         public AliasSource AliasSources = AliasSource.All;

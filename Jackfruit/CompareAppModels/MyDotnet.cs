@@ -47,7 +47,7 @@ namespace Jackfruit
             var app = new MyApp();
             app.AddCommand(Dotnet.RunDotnet);
             app.Dotnet.AddSubCommand(Dotnet.RunAdd);
-            app.Dotnet.Add.AddSubCommand(Dotnet.RunAddReference).Customize(CustomizeAddReference);
+            app.Dotnet.Add.AddSubCommand(Dotnet.RunAddReference);
             app.Dotnet.Add.AddSubCommand(Dotnet.RunAddPackage);
 
             app.AddCommonAliases(new List<(string alias, string optionName)>

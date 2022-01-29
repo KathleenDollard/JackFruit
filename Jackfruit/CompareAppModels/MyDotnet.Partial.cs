@@ -73,8 +73,7 @@ namespace Jackfruit
     public class AddCommandWrapper : CommandBase
     {
         public Command Command { get; }
-        public Option<DirectoryInfo> AdditionalprobingpathOption { get; }
-        // etc
+
         public AddCommandWrapper()
         {
             Command = new Command("add");
