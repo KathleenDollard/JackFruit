@@ -14,6 +14,7 @@
 
 	<ItemGroup>
 		<Compile Include="Models.fs" />
+		<Compile Include="SubCommandMapping.fs" />
 		<Compile Include="ArchetypeMapping.fs" />
 		<Compile Include="JackfruitAppModel.fs" />
 	</ItemGroup>

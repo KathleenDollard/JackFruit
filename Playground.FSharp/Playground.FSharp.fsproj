@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="BadErrors.fs" />
     <Compile Include="Notes.fs" />
     <Compile Include="ClassDU.fs" />
     <Compile Include="Fluent.fs" />
