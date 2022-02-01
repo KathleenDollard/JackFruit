@@ -12,7 +12,8 @@
 		<Compile Include="MapData.fs" />
 		<Compile Include="ArchetypeMappingTests.fs" />
 		<Compile Include="AppModelTests.fs" />
-		<Compile Include="SubCommandMappingTests.fs" />
+		<Compile Include="AddCommandMappingTestUtils.fs" />
+		<Compile Include="AddCommandMappingTests.fs" />
 		<Content Include="TestHandlers.cs" />
 		<Compile Include="EndToEndTests.fs" />
 	</ItemGroup>

@@ -56,7 +56,7 @@ type ``When building a SyntaxTree``() =
     member _.``Invalid VB code creates diagnostics``() =
         let input = @"
         Public Clss A
-            Public Sub B() 
+            Public Sub B()
             End Sub
         End Class"
 

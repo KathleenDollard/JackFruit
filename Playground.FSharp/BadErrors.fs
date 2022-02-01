@@ -29,3 +29,15 @@ module ExtraParamInBinding =
     //    |> Result.bind f3 5
 
     //Console.WriteLine(x)
+
+//module ErrorIsFarFromProblem =
+//    // Do we know there are other offside errors when we get to line 42?
+//    // When this happened the methods were quite long and I didn't understand the importance of the offside warning
+//    let f1 =
+
+//    let f2 = 
+//        //Many lines of methods and code so f3 and f1 were not on screen together
+//        []
+
+//    let f3 = 
+//        []

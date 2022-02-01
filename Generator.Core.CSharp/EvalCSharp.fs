@@ -21,7 +21,7 @@ type EvalCSharp() =
                     -> (caller, 
                         [for arg in argList do arg :> SyntaxNode])
                 | _ 
-                    -> ()]     
+                    -> ()]
 
     override _.MethodSymbolFromMethodCall semanticModel expression = // None
         let handler =

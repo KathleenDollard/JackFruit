@@ -18,7 +18,7 @@ open Generator
 
 type ``When parsing archetypes``() =
     [<Fact>]
-    member _.``Ancestors found for empty archetype``() =
+    static member internal ``Ancestors found for empty archetype``() =
         let actual = ParseArchetypeInfo "\"\"" None
 
         actual.Path |> should equal [""]
