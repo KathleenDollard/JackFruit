@@ -10,6 +10,7 @@ open Xunit
 open Jackfruit.ArchetypeMapping
 open Generator
 open Generator.RoslynUtils
+open ExplicitAddMapping
 
 let testNamespace = "TestCode"
 
@@ -53,6 +54,24 @@ let AddMethodsToClassWithBuilder (source: string list) =
         }}
  
     }}"
+
+let GetSemanticModel (statements: string) =
+    let tree = CSharpSyntaxTree.ParseText statements
+    match GetSemanticModelFromFirstTree [tree] with
+    | Ok semanticModel -> semanticModel
+    | Error err -> invalidOp $"Error building test code {err}"
+
+
+let GetCommandInfoList evalLang pairs =
+    match ExplicitAddInfoListFrom evalLang pairs with
+    | Ok x -> x
+    | Error err -> invalidOp $"Error getting CommandInfo list {err}"
+
+
+let GetPairs evalLang semanticModel methodName = 
+    match GetPathAndHandler methodName evalLang semanticModel with
+    | Ok p -> p
+    | Error err -> invalidOp $"Error getting path and handler {err}"
 
 //let ArchetypesAndModelFromSource source =
 //    let source = AddMapStatements false source

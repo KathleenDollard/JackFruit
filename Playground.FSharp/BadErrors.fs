@@ -41,3 +41,14 @@ module ExtraParamInBinding =
 
 //    let f3 = 
 //        []
+
+//module NestedResultHardToSeee =
+    //// Would it ever not be an error to have nested result error types like this. when this happens in a bind its really hard to see
+    //let mergeWith listResult currentList =
+    //    match listResult with
+    //    | Ok list -> Ok (currentList @ list)
+    //    | Error err -> err
+
+    //let commandNamesFromModel semanticModel=
+    //    Ok [ "A"; "B" ]
+    //    |> Result.bind (mergeWith Ok [ "C"; "D" ])

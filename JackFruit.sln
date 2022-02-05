@@ -25,8 +25,6 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "JackfruitAppModel", "JackFr
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "JackfruitAppModel.Tests", "JackfruitAppModel.Tests\JackfruitAppModel.Tests.fsproj", "{36DED83A-2920-4FC6-A042-26DB7FE440B7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Temp1", "Temp1\Temp1.csproj", "{3179248B-6350-4251-9361-0E42732E76C5}"
-EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Generator.Core", "Generator.Core\Generator.Core.fsproj", "{3F0ADB6B-BA81-4F02-8F99-CCEA679F9F16}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ConsoleSupport", "ConsoleSupport\ConsoleSupport.fsproj", "{A3A11094-53DB-4C62-A232-F303259C7C60}"
@@ -79,10 +77,6 @@ Global
 		{36DED83A-2920-4FC6-A042-26DB7FE440B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36DED83A-2920-4FC6-A042-26DB7FE440B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36DED83A-2920-4FC6-A042-26DB7FE440B7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3179248B-6350-4251-9361-0E42732E76C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3179248B-6350-4251-9361-0E42732E76C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3179248B-6350-4251-9361-0E42732E76C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3179248B-6350-4251-9361-0E42732E76C5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3F0ADB6B-BA81-4F02-8F99-CCEA679F9F16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3F0ADB6B-BA81-4F02-8F99-CCEA679F9F16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F0ADB6B-BA81-4F02-8F99-CCEA679F9F16}.Release|Any CPU.ActiveCfg = Release|Any CPU

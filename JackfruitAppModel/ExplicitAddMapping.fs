@@ -5,13 +5,14 @@ open Generator.GeneralUtils
 open Microsoft.CodeAnalysis
 open Common
 open Generator
+open System
 
-type AddCommandInfo =
+type ExplicitAddInfo =
     { Path: string list 
       Handler: SyntaxNode option }
 
 
-module AddCommandMapping =
+module ExplicitAddMapping =
     let GetNamePatterns defaultPatterns (evalLanguage: EvalBase) semanticModel =
         // We are not checking the caller. If there is another use of these method name on another class
         // with a single string argument, we will use it as a pattern
@@ -46,26 +47,33 @@ module AddCommandMapping =
             |> List.except removePatterns
         patterns
 
-    //let GetPathAndHandler methodName (evalLanguage: EvalBase) semanticModel =
-    //    let commandPairsResult = evalLanguage.InvocationsFromModel methodName semanticModel
-    //    match commandPairsResult with
-    //    | Ok commandPairs -> 
-    //        [ for commandPair in commandPairs do
-    //            match commandPair with
-    //            | (name, [handler]) -> name, handler
-    //            | _ -> () ]
-    //    | _ -> []
+    let GetPathAndHandler methodName (evalLanguage: EvalBase) semanticModel =
+        let commandPairsResult = evalLanguage.InvocationsFromModel methodName semanticModel
+        match commandPairsResult with
+        | Ok commandPairs -> 
+            let pairResults = 
+                [ for commandPair in commandPairs do
+                  match commandPair with
+                  | (name, [handler]) -> Ok (name, handler)
+                  | (name, _) -> Error UnexpectednumberOfArguments ]
+
+            let errors = AppErrors.CreateErrorListeFromResults pairResults
+            let good = [ for p in pairResults do match p with | Ok pair -> pair | Error _ -> () ]
+            match errors with
+            | [] -> Ok good
+            | _ -> Error (Aggregate errors)
+        | Error err -> Error err
 
     let private stringSplitOptions =
          System.StringSplitOptions.RemoveEmptyEntries
 
-    let ParseAddCommandTarget target =
+    let ParseExplicitAddTarget target =
         (RemoveSurroundingDoubleQuote target)
             .Split([|'.'|], stringSplitOptions)
         |> Array.toList
 
-    let ParseAddCommandInfo path handler =
-        let commandNames = (ParseAddCommandTarget path)[1..]
+    let ParseExplicitAddInfo path handler =
+        let commandNames = (ParseExplicitAddTarget path)[1..]
 
         { Path = 
             // Root command name is generally empty
@@ -82,19 +90,17 @@ module AddCommandMapping =
         else
             Some expression
 
-    let AddCommandInfoListFrom (evalLanguage: EvalBase) (invocations: (string * SyntaxNode list) list) : Result<AddCommandInfo list, AppErrors> =
+    let ExplicitAddInfoListFrom (evalLanguage: EvalBase) (invocations: (string * SyntaxNode) list) : Result<ExplicitAddInfo list, AppErrors> =
             let addCommandInfoWithResults =
                 let mutable pos = 0
                 [ for invoke in invocations do
                     let pos = pos + 1
                     match invoke with
-                    | (_, [ a; d ]) ->
-                        let target = evalLanguage.StringFrom a
+                    | (target, d ) ->
                         let expression = evalLanguage.ExpressionFrom d
-                        match (target, expression) with
-                        | Ok arch, Ok expr -> Ok (ParseAddCommandInfo arch (ExpresionOption evalLanguage expr))
-                        | Error _, _ ->  Error (Generator.AppModelIssue $"Unexpected expression for frchetype at {pos}")
-                        | Ok arch, Error _ ->  Error (Generator.AppModelIssue $"Unexpected expression for handler {arch}")
+                        match expression with
+                        | Ok expr -> Ok (ParseExplicitAddInfo target (ExpresionOption evalLanguage expr))
+                        | Error _->  Error (Generator.AppModelIssue $"Unexpected expression {pos}")
                     | _ -> Error Generator.UnexpectednumberOfArguments ]
             let errors = [
                 for result in addCommandInfoWithResults do
@@ -109,7 +115,7 @@ module AddCommandMapping =
                     | _ -> () ]
             | _ -> Error (Generator.Aggregate errors)
 
-    let AddCommandInfoTreeFrom (addCommandInfoList: AddCommandInfo list) = 
+    let ExplicitAddInfoTreeFrom (addCommandInfoList: ExplicitAddInfo list) = 
         let mapBranch parents item childList=
             let data = 
                 match item with
@@ -119,7 +125,7 @@ module AddCommandMapping =
                       Handler = None }
             { Data = data; Children = childList }
 
-        let getKey (item: AddCommandInfo) = item.Path
+        let getKey (item: ExplicitAddInfo) = item.Path
 
         try
           Ok (TreeFromKeyedList getKey mapBranch addCommandInfoList)
