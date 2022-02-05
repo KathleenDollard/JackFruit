@@ -1,4 +1,4 @@
-﻿namespace Jackfruit
+﻿namespace Generator.ExplicitAdd
 
 open Generator.CodeEval
 open Generator.GeneralUtils
@@ -47,22 +47,22 @@ module ExplicitAddMapping =
             |> List.except removePatterns
         patterns
 
-    let GetPathAndHandler methodName (evalLanguage: EvalBase) semanticModel =
-        let commandPairsResult = evalLanguage.InvocationsFromModel methodName semanticModel
-        match commandPairsResult with
-        | Ok commandPairs -> 
-            let pairResults = 
-                [ for commandPair in commandPairs do
-                  match commandPair with
-                  | (name, [handler]) -> Ok (name, handler)
-                  | (name, _) -> Error UnexpectednumberOfArguments ]
+    //let GetPathAndHandler methodName (evalLanguage: EvalBase) semanticModel =
+    //    let commandPairsResult = evalLanguage.InvocationsFromModel methodName semanticModel
+    //    match commandPairsResult with
+    //    | Ok commandPairs -> 
+    //        let pairResults = 
+    //            [ for commandPair in commandPairs do
+    //              match commandPair with
+    //              | (name, [handler]) -> Ok (name, handler)
+    //              | (name, _) -> Error UnexpectednumberOfArguments ]
 
-            let errors = AppErrors.CreateErrorListeFromResults pairResults
-            let good = [ for p in pairResults do match p with | Ok pair -> pair | Error _ -> () ]
-            match errors with
-            | [] -> Ok good
-            | _ -> Error (Aggregate errors)
-        | Error err -> Error err
+    //        let errors = AppErrors.CreateErrorListeFromResults pairResults
+    //        let good = [ for p in pairResults do match p with | Ok pair -> pair | Error _ -> () ]
+    //        match errors with
+    //        | [] -> Ok good
+    //        | _ -> Error (Aggregate errors)
+    //    | Error err -> Error err
 
     let private stringSplitOptions =
          System.StringSplitOptions.RemoveEmptyEntries
@@ -90,14 +90,14 @@ module ExplicitAddMapping =
         else
             Some expression
 
-    let ExplicitAddInfoListFrom (evalLanguage: EvalBase) (invocations: (string * SyntaxNode) list) : Result<ExplicitAddInfo list, AppErrors> =
+    let ExplicitAddInfoListFrom (evalLanguage: EvalBase) (invocations: (string * SyntaxNode list) list) : Result<ExplicitAddInfo list, AppErrors> =
             let addCommandInfoWithResults =
                 let mutable pos = 0
                 [ for invoke in invocations do
                     let pos = pos + 1
                     match invoke with
                     | (target, d ) ->
-                        let expression = evalLanguage.ExpressionFrom d
+                        let expression = evalLanguage.ExpressionFrom d[0]
                         match expression with
                         | Ok expr -> Ok (ParseExplicitAddInfo target (ExpresionOption evalLanguage expr))
                         | Error _->  Error (Generator.AppModelIssue $"Unexpected expression {pos}")

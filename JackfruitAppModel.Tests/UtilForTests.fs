@@ -7,10 +7,10 @@ open Generator.RoslynUtils
 open Jackfruit.Models
 open Generator.Tests.UtilsForTests
 open Xunit
+open Generator.ExplicitAdd.ExplicitAddMapping
 open Jackfruit.ArchetypeMapping
 open Generator
 open Generator.RoslynUtils
-open ExplicitAddMapping
 
 let testNamespace = "TestCode"
 
@@ -68,10 +68,10 @@ let GetCommandInfoList evalLang pairs =
     | Error err -> invalidOp $"Error getting CommandInfo list {err}"
 
 
-let GetPairs evalLang semanticModel methodName = 
-    match GetPathAndHandler methodName evalLang semanticModel with
-    | Ok p -> p
-    | Error err -> invalidOp $"Error getting path and handler {err}"
+//let GetPairs evalLang semanticModel methodName = 
+//    match GetPathAndHandler methodName evalLang semanticModel with
+//    | Ok p -> p
+//    | Error err -> invalidOp $"Error getting path and handler {err}"
 
 //let ArchetypesAndModelFromSource source =
 //    let source = AddMapStatements false source

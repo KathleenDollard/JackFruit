@@ -1,4 +1,4 @@
-﻿namespace Jackfruit
+﻿namespace Generator
 
 open Microsoft.CodeAnalysis;
 open Xunit

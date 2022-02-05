@@ -273,7 +273,7 @@ and CommandDef(commandId: string, path: string list, returnType: ReturnType, com
       /// setup there is generally additional information discovered that 
       /// is needed by later transformers. Put that data in the pocket.
       ///
-      /// Things are added to the Pocket by both the AppModel (such as an archetype) 
+      /// Things are added to the Pocket by both the AppModel (such as details of the input) 
       /// and by the generator (the MethodSymbol and the SemanticModel). Ideally
       /// the order of transformer evaluation is strictly for precedence, and thus
       /// it is not ideal for transformers to use the pocket to communicate because it

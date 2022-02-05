@@ -1,8 +1,8 @@
 ﻿module Generator.Tests.ExplicitAddMappingTests
 
 open Xunit
-open Jackfruit
-open Jackfruit.Models
+//open Jackfruit
+//open Jackfruit.Models
 open Generator.Tests.UtilsForTests
 open Generator
 open Microsoft.CodeAnalysis.CSharp
@@ -10,14 +10,15 @@ open CliApp
 open System.Collections.Generic
 open FsUnit.Xunit
 open FsUnit.CustomMatchers
-open Generator.Tests.MapExplicitAddData
+//open Generator.Tests.MapExplicitAddData
 open Generator.Tests
 open Jackfruit.UtilsForTests
-open Jackfruit.Tests
+//open Jackfruit.Tests
 open Generator.Tests.MapExplicitAddData
-open Jackfruit.ExplicitAddMapping
+open Generator.ExplicitAdd.ExplicitAddMapping
 open Microsoft.CodeAnalysis
 open Common
+open Generator.ExplicitAdd
 
 
 //NOTE: We are testing against a facsimile of AppBase because using reference assemblies is a PITB
@@ -79,7 +80,7 @@ type ``When parsing ExplicitAdds``() =
      static member internal ``Ancestors found for empty ExplicitAdd``() =
          let actual = ParseExplicitAddInfo "\"\"" None
          let expected = 
-            { Path = [""]
+            { ExplicitAddInfo.Path = [""]
               Handler = None }
 
          Assert.Equal(expected, actual)
@@ -115,9 +116,15 @@ type ``When creating ExplicitAddInfo from mapping``() =
             | Ok list -> Ok (currentList @ list)
             | Error err -> Error err
 
+        //let commandNamesFromModel semanticModel=
+        //    GetPathAndHandler "AddCommand" eval semanticModel
+        //    |> Result.bind (mergeWith (GetPathAndHandler "AddSubCommand" eval semanticModel))
+        //    |> Result.bind (ExplicitAddInfoListFrom eval)
+        //    |> Result.map getCommandNames
+
         let commandNamesFromModel semanticModel=
-            GetPathAndHandler "AddCommand" eval semanticModel
-            |> Result.bind (mergeWith (GetPathAndHandler "AddSubCommand" eval semanticModel))
+            eval.InvocationsFromModel "AddCommand" semanticModel
+            |> Result.bind (mergeWith (eval.InvocationsFromModel "AddSubCommand" semanticModel))
             |> Result.bind (ExplicitAddInfoListFrom eval)
             |> Result.map getCommandNames
 
@@ -168,8 +175,12 @@ type ``For command definitons, you can``() =
 
     let TestPath source methodName expected =
         let semanticModel = GetSemanticModel source
-        let pairs = GetPairs evalLang semanticModel methodName
-        let infoList = GetCommandInfoList evalLang pairs
+        let invocationsResult = eval.InvocationsFromModel methodName semanticModel
+        let invocations =
+            match invocationsResult with
+            | Ok inv -> inv
+            | Error err -> invalidOp "Error finding invocations"
+        let infoList = GetCommandInfoList evalLang invocations
         let actual = 
             [ for info in infoList do 
                 info.Path]
@@ -181,8 +192,12 @@ type ``For command definitons, you can``() =
     
     let TestHandler source methodName expected =
         let semanticModel = GetSemanticModel source
-        let pairs = GetPairs evalLang semanticModel methodName
-        let infoList = GetCommandInfoList evalLang pairs
+        let invocationsResult = eval.InvocationsFromModel methodName semanticModel
+        let invocations =
+            match invocationsResult with
+            | Ok inv -> inv
+            | Error err -> invalidOp "Error finding invocations"
+        let infoList = GetCommandInfoList evalLang invocations
         let actual = 
             [ for info in infoList do 
                 match info.Handler with
@@ -221,8 +236,12 @@ type ``When building CommandDefs from explicit AddCommands, you can``() =
     let evalLang = EvalCSharp()
 
     let InputTree semanticModel methodName =
-        let pairs = GetPairs evalLang semanticModel methodName
-        let infoList = GetCommandInfoList evalLang pairs
+        let invocationsResult = eval.InvocationsFromModel methodName semanticModel
+        let invocations =
+            match invocationsResult with
+            | Ok inv -> inv
+            | Error err -> invalidOp "Error finding invocations"
+        let infoList = GetCommandInfoList evalLang invocations
         let result = ExplicitAddInfoTreeFrom infoList
         match result with
         | Ok tree -> tree
