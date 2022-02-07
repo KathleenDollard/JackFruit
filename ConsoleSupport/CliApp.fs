@@ -15,6 +15,7 @@ type AliasSource =
   | Attribute = 4
   | All = 6
 
+
 type IsArgumentSource =
   | XmlComment = 2 
   | Attribute = 4
@@ -25,6 +26,10 @@ type OptionArgumentNameSource =
   | XmlComment = 2 
   | Attribute = 4
   | All = 6
+
+
+type CommandBase() =
+    member this.AddSubCommand(codeToRun: Delegate) = ()
 
 
 type AppBase() =
@@ -60,12 +65,11 @@ type AppBase() =
     member this.IsArgumentSource = IsArgumentSource.All;
     member this.OptionArgumentNameSource optionArgumentNameSource = OptionArgumentNameSource.All;
 
-    member this.AddRootCommand(codeToRun: Delegate) = ()
+    static member AddRootCommand(codeToRun: Delegate) = ()
+    static member AddSubCommand(codeToRun: Delegate) = ()
 
     member this.AddCommonAliases(pairs: IEnumerable<(string * string)>) =
         for pair in pairs do
             match pair with
             | alias, optionName -> this.CommonAliases.Add(alias, optionName)
         ()
-
-

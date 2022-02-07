@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace CliDefinition
 {
    
-   public class OriginalSeriesCli : ICommandHandler
+   public partial class OriginalSeriesCli : ICommandHandler
    {
       private Action<string, string, string> _operation {get; set;}
       public Command Command {get; set;}
@@ -36,6 +36,7 @@ namespace CliDefinition
       {
          return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(uhuraOption);
       }
+      public CommandBase NextGeneration {get; set;}
       public Task<int> InvokeAsync()
       {
          ._operation(.kirkOptionResult(context), .spockOptionResult(context), .uhuraOptionResult(context));
@@ -43,7 +44,7 @@ namespace CliDefinition
       }
    }
    
-   public class NextGenerationCli : ICommandHandler
+   public partial class NextGenerationCli : ICommandHandler
    {
       private Action<string> _operation {get; set;}
       public Command Command {get; set;}
@@ -60,6 +61,7 @@ namespace CliDefinition
       {
          return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(picardOption);
       }
+      public CommandBase Voyager {get; set;}
       public Task<int> InvokeAsync()
       {
          ._operation(.picardOptionResult(context));
@@ -67,7 +69,7 @@ namespace CliDefinition
       }
    }
    
-   public class VoyagerCli : ICommandHandler
+   public partial class VoyagerCli : ICommandHandler
    {
       private Action<string, string, string, bool, string> _operation {get; set;}
       public Command Command {get; set;}

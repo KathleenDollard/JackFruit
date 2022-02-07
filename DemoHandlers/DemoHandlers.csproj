@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\kdollard\.nuget\packages\fsharp.core\6.0.2\contentFiles\any\netstandard2.1\FSharp.Core.xml" />
+  </ItemGroup>
+
+</Project>

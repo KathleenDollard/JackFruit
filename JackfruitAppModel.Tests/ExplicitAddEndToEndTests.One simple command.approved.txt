@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace CliDefinition
 {
    
-   public class NextGenerationCli : ICommandHandler
+   public partial class NextGenerationCli : ICommandHandler
    {
       private Action<string> _operation {get; set;}
       public Command Command {get; set;}

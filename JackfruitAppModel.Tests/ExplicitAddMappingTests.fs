@@ -112,13 +112,13 @@ type ``When creating ExplicitAddInfo from mapping``() =
                 archInfo.Path |> List.last ]
 
         //let commandNamesFromModel semanticModel=
-        //    GetPathAndHandler ["AddCommand"] eval semanticModel
+        //    GetPathAndHandler ["AddRootCommand"] eval semanticModel
         //    |> Result.bind (mergeWith (GetPathAndHandler ["AddSubCommand"] eval semanticModel))
         //    |> Result.bind (ExplicitAddInfoListFrom eval)
         //    |> Result.map getCommandNames
 
         let commandNamesFromModel semanticModel=
-            eval.InvocationsFromModel ["AddCommand"] semanticModel
+            eval.InvocationsFromModel ["AddRootCommand"] semanticModel
             |> Result.bind (MergeWith (eval.InvocationsFromModel ["AddSubCommand"] semanticModel))
             |> Result.bind (ExplicitAddInfoListFrom eval semanticModel)
             |> Result.map getCommandNames
@@ -206,7 +206,7 @@ type ``For command definitons, you can``() =
 
     [<Fact>]
     member _.``Extract the path members for a command``() =
-        TestPath OneMapping.CliCode ["AddCommand"] [ ["NextGeneration"] ]
+        TestPath OneMapping.CliCode ["AddRootCommand"] [ ["NextGeneration"] ]
 
     [<Fact>]
     member _.``Extract the path members for a subcommand``() =
@@ -216,7 +216,7 @@ type ``For command definitons, you can``() =
 
     [<Fact>]
     member _.``Extract the handler for a command``() =
-        TestHandler OneMapping.CliCode ["AddCommand"] [ "NextGeneration"]
+        TestHandler OneMapping.CliCode ["AddRootCommand"] [ "NextGeneration"]
 
 
     [<Fact>]
@@ -274,7 +274,7 @@ type ``When building CommandDefs from explicit AddCommands, you can``() =
         let expected =
             { Data = { Path = [ "NextGeneration"]; HandlerName = "NextGeneration" }
               Children = [] }
-        let trees = TestTree ["AddCommand"] OneMapping.CliCode expected
+        let trees = TestTree ["AddRootCommand"] OneMapping.CliCode expected
         Assert.NotNull(trees[0].Data.Handler)
 
     [<Fact>]
@@ -286,4 +286,4 @@ type ``When building CommandDefs from explicit AddCommands, you can``() =
                     Children = 
                         [ { Data = { Path = [ "OriginalSeries"; "NextGeneration"; "Voyager"]; HandlerName = "Voyager" }
                             Children = [] }] } ] }
-        TestTree ["AddCommand"; "AddSubCommand"] ThreeMappings.CliCode expected
+        TestTree ["AddRootCommand"; "AddSubCommand"] ThreeMappings.CliCode expected

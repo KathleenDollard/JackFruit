@@ -15,7 +15,7 @@ let AppBaseCode =
         public static List<string> DefaultPatterns = new() { ""*"", ""Run *"", ""* Handler"" };
         public static void AddCommandNamePattern(string pattern) { }
         public static void RemoveCommandNamePattern(string pattern) { }
-        public void AddCommand(Delegate handler) { }
+        public void AddRootCommand(Delegate handler) { }
         public void AddSubCommand(Delegate handler) { }
     }"
 
@@ -145,7 +145,7 @@ let OneMapping =
     public void DefineCli ()
     {{ 
         var app = new MyCli();
-        app.AddCommand(Handlers.NextGeneration);
+        app.AddRootCommand(Handlers.NextGeneration);
     }}"
       CommandNames = [ "NextGeneration" ]
       CommandDefs = [ commandDef ] }
@@ -194,7 +194,7 @@ let ThreeMappings =
     public void DefineCli ()
     {{ 
         var app = new MyCli();
-        app.AddCommand(Handlers.OriginalSeries);
+        app.AddRootCommand(Handlers.OriginalSeries);
         app.OriginalSeries.AddSubCommand(Handlers.NextGeneration);
         app.OriginalSeries.NextGeneration.AddSubCommand(Handlers.Voyager);
     }}"
