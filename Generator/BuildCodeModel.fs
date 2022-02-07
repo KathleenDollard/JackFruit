@@ -33,7 +33,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
         let invokeReturnType = ReturnType.ReturnType (NamedItem.Create ("Task", ["int"]))
                 
         [ Class className {
-            Public2
+            Public2 Partial
             ImplementsInterface "ICommandHandler"
             // TODO: Make this property Get only
             Property (operationAsField, operationType) { Private }
@@ -65,6 +65,9 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                     // TODO: Work on Symbol in the following line
                     Return (Invoke "context.ParseResult" $"GetValueFor{mbr.KindName}<{mbr.TypeName}>" [ propertyAccess ] )
                     }
+
+            for subCommand in commandDef.SubCommands do
+                Property (subCommand.Name, "CommandBase") { Public2 }
 
             Method("InvokeAsync") {
                 Public2

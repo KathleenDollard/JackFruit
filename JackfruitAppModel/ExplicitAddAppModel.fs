@@ -10,7 +10,7 @@ type AppModel(evalLanguage: EvalBase) =
     inherit AppModel<TreeNodeType<ExplicitAddInfo>>() with 
 
     // TODO: Add SubCommands
-    let mapMethodNames = ["AddCommand"; "AddSubCommand"]
+    let mapMethodNames = ["AddRootCommand"; "AddSubCommand"]
 
     override _.Initialize semanticModel =
         evalLanguage.InvocationsFromModel mapMethodNames semanticModel

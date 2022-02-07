@@ -153,7 +153,8 @@ type LanguageBase() =
                 | Extension -> "" // extensions need special handling
                 | Sealed -> this.SealedKeyword
            ] 
-        String.Join(", ", modifierList)
+        if modifierList.IsEmpty then ""
+        else " " + String.Join(", ", modifierList)
 
     member this.ScopeOutput scope =
         match scope with 
