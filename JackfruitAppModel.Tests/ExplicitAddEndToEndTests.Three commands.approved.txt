@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 namespace CliDefinition
 {
    
-   public class Cli : ICommandHandler
+   public class OriginalSeriesCli : ICommandHandler
    {
       private Action<string, string, string> _operation {get; set;}
       public Command Command {get; set;}
-      public Cli(Action<string, string, string> operation)
+      public OriginalSeriesCli(Action<string, string, string> operation)
       {
          _operation = operation;
-         Command = new Command("");
+         Command = new Command("OriginalSeries");
          kirkOption = new Option<string>("kirk");
          Command.Add(kirkOption);
          spockOption = new Option<string>("spock");
@@ -39,6 +39,82 @@ namespace CliDefinition
       public Task<int> InvokeAsync()
       {
          ._operation(.kirkOptionResult(context), .spockOptionResult(context), .uhuraOptionResult(context));
+         return Task.FromResult(context.ExitCode);
+      }
+   }
+   
+   public class NextGenerationCli : ICommandHandler
+   {
+      private Action<string> _operation {get; set;}
+      public Command Command {get; set;}
+      public NextGenerationCli(Action<string> operation)
+      {
+         _operation = operation;
+         Command = new Command("NextGeneration");
+         picardOption = new Option<string>("picard");
+         Command.Add(picardOption);
+         Command.Handler = this;
+      }
+      public Option<string> picardOption {get; set;}
+      public string picardOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(picardOption);
+      }
+      public Task<int> InvokeAsync()
+      {
+         ._operation(.picardOptionResult(context));
+         return Task.FromResult(context.ExitCode);
+      }
+   }
+   
+   public class VoyagerCli : ICommandHandler
+   {
+      private Action<string, string, string, bool, string> _operation {get; set;}
+      public Command Command {get; set;}
+      public VoyagerCli(Action<string, string, string, bool, string> operation)
+      {
+         _operation = operation;
+         Command = new Command("Voyager");
+         janewayOption = new Option<string>("janeway");
+         Command.Add(janewayOption);
+         chakotayOption = new Option<string>("chakotay");
+         Command.Add(chakotayOption);
+         torresOption = new Option<string>("torres");
+         Command.Add(torresOption);
+         tuvokOption = new Option<bool>("tuvok");
+         Command.Add(tuvokOption);
+         sevenOfNineOption = new Option<string>("sevenOfNine");
+         Command.Add(sevenOfNineOption);
+         Command.Handler = this;
+      }
+      public Option<string> janewayOption {get; set;}
+      public string janewayOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(janewayOption);
+      }
+      public Option<string> chakotayOption {get; set;}
+      public string chakotayOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(chakotayOption);
+      }
+      public Option<string> torresOption {get; set;}
+      public string torresOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(torresOption);
+      }
+      public Option<bool> tuvokOption {get; set;}
+      public bool tuvokOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "bool">(tuvokOption);
+      }
+      public Option<string> sevenOfNineOption {get; set;}
+      public string sevenOfNineOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(sevenOfNineOption);
+      }
+      public Task<int> InvokeAsync()
+      {
+         ._operation(.janewayOptionResult(context), .chakotayOptionResult(context), .torresOptionResult(context), .tuvokOptionResult(context), .sevenOfNineOptionResult(context));
          return Task.FromResult(context.ExitCode);
       }
    }
