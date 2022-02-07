@@ -12,12 +12,12 @@ type EvalCSharp() =
         | :? CSharp.CSharpSyntaxNode as cSharpNode-> StringFrom cSharpNode
         | _ -> invalidOp "Unexpected type"
     
-    override _.InvocationsFromModel name semantiModel = // Error (AppErrors.NotImplemented "Not yet")
+    override _.InvocationsFromModel names semantiModel = // Error (AppErrors.NotImplemented "Not yet")
         let syntaxTree = semantiModel.SyntaxTree
         Ok 
             [ for node in syntaxTree.GetRoot().DescendantNodes() do
                 match node with 
-                | SimpleInvocationByName name (caller, argList) 
+                | SimpleInvocationByName names (caller, argList) 
                     -> (caller, 
                         [for arg in argList do arg :> SyntaxNode])
                 | _ 

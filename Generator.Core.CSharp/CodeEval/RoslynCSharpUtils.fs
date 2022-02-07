@@ -55,13 +55,13 @@ let (|SimpleMemberAccessExpression|_|) (n: CSharpSyntaxNode) =
     | _ -> None
 
 
-let (|SimpleInvocationByName|_|) (name:string) (node:SyntaxNode) = 
+let (|SimpleInvocationByName|_|) (names:string list) (node:SyntaxNode) = 
     match node with
     | InvocationExpression (expr, a) -> 
         match expr with 
-        | SimpleMemberAccessExpression (c, n) when n.ToString() = name ->
+        | SimpleMemberAccessExpression (c, n) when (List.contains (n.ToString()) names) ->
                 Some( c.ToString(), Seq.toList a.Arguments )
-        | IdentifierNameSyntax (_, n) when n.ToString() = name -> 
+        | IdentifierNameSyntax (_, n) when (List.contains (n.ToString()) names) ->
                 Some( "", Seq.toList a.Arguments)
         | _ -> None
     | _ -> None

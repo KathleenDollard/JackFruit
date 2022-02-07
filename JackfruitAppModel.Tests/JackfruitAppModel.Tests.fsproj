@@ -10,13 +10,13 @@
 	<ItemGroup>
 		<Compile Include="UtilForTests.fs" />
 		<Compile Include="MapExplicitAddData.fs" />
-		<Compile Include="MapData.fs" />
-		<Compile Include="ArchetypeMappingTests.fs" />
-		<Compile Include="AppModelTests.fs" />
+		<!--<Compile Include="MapData.fs" />-->
+		<!--<Compile Include="ArchetypeMappingTests.fs" />-->
+		<!--<Compile Include="AppModelTests.fs" />-->
 		<Compile Include="ExplicitAddAppModelTests .fs" />
 		<Compile Include="ExplicitAddMappingTests.fs" />
 		<Content Include="TestHandlers.cs" />
-		<Compile Include="EndToEndTests.fs" />
+		<!--<Compile Include="EndToEndTests.fs" />-->
 		<Compile Include="ExplicitAddEndToEndTests.fs" />
 	</ItemGroup>
 

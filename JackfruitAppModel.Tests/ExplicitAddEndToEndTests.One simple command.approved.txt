@@ -5,26 +5,40 @@ using System.Threading.Tasks;
 namespace CliDefinition
 {
    
-   public class ACli : ICommandHandler
+   public class Cli : ICommandHandler
    {
-      private Action<string> _operation {get; set;}
+      private Action<string, string, string> _operation {get; set;}
       public Command Command {get; set;}
-      public ACli(Action<string> operation)
+      public Cli(Action<string, string, string> operation)
       {
          _operation = operation;
-         Command = new Command("A");
-         oneOption = new Option<string>("one");
-         Command.Add(oneOption);
+         Command = new Command("");
+         kirkOption = new Option<string>("kirk");
+         Command.Add(kirkOption);
+         spockOption = new Option<string>("spock");
+         Command.Add(spockOption);
+         uhuraOption = new Option<string>("uhura");
+         Command.Add(uhuraOption);
          Command.Handler = this;
       }
-      public Option<string> oneOption {get; set;}
-      public string oneOptionResult(InvocationContext context)
+      public Option<string> kirkOption {get; set;}
+      public string kirkOptionResult(InvocationContext context)
       {
-         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(oneOption);
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(kirkOption);
+      }
+      public Option<string> spockOption {get; set;}
+      public string spockOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(spockOption);
+      }
+      public Option<string> uhuraOption {get; set;}
+      public string uhuraOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(uhuraOption);
       }
       public Task<int> InvokeAsync()
       {
-         ._operation(.oneOptionResult(context));
+         ._operation(.kirkOptionResult(context), .spockOptionResult(context), .uhuraOptionResult(context));
          return Task.FromResult(context.ExitCode);
       }
    }

@@ -6,12 +6,13 @@ open Microsoft.CodeAnalysis
 open Generator.SourceGenerator
 open Common
 open Jackfruit.Models
+open Generator.ExplicitAdd
 open Generator
 
 
 [<Generator(LanguageNames.CSharp)>]
 type ExplicitAddGenerator() =
-    inherit CliSourceGenerator<TreeNodeType<ArchetypeInfo>>()
+    inherit CliSourceGenerator<TreeNodeType<ExplicitAddInfo>>()
 
     override _.GetAppModel synataxTrees semanticModel =
-        Jackfruit.AppModel(EvalCSharp())
+        AppModel(EvalCSharp())

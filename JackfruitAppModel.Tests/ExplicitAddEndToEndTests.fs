@@ -3,16 +3,17 @@
 open Microsoft.CodeAnalysis;
 open Xunit
 open ApprovalTests.Reporters
-open Jackfruit.Tests
 open System
 open Generator.Tests.UtilsForTests
 open ApprovalTests
 open System.Linq
 open Generator.SourceGenerator
 open Generator
+open Generator.Tests.MapExplicitAddData
+open Generator.ExplicitAdd
 
 type ExplicitAddTestGenerator() =
-    inherit Jackfruit.Generator()
+    inherit Jackfruit.ExplicitAddGenerator()
 
     override _.CodeModelBuilder commandDef =
         BuildNewerCliCodeModel.OutputCommandWrapper commandDef
@@ -22,7 +23,7 @@ type ExplicitAddEndToEndTests() =
     let RunCliModelGenerator (inputCompilation: Compilation) generator =
         RunGenerator generator inputCompilation
 
-    let RunTest (data: MapData.Data) generator =
+    let RunTest (data: Data) generator =
         let compilation = CreateCompilation data.CliCode
         let inputDiagnostics = compilation.GetDiagnostics()
         if not (inputDiagnostics.IsEmpty) then invalidOp "Input code is invalid"
@@ -36,29 +37,29 @@ type ExplicitAddEndToEndTests() =
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``No commands``() =
-        RunTest MapData.NoMapping (Jackfruit.Generator())
+        RunTest NoMapping (Jackfruit.ExplicitAddGenerator())
         
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``One simple command``() =
-        RunTest MapData.OneMapping (Jackfruit.Generator())
+        RunTest OneMapping (Jackfruit.ExplicitAddGenerator())
     
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``Three commands``() =
-        RunTest MapData.ThreeMappings (Jackfruit.Generator())
+        RunTest ThreeMappings (Jackfruit.ExplicitAddGenerator())
 
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``No commands with test generator``() =
-        RunTest MapData.NoMapping (TestGenerator())
+        RunTest NoMapping (ExplicitAddTestGenerator())
    
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``One simple command with test generator``() =
-        RunTest MapData.OneMapping (TestGenerator())
+        RunTest OneMapping (ExplicitAddTestGenerator())
     
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``Three commands with test generator``() =
-        RunTest MapData.ThreeMappings (TestGenerator())
+        RunTest ThreeMappings (ExplicitAddTestGenerator())

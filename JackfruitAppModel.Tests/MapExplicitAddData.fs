@@ -93,7 +93,7 @@ let Handlers = $"
         public static void OriginalSeries(string kirk, string spock, string uhura) {{ }}
         public static void NextGeneration(string picard) {{ }}
         public static void DeepSpaceNine(string sisko, string odo, string dax, string worf, string oBrien) {{ }}
-        public static void Voyager(string janeway, string chakotay, string torres, string tuvok, string sevenOfNine) {{ }}
+        public static void Voyager(string janeway, string chakotay, string torres, bool tuvok, string sevenOfNine) {{ }}
     }}"
 
 let CliWrapperCode statements = $@"
@@ -137,7 +137,7 @@ let NoMapping =
       CommandDefs = [ ] }
 
 let OneMapping =
-    let mutable commandDef = CommandDef("OriginalSeries", [""], ReturnType.ReturnTypeVoid, Arbitrary "OriginalSeries")
+    let mutable commandDef = CommandDef("NextGeneration", ["NextGeneration"], ReturnType.ReturnTypeVoid, Arbitrary "NextGeneration")
     let members = [ MemberDef("picard",commandDef, (SimpleNamedItem "string"), ArbitraryMember, true) ]
     commandDef.Members <- members
 
@@ -145,14 +145,14 @@ let OneMapping =
     public void DefineCli ()
     {{ 
         var app = new MyCli();
-        app.AddCommand(Handlers.OriginalSeries);
+        app.AddCommand(Handlers.NextGeneration);
     }}"
-      CommandNames = [ "" ]
+      CommandNames = [ "NextGeneration" ]
       CommandDefs = [ commandDef ] }
 
 let ThreeMappings =
     // KAD-Don-Chet: Why don't I need mutable here?
-    let voyager = CommandDef("voyager", [ "originalSeries"; "nextGeneration"; "voyager" ], ReturnType.ReturnTypeVoid, Arbitrary "Voyager")
+    let voyager = CommandDef("Voyager", [ "OriginalSeries"; "NextGeneration"; "Voyager" ], ReturnType.ReturnTypeVoid, Arbitrary "Voyager")
     voyager.Members <-
         [ MemberDef("janeway", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("chakotay", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
@@ -168,16 +168,21 @@ let ThreeMappings =
     //      MemberDef("worf",  deepSpaceNine, (SimpleNamedItem "bool"), ArbitraryMember, true)
     //      MemberDef("oBrien",  deepSpaceNine, (SimpleNamedItem "string"), ArbitraryMember, true) ]
 
-    let nextGeneration = CommandDef("nextGeneration", [ "originalSeries"; "nextGeneration" ], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine")
+    let nextGeneration = CommandDef("NextGeneration", [ "OriginalSeries"; "NextGeneration" ], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine")
     nextGeneration.Members <-
+        [ MemberDef("picard", nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+    nextGeneration.SubCommands <- [voyager]
+
+    let deepSpaceNine = CommandDef("DeepSpaceNine", [ "OriginalSeries"; "NextGeneration"; "DeepSpaceNine"], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine")
+    deepSpaceNine.Members <-
         [ MemberDef("sisko", nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("odo", nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("dax",  nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("worf",  nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true)
           MemberDef("oBrien",  nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true) ]
-    nextGeneration.SubCommands <- [voyager]
+    deepSpaceNine.SubCommands <- []
 
-    let originalSeries = CommandDef("originalSeries", [ "originalSeries" ], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine")
+    let originalSeries = CommandDef("OriginalSeries", [ "OriginalSeries" ], ReturnType.ReturnTypeVoid, Arbitrary "OriginalSeries")
     originalSeries.Members <-
         [ MemberDef("kirk", originalSeries, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("spock", originalSeries, (SimpleNamedItem "string"), ArbitraryMember, true)
@@ -193,6 +198,6 @@ let ThreeMappings =
         app.OriginalSeries.AddSubCommand(Handlers.NextGeneration);
         app.OriginalSeries.NextGeneration.AddSubCommand(Handlers.Voyager);
     }}"
-      CommandNames = [ ""; "OriginalSeries"; "NextGeneration" ]
+      CommandNames = [ "OriginalSeries"; "NextGeneration"; "Voyager" ]
 
       CommandDefs = [ originalSeries ] }

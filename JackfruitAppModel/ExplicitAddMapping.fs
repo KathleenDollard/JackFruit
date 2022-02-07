@@ -40,8 +40,8 @@ module ExplicitAddMapping =
             | Ok list -> patternsFromSyntaxNodes list
             | Error _ -> []
 
-        let addPatterns = patternsFromInvocations "AddCommandNamePattern"
-        let removePatterns = patternsFromInvocations "RemoveCommandNamePattern"
+        let addPatterns = patternsFromInvocations ["AddCommandNamePattern"]
+        let removePatterns = patternsFromInvocations ["RemoveCommandNamePattern"]
         let patterns = 
             defaultPatterns @ addPatterns
             |> List.except removePatterns
@@ -72,15 +72,10 @@ module ExplicitAddMapping =
             .Split([|'.'|], stringSplitOptions)
         |> Array.toList
 
-    let ParseExplicitAddInfo path handler =
-        let commandNames = (ParseExplicitAddTarget path)[1..]
+    let ParseExplicitAddInfo path handler currentName =
+        let commandNames = (ParseExplicitAddTarget path)[1..] @ [currentName]
 
-        { Path = 
-            // Root command name is generally empty
-            if commandNames.IsEmpty then
-                [""]
-            else
-                commandNames
+        { Path = commandNames
           Handler = handler }
 
 
@@ -90,16 +85,24 @@ module ExplicitAddMapping =
         else
             Some expression
 
-    let ExplicitAddInfoListFrom (evalLanguage: EvalBase) (invocations: (string * SyntaxNode list) list) : Result<ExplicitAddInfo list, AppErrors> =
+    let ExplicitAddInfoListFrom (evalLanguage: EvalBase) semanticModel (invocations: (string * SyntaxNode list) list) : Result<ExplicitAddInfo list, AppErrors> =
             let addCommandInfoWithResults =
                 let mutable pos = 0
                 [ for invoke in invocations do
                     let pos = pos + 1
                     match invoke with
                     | (target, d ) ->
-                        let expression = evalLanguage.ExpressionFrom d[0]
-                        match expression with
-                        | Ok expr -> Ok (ParseExplicitAddInfo target (ExpresionOption evalLanguage expr))
+                        let expressionResult = evalLanguage.ExpressionFrom d[0]
+                        match expressionResult with
+                        | Ok expr -> 
+                            let exprOption = (ExpresionOption evalLanguage expr)
+                            match exprOption with
+                            | Some expression ->
+                                let method = evalLanguage.MethodSymbolFromMethodCall semanticModel expression
+                                match method with
+                                | Some m -> Ok (ParseExplicitAddInfo target exprOption m.Name)
+                                | None -> Error (Generator.AppModelIssue $"Parameter must be a {pos}")
+                            | None -> Error (Generator.AppModelIssue $"Method is required {pos}")
                         | Error _->  Error (Generator.AppModelIssue $"Unexpected expression {pos}")
                     | _ -> Error Generator.UnexpectednumberOfArguments ]
             let errors = [

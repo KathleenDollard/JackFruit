@@ -78,27 +78,27 @@ type ``For Command Name Patterns, you can ``() =
 type ``When parsing ExplicitAdds``() =
      [<Fact>]
      static member internal ``Ancestors found for empty ExplicitAdd``() =
-         let actual = ParseExplicitAddInfo "\"\"" None
+         let actual = ParseExplicitAddInfo "\"\"" None "current"
          let expected = 
-            { ExplicitAddInfo.Path = [""]
+            { ExplicitAddInfo.Path = ["current"]
               Handler = None }
 
          Assert.Equal(expected, actual)
  
      [<Fact>]
      member _.``Ancestors found for simple ExplicitAdd``() =
-         let actual = ParseExplicitAddInfo "\"app.first\"" None
+         let actual = ParseExplicitAddInfo "\"app.first\"" None "current"
          let expected = 
-            { Path = ["first"]
+            { Path = ["first"; "current"]
               Handler = None }
  
          Assert.Equal(expected, actual)
 
      [<Fact>]
      member _.``Ancestors found for multi-level ExplicitAdd``() =
-         let actual = ParseExplicitAddInfo "\"app.first.second.third\"" None
+         let actual = ParseExplicitAddInfo "\"app.first.second.third\"" None "current"
          let expected = 
-            { Path = [ "first"; "second"; "third"]
+            { Path = [ "first"; "second"; "third"; "current"]
               Handler = None }
  
          Assert.Equal(expected, actual)
@@ -111,21 +111,16 @@ type ``When creating ExplicitAddInfo from mapping``() =
             [ for archInfo in archInfoList do
                 archInfo.Path |> List.last ]
 
-        let mergeWith listResult currentList =
-            match listResult with
-            | Ok list -> Ok (currentList @ list)
-            | Error err -> Error err
-
         //let commandNamesFromModel semanticModel=
-        //    GetPathAndHandler "AddCommand" eval semanticModel
-        //    |> Result.bind (mergeWith (GetPathAndHandler "AddSubCommand" eval semanticModel))
+        //    GetPathAndHandler ["AddCommand"] eval semanticModel
+        //    |> Result.bind (mergeWith (GetPathAndHandler ["AddSubCommand"] eval semanticModel))
         //    |> Result.bind (ExplicitAddInfoListFrom eval)
         //    |> Result.map getCommandNames
 
         let commandNamesFromModel semanticModel=
-            eval.InvocationsFromModel "AddCommand" semanticModel
-            |> Result.bind (mergeWith (eval.InvocationsFromModel "AddSubCommand" semanticModel))
-            |> Result.bind (ExplicitAddInfoListFrom eval)
+            eval.InvocationsFromModel ["AddCommand"] semanticModel
+            |> Result.bind (MergeWith (eval.InvocationsFromModel ["AddSubCommand"] semanticModel))
+            |> Result.bind (ExplicitAddInfoListFrom eval semanticModel)
             |> Result.map getCommandNames
 
         let result = 
@@ -180,7 +175,7 @@ type ``For command definitons, you can``() =
             match invocationsResult with
             | Ok inv -> inv
             | Error err -> invalidOp "Error finding invocations"
-        let infoList = GetCommandInfoList evalLang invocations
+        let infoList = GetCommandInfoList evalLang semanticModel invocations
         let actual = 
             [ for info in infoList do 
                 info.Path]
@@ -197,7 +192,7 @@ type ``For command definitons, you can``() =
             match invocationsResult with
             | Ok inv -> inv
             | Error err -> invalidOp "Error finding invocations"
-        let infoList = GetCommandInfoList evalLang invocations
+        let infoList = GetCommandInfoList evalLang semanticModel invocations
         let actual = 
             [ for info in infoList do 
                 match info.Handler with
@@ -211,22 +206,22 @@ type ``For command definitons, you can``() =
 
     [<Fact>]
     member _.``Extract the path members for a command``() =
-        TestPath OneMapping.CliCode "AddCommand" [ [""] ]
+        TestPath OneMapping.CliCode ["AddCommand"] [ ["NextGeneration"] ]
 
     [<Fact>]
     member _.``Extract the path members for a subcommand``() =
-        TestPath ThreeMappings.CliCode "AddSubCommand" 
-            [ ["OriginalSeries"] 
-              ["OriginalSeries"; "NextGeneration"]]
+        TestPath ThreeMappings.CliCode ["AddSubCommand"] 
+            [ ["OriginalSeries"; "NextGeneration"] 
+              ["OriginalSeries"; "NextGeneration"; "Voyager"]]
 
     [<Fact>]
     member _.``Extract the handler for a command``() =
-        TestHandler OneMapping.CliCode "AddCommand" [ "OriginalSeries"]
+        TestHandler OneMapping.CliCode ["AddCommand"] [ "NextGeneration"]
 
 
     [<Fact>]
     member _.``Extract the handler for a subcommand``() =
-        TestHandler ThreeMappings.CliCode "AddSubCommand" [ "NextGeneration"; "Voyager" ]
+        TestHandler ThreeMappings.CliCode ["AddSubCommand"] [ "NextGeneration"; "Voyager" ]
     
 type ToCompare = 
     { Path: string list
@@ -241,7 +236,7 @@ type ``When building CommandDefs from explicit AddCommands, you can``() =
             match invocationsResult with
             | Ok inv -> inv
             | Error err -> invalidOp "Error finding invocations"
-        let infoList = GetCommandInfoList evalLang invocations
+        let infoList = GetCommandInfoList evalLang semanticModel invocations
         let result = ExplicitAddInfoTreeFrom infoList
         match result with
         | Ok tree -> tree
@@ -272,19 +267,23 @@ type ``When building CommandDefs from explicit AddCommands, you can``() =
         let trees = InputTree semanticModel methodName
         for tree in trees do
             CompareWithTree semanticModel expected tree
+        trees
 
     [<Fact>]
     member _.``Build the input tree for one command``() =
         let expected =
-            { Data = { Path = [ ""]; HandlerName = "OriginalSeries" }
+            { Data = { Path = [ "NextGeneration"]; HandlerName = "NextGeneration" }
               Children = [] }
-        TestTree "AddCommand" OneMapping.CliCode expected
+        let trees = TestTree ["AddCommand"] OneMapping.CliCode expected
+        Assert.NotNull(trees[0].Data.Handler)
 
     [<Fact>]
     member _.``Build the input tree for two sub-commands``() =
         let expected =
-            { Data = { Path = [ "OriginalSeries"]; HandlerName = "NextGeneration" }
+            { Data = { Path = [ "OriginalSeries"]; HandlerName = "OriginalSeries" }
               Children = 
-                [ { Data = { Path = [ "OriginalSeries"; "NextGeneration"]; HandlerName = "Voyager" }
-                    Children = [] } ] }
-        TestTree "AddSubCommand" ThreeMappings.CliCode expected
+                [ { Data = { Path = [ "OriginalSeries"; "NextGeneration"]; HandlerName = "NextGeneration" }
+                    Children = 
+                        [ { Data = { Path = [ "OriginalSeries"; "NextGeneration"; "Voyager"]; HandlerName = "Voyager" }
+                            Children = [] }] } ] }
+        TestTree ["AddCommand"; "AddSubCommand"] ThreeMappings.CliCode expected

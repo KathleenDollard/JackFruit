@@ -5,16 +5,22 @@ using System.Threading.Tasks;
 namespace CliDefinition
 {
    
-   public class ACli
+   public class Cli
    {
       public Command Command {get; set;}
-      public ACli()
+      public Cli()
       {
-         Command = new Command("A");
-         oneOption = new Option<string>("one");
-         Command.Add(oneOption);
-         Command.SetHandler(Handlers.A, oneOption);
+         Command = new Command("");
+         kirkOption = new Option<string>("kirk");
+         Command.Add(kirkOption);
+         spockOption = new Option<string>("spock");
+         Command.Add(spockOption);
+         uhuraOption = new Option<string>("uhura");
+         Command.Add(uhuraOption);
+         Command.SetHandler(CliApp.Handlers.OriginalSeries, kirkOption, spockOption, uhuraOption);
       }
-      public Option<string> oneOption {get; set;}
+      public Option<string> kirkOption {get; set;}
+      public Option<string> spockOption {get; set;}
+      public Option<string> uhuraOption {get; set;}
    }
 }

@@ -10,11 +10,11 @@ type AppModel(evalLanguage: EvalBase) =
     inherit AppModel<TreeNodeType<ExplicitAddInfo>>() with 
 
     // TODO: Add SubCommands
-    let mapMethodName = "AddCommand"
+    let mapMethodNames = ["AddCommand"; "AddSubCommand"]
 
     override _.Initialize semanticModel =
-        evalLanguage.InvocationsFromModel mapMethodName semanticModel
-        |> Result.bind (ExplicitAddInfoListFrom evalLanguage)
+        evalLanguage.InvocationsFromModel mapMethodNames semanticModel
+        |> Result.bind (ExplicitAddInfoListFrom evalLanguage semanticModel)
         |> Result.bind ExplicitAddInfoTreeFrom
         
     override _.Children archTree =
@@ -26,7 +26,11 @@ type AppModel(evalLanguage: EvalBase) =
             match nodeInfo.Handler with
             | None -> None
             | Some handler -> evalLanguage.MethodSymbolFromMethodCall semanticModel handler
-        { InfoCommandId = Some (List.last nodeInfo.Path)
+        let commandId =
+            match method with 
+            | Some m -> Some m.Name
+            | None -> None
+        { InfoCommandId = commandId
           Path = nodeInfo.Path 
           Method = method 
           ForPocket = [] }

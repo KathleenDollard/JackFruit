@@ -2,52 +2,55 @@
 
 
 open Xunit
-open FsUnit.Xunit
-open FsUnit.CustomMatchers
-open Jackfruit.ArchetypeMapping
-open Generator.RoslynUtils
-open Generator.GeneralUtils
-open Jackfruit.Models
 open Generator.Tests.UtilsForTests
-open Microsoft.CodeAnalysis
-open Generator.Tests
 open Jackfruit.UtilsForTests
 open Generator.NewMapping
 //open Generator
 open Generator.Models
-open Jackfruit.Tests
+//open Jackfruit.Tests
 open Common
 open ApprovalTests.Reporters
-open ApprovalTests
 open Generator
+open Generator.Tests.MapExplicitAddData
+open Generator.ExplicitAdd.ExplicitAddMapping
+open Generator.ExplicitAdd
 
 
-type ``Can retrieve method for archetype``() =
+type ``Can retrieve method for AddCommand-AddSubCommand``() =
     let eval = EvalCSharp()
 
-    let ArchetypeList source =
+    let NodeInfoList source =
         let result = ModelFrom [(CSharpCode source); (CSharpCode HandlerSource)]
-        let model =
+        let semanticModel =
             match result with 
             | Ok m -> m
             | Error err -> invalidOp $"Test failed during model creation with {err}"
         
-        let archListResult = 
-            eval.InvocationsFromModel "MapInferred" model
-            |> Result.bind (ArchetypeInfoListFrom eval)
+        let invocationResult = 
+            let commands =
+                eval.InvocationsFromModel ["AddCommand"] semanticModel
+            let subCommands = 
+                eval.InvocationsFromModel ["AddSubCommand"] semanticModel
+            match commands, subCommands with
+            | (Ok r1, Ok r2) -> Ok (r1 @ r2)
+            | (Error err1, Error err2) -> invalidOp $"Failed finding AddCommand/AddSubCommand: {err1} {err2}"
+            
+        let infoListResult = 
+            invocationResult
+            |> Result.bind (ExplicitAddInfoListFrom eval semanticModel)
 
-        match archListResult with 
-        | Ok list -> list, model
-        | Error err -> invalidOp $"Test failed durin Archetype list creation with {err}"
+        match infoListResult with 
+        | Ok list -> list, semanticModel
+        | Error err -> invalidOp $"Test failed durin node info list creation with {err}"
 
-    let TestArchetypeHandlerRetrieval (code: string) (expectedNames: string list) =
+    let TestRetrieval (code: string) (expectedNames: string list) =
         //let code = AddMethodsToClassWithBuilder code
-        let (archetypeList, model) = ArchetypeList code
+        let (nodeInfoList, semanticModel) = NodeInfoList code
         
         let actual =
-            [ for archetype in archetypeList do
-                match archetype.Handler with 
-                | Some handler -> MethodSymbolFromMethodCall model handler 
+            [ for nodeInfo in nodeInfoList do
+                match nodeInfo.Handler with 
+                | Some handler -> MethodSymbolFromMethodCall semanticModel handler 
                 | None -> () ]
 
         let actualNames = 
@@ -56,56 +59,51 @@ type ``Can retrieve method for archetype``() =
                 | Some method -> method.Name
                 | None -> () ]
 
-        if actualNames <> expectedNames then raise (MatchException ( expectedNames.ToString(), actualNames.ToString(), ""))
+        if actualNames <> expectedNames then 
+            invalidOp $"Names do not match: \r{expectedNames} {actualNames}"
 
     // Not sure other than the first is interesting
     [<Fact>]
     member _.``Handler found for one mappings``() =
-        TestArchetypeHandlerRetrieval MapData.OneMapping.CliCode  ["A"]
+        TestRetrieval OneMapping.CliCode  ["NextGeneration"]
 
     [<Fact>]
     member _.``Error not thrown when no mapping``() =
-        TestArchetypeHandlerRetrieval MapData.NoMapping.CliCode  []
+        TestRetrieval NoMapping.CliCode  []
 
     [<Fact>]
     member _.``Handlers found for three mappings``() =
-        TestArchetypeHandlerRetrieval MapData.ThreeMappings.CliCode  ["Dotnet"; "AddPackage"]
+        TestRetrieval ThreeMappings.CliCode  ["OriginalSeries"; "NextGeneration"; "Voyager"]
 
 
 
-type ``Can build CommandDef from archetype``() =
+type ``Can build CommandDef from AddCommand``() =
 
     let eval = EvalCSharp()
 
-    let ArchetypeTree source =
+    let InfoTree source =
         let result = ModelFrom [(CSharpCode source); (CSharpCode HandlerSource)]
-        let model =
+        let semanticModel =
             match result with 
             | Ok m -> m
             | Error err -> invalidOp $"Test failed during model creation with {err}"
         
-        let archListResult = 
-            eval.InvocationsFromModel "MapInferred" model
-            |> Result.bind (ArchetypeInfoListFrom eval)
-            |> Result.bind ArchetypeInfoTreeFrom
+        let nodeInfoListResult = 
+            eval.InvocationsFromModel ["AddCommand"; "AddSubCommand"] semanticModel
+            |> Result.bind (ExplicitAddInfoListFrom eval semanticModel)
+            |> Result.bind ExplicitAddInfoTreeFrom
 
-        match archListResult with 
-        | Ok list -> list, model
-        | Error err -> invalidOp $"Test failed durin ArchetypeTree creation with {err}"
+        match nodeInfoListResult with 
+        | Ok list -> list, semanticModel
+        | Error err -> invalidOp $"Test failed durin tree creation with {err}"
 
-    let GetCommandDefs(code: string) =
-        let (archetypeTreeList, model) = ArchetypeTree code
-        let appModel = Jackfruit.AppModel(eval) :> Generator.AppModel<TreeNodeType<ArchetypeInfo>>
-        [ match CommandDefsFrom model appModel archetypeTreeList with
-            | Ok nodeDefs -> nodeDefs
-            | Error e -> invalidOp "Error when building CommandDef"]
 
-    let TestArchetypeHandlerRetrieval (code: string) (expectedCommandDefs: CommandDef list) =
+    let TestHandlerRetrieval (code: string) (expectedCommandDefs: CommandDef list) =
         //let code = AddMethodsToClassWithBuilder code
-        let (archetypeTreeList, model) = ArchetypeTree code
-        let appModel = Jackfruit.AppModel(eval) :> Generator.AppModel<TreeNodeType<ArchetypeInfo>>
+        let (infoList, semanticModel) = InfoTree code
+        let appModel = AppModel(eval) :> Generator.AppModel<TreeNodeType<ExplicitAddInfo>>
         let commandDefs =
-            [ match CommandDefsFrom model appModel archetypeTreeList with
+            [ match CommandDefsFrom semanticModel appModel infoList with
                 | Ok nodeDefs -> for def in nodeDefs do def 
                 | Error e -> invalidOp "Error when building CommandDef"]
         let differences = (CommandDefDifferences expectedCommandDefs commandDefs)
@@ -113,21 +111,22 @@ type ``Can build CommandDef from archetype``() =
         match differences with 
         | None -> () // All is great!
         | Some issues -> 
-            raise (MatchException (expectedCommandDefs.ToString(), commandDefs.ToString(), (String.concat "" [ for issue in issues do "\r\n" + issue])))
+            let s = String.concat "" [ for issue in issues do "\r\n" + issue]
+            invalidOp $"CommandDefs do not match\r{s}"
        
   
     [<Fact>]
     [<UseReporter(typeof<DiffReporter>)>]
     member _.``Handler found for one mappings``() =
-        TestArchetypeHandlerRetrieval MapData.OneMapping.CliCode MapData.OneMapping.CommandDefs
+        TestHandlerRetrieval OneMapping.CliCode OneMapping.CommandDefs
 
     [<Fact>]
     member _.``Error not thrown when no mapping``() =
-        TestArchetypeHandlerRetrieval MapData.NoMapping.CliCode MapData.NoMapping.CommandDefs
+        TestHandlerRetrieval NoMapping.CliCode NoMapping.CommandDefs
 
     [<Fact>]
     member _.``Handlers found for three mappings``() =
-        TestArchetypeHandlerRetrieval MapData.ThreeMappings.CliCode MapData.ThreeMappings.CommandDefs
+        TestHandlerRetrieval ThreeMappings.CliCode ThreeMappings.CommandDefs
 
 
  
