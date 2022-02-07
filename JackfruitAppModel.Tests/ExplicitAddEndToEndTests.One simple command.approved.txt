@@ -1,0 +1,31 @@
+﻿using System;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.Threading.Tasks;
+namespace CliDefinition
+{
+   
+   public class NextGenerationCli : ICommandHandler
+   {
+      private Action<string> _operation {get; set;}
+      public Command Command {get; set;}
+      public NextGenerationCli(Action<string> operation)
+      {
+         _operation = operation;
+         Command = new Command("NextGeneration");
+         picardOption = new Option<string>("picard");
+         Command.Add(picardOption);
+         Command.Handler = this;
+      }
+      public Option<string> picardOption {get; set;}
+      public string picardOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(picardOption);
+      }
+      public Task<int> InvokeAsync()
+      {
+         ._operation(.picardOptionResult(context));
+         return Task.FromResult(context.ExitCode);
+      }
+   }
+}

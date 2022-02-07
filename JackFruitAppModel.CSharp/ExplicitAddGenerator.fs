@@ -10,11 +10,9 @@ open Generator.ExplicitAdd
 open Generator
 
 
-[<Generator(LanguageNames.VisualBasic)>]
+[<Generator(LanguageNames.CSharp)>]
 type ExplicitAddGenerator() =
     inherit CliSourceGenerator<TreeNodeType<ExplicitAddInfo>>()
 
     override _.GetAppModel synataxTrees semanticModel =
-        AppModel(EvalVisualBasic())
-
-
+        AppModel(EvalCSharp())

@@ -5,11 +5,8 @@ open Xunit
 open FsUnit.Xunit
 open FsUnit.CustomMatchers
 open Jackfruit.ArchetypeMapping
-open Generator.RoslynUtils
-open Generator.GeneralUtils
 open Jackfruit.Models
 open Generator.Tests.UtilsForTests
-open Microsoft.CodeAnalysis
 open Generator.Tests
 open Jackfruit.UtilsForTests
 open Jackfruit.Tests
@@ -18,7 +15,7 @@ open Generator
 
 type ``When parsing archetypes``() =
     [<Fact>]
-    member _.``Ancestors found for empty archetype``() =
+    static member internal ``Ancestors found for empty archetype``() =
         let actual = ParseArchetypeInfo "\"\"" None
 
         actual.Path |> should equal [""]

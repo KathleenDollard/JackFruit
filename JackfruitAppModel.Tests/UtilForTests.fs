@@ -7,7 +7,8 @@ open Generator.RoslynUtils
 open Jackfruit.Models
 open Generator.Tests.UtilsForTests
 open Xunit
-open Jackfruit.ArchetypeMapping
+open Generator.ExplicitAdd.ExplicitAddMapping
+//open Jackfruit.ArchetypeMapping
 open Generator
 open Generator.RoslynUtils
 
@@ -54,6 +55,29 @@ let AddMethodsToClassWithBuilder (source: string list) =
  
     }}"
 
+let MergeWith listResult currentList =
+    match listResult with
+    | Ok list -> Ok (currentList @ list)
+    | Error err -> Error err
+
+let GetSemanticModel (statements: string) =
+    let tree = CSharpSyntaxTree.ParseText statements
+    match GetSemanticModelFromFirstTree [tree] with
+    | Ok semanticModel -> semanticModel
+    | Error err -> invalidOp $"Error building test code {err}"
+
+
+let GetCommandInfoList evalLang semanticModel pairs =
+    match ExplicitAddInfoListFrom evalLang semanticModel pairs with
+    | Ok x -> x
+    | Error err -> invalidOp $"Error getting CommandInfo list {err}"
+
+
+//let GetPairs evalLang semanticModel methodName = 
+//    match GetPathAndHandler methodName evalLang semanticModel with
+//    | Ok p -> p
+//    | Error err -> invalidOp $"Error getting path and handler {err}"
+
 //let ArchetypesAndModelFromSource source =
 //    let source = AddMapStatements false source
 //    AddStatementToTestCodeModel option = None
@@ -84,19 +108,19 @@ let AddMethodsToClassWithBuilder (source: string list) =
 //    | Ok archetypeList -> (archetypeList, model.Value)
 //    | Error err -> invalidOp $"Test failed building archetypes from source {err}"
 
-let InvocationsAndModelFrom source =
-    //let source = AddMapStatements false source
-    let mutable model:SemanticModel = null
+//let InvocationsAndModelFrom source =
+//    //let source = AddMapStatements false source
+//    let mutable model:SemanticModel = null
 
-    // KAD: Any better way to catch an interim value in a pipeline
-    let updateModel newModel = 
-        model <- newModel
-        newModel
+//    // KAD: Any better way to catch an interim value in a pipeline
+//    let updateModel newModel = 
+//        model <- newModel
+//        newModel
 
-    ModelFrom [CSharpCode source; CSharpCode HandlerSource]
-    |> Result.map updateModel
-    |> Result.map (eval.InvocationsFromModel "MapInferred")
-    |> Result.map (fun invocations -> (invocations, model))
+    //ModelFrom [CSharpCode source; CSharpCode HandlerSource]
+    //|> Result.map updateModel
+    //|> Result.map (eval.InvocationsFromModel "MapInferred")
+    //|> Result.map (fun invocations -> (invocations, model))
 
 
 //let MethodSyntaxAndModel handlerName : Result<SyntaxNode * SemanticModel, AppErrors> = 

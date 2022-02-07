@@ -14,8 +14,10 @@
 
 	<ItemGroup>
 		<Compile Include="Models.fs" />
-		<Compile Include="ArchetypeMapping.fs" />
-		<Compile Include="JackfruitAppModel.fs" />
+		<Compile Include="ExplicitAddMapping.fs" />
+		<!--<Compile Include="ArchetypeMapping.fs" />-->
+		<Compile Include="ExplicitAddAppModel.fs" />
+		<!--<Compile Include="JackfruitAppModel.fs" />-->
 	</ItemGroup>
 
 	<ItemGroup>

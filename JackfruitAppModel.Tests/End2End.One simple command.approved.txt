@@ -5,16 +5,27 @@ using System.Threading.Tasks;
 namespace CliDefinition
 {
    
-   public class ACli
+   public class ACli : ICommandHandler
    {
+      private Action<string> _operation {get; set;}
       public Command Command {get; set;}
-      public ACli()
+      public ACli(Action<string> operation)
       {
+         _operation = operation;
          Command = new Command("A");
          oneOption = new Option<string>("one");
          Command.Add(oneOption);
-         Command.SetHandler(Handlers.A, oneOption);
+         Command.Handler = this;
       }
       public Option<string> oneOption {get; set;}
+      public string oneOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(oneOption);
+      }
+      public Task<int> InvokeAsync()
+      {
+         ._operation(.oneOptionResult(context));
+         return Task.FromResult(context.ExitCode);
+      }
    }
 }

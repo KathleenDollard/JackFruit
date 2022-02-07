@@ -5,34 +5,54 @@ using System.Threading.Tasks;
 namespace CliDefinition
 {
    
-   public class dotnetCli
+   public class dotnetCli : ICommandHandler
    {
+      private Action<string> _operation {get; set;}
       public Command Command {get; set;}
-      public dotnetCli()
+      public dotnetCli(Action<string> operation)
       {
+         _operation = operation;
          Command = new Command("dotnet");
          projectOption = new Option<string>("project");
          Command.Add(projectOption);
-         Command.SetHandler(DotnetHandlers.Dotnet, projectOption);
+         Command.Handler = this;
       }
       public Option<string> projectOption {get; set;}
-   }
-   
-   public class addCli
-   {
-      public Command Command {get; set;}
-      public addCli()
+      public string projectOptionResult(InvocationContext context)
       {
-         Command = new Command("add");
-         Command.SetHandler();
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(projectOption);
+      }
+      public Task<int> InvokeAsync()
+      {
+         ._operation(.projectOptionResult(context));
+         return Task.FromResult(context.ExitCode);
       }
    }
    
-   public class packageCli
+   public class addCli : ICommandHandler
    {
+      private Action _operation {get; set;}
       public Command Command {get; set;}
-      public packageCli()
+      public addCli(Action operation)
       {
+         _operation = operation;
+         Command = new Command("add");
+         Command.Handler = this;
+      }
+      public Task<int> InvokeAsync()
+      {
+         ._operation();
+         return Task.FromResult(context.ExitCode);
+      }
+   }
+   
+   public class packageCli : ICommandHandler
+   {
+      private Action<string, string, string, bool, string, string, bool, bool> _operation {get; set;}
+      public Command Command {get; set;}
+      public packageCli(Action<string, string, string, bool, string, string, bool, bool> operation)
+      {
+         _operation = operation;
          Command = new Command("package");
          packageNameOption = new Option<string>("packageName");
          Command.Add(packageNameOption);
@@ -50,15 +70,52 @@ namespace CliDefinition
          Command.Add(interactiveOption);
          prereleaseOption = new Option<bool>("prerelease");
          Command.Add(prereleaseOption);
-         Command.SetHandler(DotnetHandlers.AddPackage, packageNameOption, versionOption, frameworkOption, noRestoreOption, sourceOption, packageDirectoryOption, interactiveOption, prereleaseOption);
+         Command.Handler = this;
       }
       public Option<string> packageNameOption {get; set;}
+      public string packageNameOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(packageNameOption);
+      }
       public Option<string> versionOption {get; set;}
+      public string versionOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(versionOption);
+      }
       public Option<string> frameworkOption {get; set;}
+      public string frameworkOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(frameworkOption);
+      }
       public Option<bool> noRestoreOption {get; set;}
+      public bool noRestoreOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "bool">(noRestoreOption);
+      }
       public Option<string> sourceOption {get; set;}
+      public string sourceOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(sourceOption);
+      }
       public Option<string> packageDirectoryOption {get; set;}
+      public string packageDirectoryOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(packageDirectoryOption);
+      }
       public Option<bool> interactiveOption {get; set;}
+      public bool interactiveOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "bool">(interactiveOption);
+      }
       public Option<bool> prereleaseOption {get; set;}
+      public bool prereleaseOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "bool">(prereleaseOption);
+      }
+      public Task<int> InvokeAsync()
+      {
+         ._operation(.packageNameOptionResult(context), .versionOptionResult(context), .frameworkOptionResult(context), .noRestoreOptionResult(context), .sourceOptionResult(context), .packageDirectoryOptionResult(context), .interactiveOptionResult(context), .prereleaseOptionResult(context));
+         return Task.FromResult(context.ExitCode);
+      }
    }
 }

@@ -97,8 +97,8 @@ type ``When working with strings`` () =
 // KAD: I want to put the following mess inside the type that it applies to, but got errors: Why?
 // TODO: If the above is a real problem not a mistake on my part, move this to a separate file
 
-/// Test type for input to testing tree building. The type in the actual code will be the  
-/// slightly more complex ArchetypeInfo
+/// Test type for input to testing tree building. The type in the actual code will be 
+/// slightly more complex
 type InputType<'T> = {
     Parents: string list
     InputData: 'T }

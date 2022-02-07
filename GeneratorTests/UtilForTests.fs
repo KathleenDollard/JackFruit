@@ -301,7 +301,7 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
 
     let rec CompareCommand parentId (exp: CommandDef) (act: CommandDef) =
         [ let id = parentId + if String.IsNullOrEmpty(exp.CommandId) then act.CommandId else exp.CommandId
-          if exp.CommandId <> act.CommandId then $"{id}: CommandId {exp.CommandId} does not match {act.CommandId}"
+          if exp.CommandId <> act.CommandId then $"{id}: CommandId '{exp.CommandId}' does not match '{act.CommandId}'"
           if exp.ReturnType <> act.ReturnType then $"{id}: ReturnType {exp.ReturnType} does not match {act.ReturnType}"
           if exp.Path <> act.Path then $"{id}: Path {exp.Path} does not match {act.Path}"
           if exp.Aliases <> act.Aliases then $"{id}: Aliases {exp.Aliases} does not match {act.Aliases}"
@@ -325,7 +325,7 @@ let CommandDefDifferences (expected: CommandDef list) (actual: CommandDef list) 
         ]
 
 
-    if expected.Length > actual.Length then 
+    if expected.Length <> actual.Length then 
         Some [ $"CommandDef length of expected ({expected.Length}) is different than the length of actual ({actual.Length})"]
     else 
         let data = List.zip expected actual
