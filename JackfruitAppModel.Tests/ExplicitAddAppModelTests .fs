@@ -28,7 +28,7 @@ type ``Can retrieve method for AddCommand-AddSubCommand``() =
         
         let invocationResult = 
             let commands =
-                eval.InvocationsFromModel ["AddRootCommand"] semanticModel
+                eval.InvocationsFromModel ["CreateWithRootCommand"] semanticModel
             let subCommands = 
                 eval.InvocationsFromModel ["AddSubCommand"] semanticModel
             match commands, subCommands with
@@ -89,7 +89,7 @@ type ``Can build CommandDef from AddCommand``() =
             | Error err -> invalidOp $"Test failed during model creation with {err}"
         
         let nodeInfoListResult = 
-            eval.InvocationsFromModel ["AddRootCommand"; "AddSubCommand"] semanticModel
+            eval.InvocationsFromModel ["CreateWithRootCommand"; "AddSubCommand"] semanticModel
             |> Result.bind (ExplicitAddInfoListFrom eval semanticModel)
             |> Result.bind ExplicitAddInfoTreeFrom
 

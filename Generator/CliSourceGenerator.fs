@@ -3,7 +3,7 @@
 open Microsoft.CodeAnalysis
 open Generator
 open Generator.NewMapping
-open Generator.BuildCliCodeModel
+open Generator.BuildNewerCliCodeModel
 open Generator.Transforms
 open System.Linq
 open LanguageRoslynOut

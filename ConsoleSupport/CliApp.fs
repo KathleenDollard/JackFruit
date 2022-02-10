@@ -28,15 +28,18 @@ type OptionArgumentNameSource =
   | All = 6
 
 
-type CommandBase() =
+type CliBase() =
     member this.AddSubCommand(codeToRun: Delegate) = ()
 
-
 type AppBase() =
-    member val CommonAliases = new Dictionary<string, string>() with get
+    member val CommonAliases = Dictionary<string, string>() with get
+    member this.AddCommonAliases(pairs: IEnumerable<(string * string)>) =
+        for pair in pairs do
+            match pair with
+            | alias, optionName -> this.CommonAliases.Add(alias, optionName)
+        ()
 
-    static member DefaultPatterns = ["*"; "Run*";"*Handler"]
-
+    static member val DefaultPatterns = ResizeArray ["*"; "Run*";"*Handler"]
     /// <summary>
     /// The name of your command delegate may differ from the command name
     /// based on a pattern.Pattern portions are removed to determine the '
@@ -46,8 +49,8 @@ type AppBase() =
     /// patterns with an asterisk where the name appears, like "Patternn*".
     /// </summary>
     /// <param name="pattern"></param>
-    static member public AddCommandNamePattern(pattern: string) = ()
-
+    static member public AddCommandNamePattern(pattern: string) = 
+        AppBase.DefaultPatterns.Add pattern
     /// <summary>
     /// The name of your command delegate may differ from the command name
     /// based on a pattern.Pattern portions are removed to determine the '
@@ -57,19 +60,31 @@ type AppBase() =
     /// one of these patterns: "Run*" or "*Handler".
     /// </summary>
     /// <param name="pattern"></param>
-    static member public RemoveCommandNamePattern(pattern: string) = ()
-
+    static member public RemoveCommandNamePattern(pattern: string) = 
+        AppBase.DefaultPatterns.Remove pattern
 
     member this.DescriptionSources = DescriptionSource.All;
     member this.AliasSources = AliasSource.All;
     member this.IsArgumentSource = IsArgumentSource.All;
     member this.OptionArgumentNameSource optionArgumentNameSource = OptionArgumentNameSource.All;
 
-    static member AddRootCommand(codeToRun: Delegate) = ()
-    static member AddSubCommand(codeToRun: Delegate) = ()
+    static member CreateWithRootCommand(codeToRun: Delegate) = ()
 
-    member this.AddCommonAliases(pairs: IEnumerable<(string * string)>) =
-        for pair in pairs do
-            match pair with
-            | alias, optionName -> this.CommonAliases.Add(alias, optionName)
-        ()
+
+type AppBase<'T when 'T :> CliBase and 'T: (new: unit -> 'T)>(rootCli: 'T)  =   
+    inherit AppBase()
+
+    static member CreateWithRootCommand(codeToRun: Delegate) = 
+        AppBase<'T> 'T() 
+
+
+
+
+
+type MyAppBase() =
+    inherit AppBase()
+
+    let _rootCommand = OriginalSeries()
+    // Deliberate shadowing 
+    static member CreateWithRootCommand() = MyAppBase()
+    member _.RootCommand = _rootCommand

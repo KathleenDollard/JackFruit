@@ -5,13 +5,21 @@ using System.Threading.Tasks;
 namespace CliDefinition
 {
    
-   public partial class OriginalSeriesCli : ICommandHandler
+   public partial class OriginalSeriesApp : AppBase
    {
+      private OriginalSeriesApp()
+      {
+         RootCommand = new OriginalSeries()
+      }
+      public OriginalSeriesCli RootCommand {get; set;}
+   }
+
+   public partial class OriginalSeriesCli : CommandBase, ICommandHandler
       private Action<string, string, string> _operation {get; set;}
       public Command Command {get; set;}
-      public OriginalSeriesCli(Action<string, string, string> operation)
+      public OriginalSeriesCli()
       {
-         _operation = operation;
+         _operation = CliApp.Handlers.OriginalSeries;
          Command = new Command("OriginalSeries");
          kirkOption = new Option<string>("kirk");
          Command.Add(kirkOption);
@@ -44,13 +52,13 @@ namespace CliDefinition
       }
    }
    
-   public partial class NextGenerationCli : ICommandHandler
+   public partial class NextGenerationCli : CommandBase, ICommandHandler
    {
       private Action<string> _operation {get; set;}
       public Command Command {get; set;}
       public NextGenerationCli(Action<string> operation)
       {
-         _operation = operation;
+         _operation = CliApp.Handlers.NextGeneration;
          Command = new Command("NextGeneration");
          picardOption = new Option<string>("picard");
          Command.Add(picardOption);
@@ -69,13 +77,13 @@ namespace CliDefinition
       }
    }
    
-   public partial class VoyagerCli : ICommandHandler
+   public partial class VoyagerCli : CommandBase, ICommandHandler
    {
       private Action<string, string, string, bool, string> _operation {get; set;}
       public Command Command {get; set;}
       public VoyagerCli(Action<string, string, string, bool, string> operation)
       {
-         _operation = operation;
+         _operation = CliApp.Handlers.Voyager;
          Command = new Command("Voyager");
          janewayOption = new Option<string>("janeway");
          Command.Add(janewayOption);

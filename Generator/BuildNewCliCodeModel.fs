@@ -10,6 +10,7 @@ open Generator.LanguageExpressions.ExpressionHelpers
 open Generator.LanguageHelpers
 open Generator.JackfruitHelpers
 open DslKeywords
+open Common
 
 
 let generatedCommandHandlerName (_: CommandDef) = "GeneratedHandler"
@@ -21,6 +22,9 @@ let argumentSpecificValues (memberDef:MemberDef) = []
 
 let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel, AppErrors> =
 
+    let AppModelClass(commandDef) =
+
+
     let CommandConstructor (commandDef: CommandDef) =
         Constructor() {
             Public2
@@ -31,33 +35,55 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                 | Some desc -> Assign $"{mbr.NameAsProperty}.Description" To mbr.Description
                 | None -> ()
                 Invoke "Command" "Add" [ Literal mbr.NameAsProperty ] 
-            Invoke "Command" "SetHandler" [
-                SymbolLiteral (Symbol commandDef.HandlerMethodName)
-                for mbr in commandDef.Members do (Literal (mbr.NameAsVariable))]
+            Assign "Command.Handler" To ThisLiteral
             }
 
+    let MemberProperties(mbr: MemberDef) =
+        let propertyAccess = Literal mbr.NameAsProperty
+        Property (mbr.NameAsProperty, mbr.SymbolType) {
+            Public2
+        }
+        Method (mbr.NameAsResult) { 
+            Public2 
+            Parameter "context" "InvocationContext"
+            // TODO: Work on the following line
+            ReturnType (ReturnType.ReturnType mbr.TypeName)
+            // TODO: Work on Symbol in the following line
+            Return (Invoke "context.ParseResult" $"GetValueFor{mbr.KindName}<{mbr.TypeName}>" [ propertyAccess ] )
+            }
 
     let CommandClass (rootCommandDef: CommandDef) =
 
         let rec recurse (recurseDepth: int) (commandDef: CommandDef) =
             if recurseDepth > 10 then invalidOp "Runaway recursion suspected!"
-            let className = $"{commandDef.Name}Cli"
-            
+            let handlerName = commandDef.CommandId
+                
             [ Class className {
                 Public2
-                Property ("Command", "Command") {
-                    Public2
-                }
+                ImplementsInterface "ICommandHandler"
+                Property ("Command", "Command") { Public2 }
                 CommandConstructor commandDef
+
                 for mbr in commandDef.Members do
-                    Property (mbr.NameAsProperty, mbr.SymbolType) {
-                        Public2
+                    MemberProperties(mbr)
+
+                for subCommand in commandDef.SubCommands do
+                    Property (subCommand.Name, "CommandBase") { Public2 }
+
+                Method("InvokeAsync") {
+                    Public2
+                    ReturnType invokeReturnType
+                    Invoke "" handlerName [ 
+                        for mbr in commandDef.Members do
+                            Invoke "" mbr.NameAsResult [ SymbolLiteral (Symbol "context") ] ]
+                    // TODO: Create call to property value
+                    Return (Invoke "Task" "FromResult" [ SymbolLiteral (Symbol "context.ExitCode") ] )
                     }
                 }
-                
+
               for subCommand in commandDef.SubCommands do 
-                    for cls in recurse (recurseDepth + 1) subCommand do
-                        cls
+                for cls in recurse (recurseDepth + 1) subCommand do
+                    cls
             ]
 
         recurse 0 rootCommandDef
@@ -70,6 +96,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
             Using "System.CommandLine.Invocation"
             Using "System.Threading.Tasks"
             
+            AppModelClass commandDefs
             for commandDef in commandDefs do 
                 for cls in CommandClass commandDef do
                     cls

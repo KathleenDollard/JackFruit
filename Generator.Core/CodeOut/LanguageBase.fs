@@ -208,7 +208,13 @@ type LanguageBase() =
                 $"{this.AwaitKeyword} "
             else
                 ""
-        $"{awaitIfNeeded}{this.OutputNamedItem invocation.Instance}.{this.OutputNamedItem invocation.MethodName}({this.OutputArguments invocation.Arguments})" 
+        let instanceAndDot =
+            let toString = invocation.Instance.ToString()
+            if String.IsNullOrWhiteSpace(toString) then
+                ""
+            else 
+                $"{toString}."
+        $"{awaitIfNeeded}{instanceAndDot}{this.OutputNamedItem invocation.MethodName}({this.OutputArguments invocation.Arguments})" 
     
     member this.OutputComparison comparison = 
         $"{this.OutputExpression comparison.Left} {this.OutputOperator comparison.Operator} {this.OutputExpression comparison.Right}"

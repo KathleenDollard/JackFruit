@@ -14,8 +14,7 @@ public class Program
 
     static AppBase DefineCli()
     {
-        var app = new StarTrekCli();
-        //app.AddCommand(Handlers.StarTrek);
+        AppBase.CreateWithRootCommand(Handlers.StarTrek);
         return app;
     }
 
