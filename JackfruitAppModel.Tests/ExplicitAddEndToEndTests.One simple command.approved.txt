@@ -2,16 +2,31 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
+using CliApp;
 namespace CliDefinition
 {
    
-   public partial class NextGenerationCli : ICommandHandler
+   public class NextGenerationApp : AppBase
    {
-      private Action<string> _operation {get; set;}
-      public Command Command {get; set;}
-      public NextGenerationCli(Action<string> operation)
+      private NextGenerationCli rootCommand
+      public NextGeneration RootCommand
       {
-         _operation = operation;
+         get
+         {
+            return rootCommand;
+         }
+      }
+      public NextGeneration CreateWithRootCommand(Delegate codeToRun)
+      {
+         return new NextGeneration();
+      }
+   }
+   
+   public class NextGenerationCli : ICommandHandler
+   {
+      public Command Command {get; set;}
+      public NextGenerationCli()
+      {
          Command = new Command("NextGeneration");
          picardOption = new Option<string>("picard");
          Command.Add(picardOption);
@@ -24,7 +39,7 @@ namespace CliDefinition
       }
       public Task<int> InvokeAsync()
       {
-         ._operation(.picardOptionResult(context));
+         NextGeneration(picardOptionResult(context));
          return Task.FromResult(context.ExitCode);
       }
    }

@@ -32,6 +32,9 @@ type CliBase() =
     member this.AddSubCommand(codeToRun: Delegate) = ()
 
 type AppBase() =
+
+    static let mutable defaultPatterns = ["*"; "Run*";"*Handler"]
+
     member val CommonAliases = Dictionary<string, string>() with get
     member this.AddCommonAliases(pairs: IEnumerable<(string * string)>) =
         for pair in pairs do
@@ -39,7 +42,7 @@ type AppBase() =
             | alias, optionName -> this.CommonAliases.Add(alias, optionName)
         ()
 
-    static member val DefaultPatterns = ResizeArray ["*"; "Run*";"*Handler"]
+    static member val DefaultPatterns = defaultPatterns 
     /// <summary>
     /// The name of your command delegate may differ from the command name
     /// based on a pattern.Pattern portions are removed to determine the '
@@ -50,7 +53,7 @@ type AppBase() =
     /// </summary>
     /// <param name="pattern"></param>
     static member public AddCommandNamePattern(pattern: string) = 
-        AppBase.DefaultPatterns.Add pattern
+        defaultPatterns <- List.distinct (pattern :: defaultPatterns)
     /// <summary>
     /// The name of your command delegate may differ from the command name
     /// based on a pattern.Pattern portions are removed to determine the '
@@ -61,28 +64,34 @@ type AppBase() =
     /// </summary>
     /// <param name="pattern"></param>
     static member public RemoveCommandNamePattern(pattern: string) = 
-        AppBase.DefaultPatterns.Remove pattern
+        defaultPatterns <- 
+            match List.tryFindIndex (fun x -> x = pattern) defaultPatterns with
+            | Some i -> List.removeAt i defaultPatterns
+            | None -> defaultPatterns
 
-    member this.DescriptionSources = DescriptionSource.All;
-    member this.AliasSources = AliasSource.All;
-    member this.IsArgumentSource = IsArgumentSource.All;
-    member this.OptionArgumentNameSource optionArgumentNameSource = OptionArgumentNameSource.All;
+    member _.DescriptionSources = DescriptionSource.All;
+    member _.AliasSources = AliasSource.All;
+    member _.IsArgumentSource = IsArgumentSource.All;
+    member _.OptionArgumentNameSource optionArgumentNameSource = OptionArgumentNameSource.All;
 
     static member CreateWithRootCommand(codeToRun: Delegate) = ()
 
 
 type AppBase<'T when 'T :> CliBase and 'T: (new: unit -> 'T)>(rootCli: 'T)  =   
-    inherit AppBase()
+    //inherit AppBase()
+    member _.Temp = ()
 
-    static member CreateWithRootCommand(codeToRun: Delegate) = 
-        AppBase<'T> 'T() 
+    //static member CreateWithRootCommand(codeToRun: Delegate) = 
+    //    AppBase<'T> ('T)
 
-
+type OriginalSeries() =
+    inherit CliBase()
+    let temp = ""
 
 
 
 type MyAppBase() =
-    inherit AppBase()
+    inherit AppBase<OriginalSeries>(OriginalSeries())
 
     let _rootCommand = OriginalSeries()
     // Deliberate shadowing 

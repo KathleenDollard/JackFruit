@@ -7,15 +7,19 @@ public class Program
 
     static void Main(string[] args)
     {
-        var app = DefineCli();
+        //var app = DefineCli();
         return;
 
     }
 
-    static AppBase DefineCli()
+    public void DefineCli()
     {
-        AppBase.CreateWithRootCommand(Handlers.StarTrek);
-        return app;
+        {
+            var app = AppBase.CreateWithRootCommand(Handlers.NextGeneration);
+            app.OriginalSeries.AddSubCommand(Handlers.NextGeneration);
+            app.OriginalSeries.NextGeneration.AddSubCommand(Handlers.Voyager);
+            app.OriginalSeries.NextGeneration.AddSubCommand(Handlers.DeepSpaceNine);
+        }
     }
 
 }

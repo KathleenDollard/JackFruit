@@ -140,20 +140,36 @@ type ConstructorModel =
             this  // no op
 
 
+type AccessorType = 
+    | Getter
+    | Setter
+
+type PropertyAccessorModel =
+    { Scope: Scope
+      AccessorType: AccessorType
+      Statements: IStatement list}
+    interface IMember
+    member this.AddScope (scope: Scope) = 
+        { this with Scope = scope }
+    member this.AddStatements statements =
+        { this with Statements = statements }
+    static member Create(accessorType) = 
+        { Scope = Unknown; AccessorType = accessorType; Statements = [] }
+
 type PropertyModel =
     { PropertyName: string
       Type: NamedItem
       Scope: Scope
       Modifiers: Modifier list
-      GetStatements: IStatement list
-      SetStatements: IStatement list}
+      Getter: PropertyAccessorModel option
+      Setter: PropertyAccessorModel option }
     static member Create propertyName propertyType =
         { PropertyName = propertyName
           Type = propertyType
           Scope = Public
           Modifiers = []
-          GetStatements = []
-          SetStatements = [] }
+          Getter = None
+          Setter = None }
     interface IMember
     member this.AddScopeAndModifiers (scopeAndModifiers: ScopeAndModifiers) = 
         { this with Scope = scopeAndModifiers.Scope; Modifiers = scopeAndModifiers.Modifiers }

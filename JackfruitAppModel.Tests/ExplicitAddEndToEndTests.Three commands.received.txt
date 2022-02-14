@@ -2,10 +2,27 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
+using CliApp;
 namespace CliDefinition
 {
    
-   public class OriginalSeriesCli
+   public class OriginalSeriesApp : AppBase
+   {
+      private OriginalSeriesCli rootCommand
+      public OriginalSeries RootCommand
+      {
+         get
+         {
+            return rootCommand;
+         }
+      }
+      public OriginalSeries CreateWithRootCommand(Delegate codeToRun)
+      {
+         return new OriginalSeries();
+      }
+   }
+   
+   public class OriginalSeriesCli : ICommandHandler
    {
       public Command Command {get; set;}
       public OriginalSeriesCli()
@@ -17,14 +34,32 @@ namespace CliDefinition
          Command.Add(spockOption);
          uhuraOption = new Option<string>("uhura");
          Command.Add(uhuraOption);
-         Command.SetHandler(CliApp.Handlers.OriginalSeries, kirkOption, spockOption, uhuraOption);
+         Command.Handler = this;
       }
       public Option<string> kirkOption {get; set;}
+      public string kirkOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(kirkOption);
+      }
       public Option<string> spockOption {get; set;}
+      public string spockOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(spockOption);
+      }
       public Option<string> uhuraOption {get; set;}
+      public string uhuraOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(uhuraOption);
+      }
+      public CommandBase NextGeneration {get; set;}
+      public Task<int> InvokeAsync()
+      {
+         OriginalSeries(kirkOptionResult(context), spockOptionResult(context), uhuraOptionResult(context));
+         return Task.FromResult(context.ExitCode);
+      }
    }
    
-   public class NextGenerationCli
+   public class NextGenerationCli : ICommandHandler
    {
       public Command Command {get; set;}
       public NextGenerationCli()
@@ -32,12 +67,22 @@ namespace CliDefinition
          Command = new Command("NextGeneration");
          picardOption = new Option<string>("picard");
          Command.Add(picardOption);
-         Command.SetHandler(CliApp.Handlers.NextGeneration, picardOption);
+         Command.Handler = this;
       }
       public Option<string> picardOption {get; set;}
+      public string picardOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(picardOption);
+      }
+      public CommandBase Voyager {get; set;}
+      public Task<int> InvokeAsync()
+      {
+         NextGeneration(picardOptionResult(context));
+         return Task.FromResult(context.ExitCode);
+      }
    }
    
-   public class VoyagerCli
+   public class VoyagerCli : ICommandHandler
    {
       public Command Command {get; set;}
       public VoyagerCli()
@@ -53,12 +98,37 @@ namespace CliDefinition
          Command.Add(tuvokOption);
          sevenOfNineOption = new Option<string>("sevenOfNine");
          Command.Add(sevenOfNineOption);
-         Command.SetHandler(CliApp.Handlers.Voyager, janewayOption, chakotayOption, torresOption, tuvokOption, sevenOfNineOption);
+         Command.Handler = this;
       }
       public Option<string> janewayOption {get; set;}
+      public string janewayOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(janewayOption);
+      }
       public Option<string> chakotayOption {get; set;}
+      public string chakotayOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(chakotayOption);
+      }
       public Option<string> torresOption {get; set;}
+      public string torresOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(torresOption);
+      }
       public Option<bool> tuvokOption {get; set;}
+      public bool tuvokOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "bool">(tuvokOption);
+      }
       public Option<string> sevenOfNineOption {get; set;}
+      public string sevenOfNineOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(sevenOfNineOption);
+      }
+      public Task<int> InvokeAsync()
+      {
+         Voyager(janewayOptionResult(context), chakotayOptionResult(context), torresOptionResult(context), tuvokOptionResult(context), sevenOfNineOptionResult(context));
+         return Task.FromResult(context.ExitCode);
+      }
    }
 }

@@ -1,20 +1,18 @@
-﻿using System;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.Threading.Tasks;
+using DemoHandlers;
 using CommandBase;
-using CliApp;
 
 namespace Prototype
 {
-    internal partial class CliApp : AppBase
+    internal partial class CliApp
     {
         public OriginalSeriesCommand RootCommand { get; set; }
-        public static CliApp Create(Delegate codeToRun)
-        {
-            var newApp = new CliApp;
-            newApp.RootCommand = OriginalSeriesCommand.Create();
-        }
+        public static CliApp Create()
+            => new CliApp
+            {
+                RootCommand = OriginalSeriesCommand.Create()
+            };
     }
 
     public partial class OriginalSeriesCommand : CliRootCommand, ICommandHandler
@@ -59,7 +57,7 @@ namespace Prototype
         public NextGenerationCommand NextGeneration { get; set; }
         public Task<int> InvokeAsync(InvocationContext context)
         {
-            DemoHandlers.Handlers.StarTrek(GreetingOptionResult(context), KirkOptionResult(context), SpockOptionResult(context), UhuraOptionResult(context));
+            Handlers.StarTrek(GreetingOptionResult(context), KirkOptionResult(context), SpockOptionResult(context), UhuraOptionResult(context));
             return Task.FromResult(context.ExitCode);
         }
     }
@@ -92,7 +90,7 @@ namespace Prototype
         public VoyagerCommand Voyager { get; set; }
         public Task<int> InvokeAsync(InvocationContext context)
         {
-            DemoHandlers.Handlers.NextGeneration(GreetingOptionResult(context), PicardOptionResult(context));
+            Handlers.NextGeneration(GreetingOptionResult(context), PicardOptionResult(context));
             return Task.FromResult(context.ExitCode);
         }
     }
@@ -150,7 +148,7 @@ namespace Prototype
         }
         public Task<int> InvokeAsync(InvocationContext context)
         {
-            DemoHandlers.Handlers.Voyager(GreetingOptionResult(context), JanewayOptionResult(context), ChakotayOptionResult(context), TorresOptionResult(context), TuvokOptionResult(context), SevenOfNineOptionResult(context));
+            Handlers.Voyager(GreetingOptionResult(context), JanewayOptionResult(context), ChakotayOptionResult(context), TorresOptionResult(context), TuvokOptionResult(context), SevenOfNineOptionResult(context));
             return Task.FromResult(context.ExitCode);
         }
     }

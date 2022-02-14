@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Prototype": {
+      "commandName": "Project",
+      "commandLineArgs": "Uhura"
+    }
+  }
+}

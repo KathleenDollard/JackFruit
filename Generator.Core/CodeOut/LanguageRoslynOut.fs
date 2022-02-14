@@ -110,22 +110,37 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
 
     member this.OutputProperty (prop : PropertyModel) =
         let isAutoProp = 
-            prop.SetStatements.IsEmpty && prop.GetStatements.IsEmpty
+            match prop.Setter, prop.Getter with
+            | None, None -> true
+            | Some getter, None -> getter.Statements.IsEmpty
+            | None, Some setter -> setter.Statements.IsEmpty
+            | Some getter, Some setter ->
+                match (getter.Statements.IsEmpty), (setter.Statements.IsEmpty) with
+                | true, true -> true
+                | _, _ -> false
         if isAutoProp then
             writer.AddLines (language.AutoProperty prop)
         else
             writer.AddLines (language.PropertyOpen prop)
             writer.IncreaseIndent()
-            writer.AddLines (language.GetOpen prop)
-            writer.IncreaseIndent()
-            this.OutputStatements prop.GetStatements
-            writer.DecreaseIndent()
-            writer.AddLines (language.GetClose prop)
-            writer.AddLines (language.SetOpen prop)
-            writer.IncreaseIndent()
-            this.OutputStatements prop.SetStatements
-            writer.DecreaseIndent()
-            writer.AddLines (language.SetClose prop)
+            match prop.Getter with 
+            | None -> ()
+            | Some getter when getter.Statements.IsEmpty -> ()
+            | Some getter ->
+                writer.AddLines (language.GetOpen prop)
+                writer.IncreaseIndent()
+                this.OutputStatements getter.Statements
+                writer.DecreaseIndent()
+                writer.AddLines (language.GetClose prop)
+            match prop.Setter with 
+            | None -> ()
+            | Some setter when setter.Statements.IsEmpty -> ()
+            | Some setter ->
+                writer.AddLines (language.SetOpen prop)
+                writer.IncreaseIndent()
+                this.OutputStatements setter.Statements
+                writer.DecreaseIndent()
+                writer.AddLines (language.SetClose prop)
             writer.DecreaseIndent()
             writer.AddLines (language.PropertyClose prop)
 

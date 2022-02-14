@@ -258,10 +258,12 @@ type ``When outputting code`` () =
               (2, "value = x;")
               (1, "}")
               (0, "}")]
+        let getter = {PropertyAccessorModel.Create(Getter) with Statements = [ { ReturnModel.Expression = Some (Literal "x") } ]}
+        let setter = {PropertyAccessorModel.Create(Setter) with Statements = [ { AssignmentModel.Variable = "value"; Value = Literal "x"}]}
         let data = 
             { PropertyModel.ForTesting.Data with 
-                GetStatements = [ { ReturnModel.Expression = Some (Literal "x") } ]
-                SetStatements = [  { AssignmentModel.Variable = "value"; Value = Literal "x"}] }
+                Getter = Some getter
+                Setter = Some setter }
 
         outPutter.OutputProperty data
         let actual = writer.LinePairs()

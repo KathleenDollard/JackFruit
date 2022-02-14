@@ -22,10 +22,27 @@ let argumentSpecificValues (memberDef:MemberDef) = []
 
 let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel, AppErrors> =
 
-    let AppModelClass(commandDef) =
+    let className (commandDef:CommandDef) = $"{commandDef.Name}Cli"
 
+    let appClass(commandDef: CommandDef) = 
+        let className = className commandDef
+        let classNamedItem = NamedItem.SimpleNamedItem className
+        let fieldName = "rootCommand"
+        Class ($"{commandDef.Name}App") {
+            Internal Partial
+            InheritedFrom "AppBase"
+            Property ("RootCommand", commandDef.Name) { 
+                Public2
+            }
+            Method("Create") {
+                Public2 Static
+                ReturnType className
+                AssignWithVar "newApp" To (New commandDef.Name [])
+                Return (SymbolLiteral (Symbol "newApp"))
+            }
+        }
 
-    let CommandConstructor (commandDef: CommandDef) =
+    let commandConstructor (commandDef: CommandDef) =
         Constructor() {
             Public2
             Assign "Command" To (New "Command" [ StringLiteral commandDef.Name ])
@@ -38,47 +55,51 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
             Assign "Command.Handler" To ThisLiteral
             }
 
-    let MemberProperties(mbr: MemberDef) =
+    let memberResult(mbr: MemberDef) =
         let propertyAccess = Literal mbr.NameAsProperty
-        Property (mbr.NameAsProperty, mbr.SymbolType) {
-            Public2
-        }
         Method (mbr.NameAsResult) { 
             Public2 
             Parameter "context" "InvocationContext"
-            // TODO: Work on the following line
+            // KAD-Chet: Work on the following line
             ReturnType (ReturnType.ReturnType mbr.TypeName)
-            // TODO: Work on Symbol in the following line
+            // KAD-Chet: Work on Symbol in the following line
             Return (Invoke "context.ParseResult" $"GetValueFor{mbr.KindName}<{mbr.TypeName}>" [ propertyAccess ] )
             }
 
-    let CommandClass (rootCommandDef: CommandDef) =
+    let invokeMethod (commandDef: CommandDef) =
+        let handlerName = commandDef.CommandId
+        let invokeReturnType = ReturnType.ReturnType (NamedItem.Create ("Task", ["int"]))
+        Method("InvokeAsync") {
+            Public2
+            ReturnType invokeReturnType
+            Invoke "" handlerName [ 
+                for mbr in commandDef.Members do
+                    Invoke "" mbr.NameAsResult [ SymbolLiteral (Symbol "context") ] ]
+            // TODO: Create call to property value
+            Return (Invoke "Task" "FromResult" [ SymbolLiteral (Symbol "context.ExitCode") ] )
+            }
+
+    let commandClass (rootCommandDef: CommandDef) =
 
         let rec recurse (recurseDepth: int) (commandDef: CommandDef) =
             if recurseDepth > 10 then invalidOp "Runaway recursion suspected!"
-            let handlerName = commandDef.CommandId
-                
+            let className = className commandDef
+
             [ Class className {
-                Public2
+                Public2 Partial
+                InheritedFrom "CliRootCommand"
                 ImplementsInterface "ICommandHandler"
                 Property ("Command", "Command") { Public2 }
-                CommandConstructor commandDef
+                commandConstructor commandDef
 
                 for mbr in commandDef.Members do
-                    MemberProperties(mbr)
+                    Property (mbr.NameAsProperty, mbr.SymbolType) { Public2 }
+                    memberResult mbr
 
                 for subCommand in commandDef.SubCommands do
                     Property (subCommand.Name, "CommandBase") { Public2 }
 
-                Method("InvokeAsync") {
-                    Public2
-                    ReturnType invokeReturnType
-                    Invoke "" handlerName [ 
-                        for mbr in commandDef.Members do
-                            Invoke "" mbr.NameAsResult [ SymbolLiteral (Symbol "context") ] ]
-                    // TODO: Create call to property value
-                    Return (Invoke "Task" "FromResult" [ SymbolLiteral (Symbol "context.ExitCode") ] )
-                    }
+                invokeMethod commandDef
                 }
 
               for subCommand in commandDef.SubCommands do 
@@ -95,10 +116,14 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
             Using "System.CommandLine"
             Using "System.CommandLine.Invocation"
             Using "System.Threading.Tasks"
+            Using "CliApp"
             
-            AppModelClass commandDefs
+            match commandDefs with
+            | [] -> ()
+            | _ -> appClass commandDefs[0]
+            
             for commandDef in commandDefs do 
-                for cls in CommandClass commandDef do
+                for cls in commandClass commandDef do
                     cls
 
             }

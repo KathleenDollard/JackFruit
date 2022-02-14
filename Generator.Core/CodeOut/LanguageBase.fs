@@ -209,7 +209,7 @@ type LanguageBase() =
             else
                 ""
         let instanceAndDot =
-            let toString = invocation.Instance.ToString()
+            let toString = this.OutputNamedItem invocation.Instance
             if String.IsNullOrWhiteSpace(toString) then
                 ""
             else 
@@ -220,7 +220,8 @@ type LanguageBase() =
         $"{this.OutputExpression comparison.Left} {this.OutputOperator comparison.Operator} {this.OutputExpression comparison.Right}"
     
     member this.OutputInstantiation (instantiation: InstantiationModel) = 
-        $"{this.NewKeyword} {this.OutputNamedItem instantiation.TypeName}({this.OutputArguments instantiation.Arguments})"  
+        let a = $"{this.NewKeyword} {this.OutputNamedItem instantiation.TypeName}({this.OutputArguments instantiation.Arguments})"  
+        a
     
     member this.OutputExpression expression =
         let x = CompareLiteralsModel.TrueLiteral // trying to force the resolution

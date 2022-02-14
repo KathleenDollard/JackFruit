@@ -2,10 +2,27 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
+using CliApp;
 namespace CliDefinition
 {
    
-   public class ACli
+   public class AApp : AppBase
+   {
+      private ACli rootCommand
+      public A RootCommand 
+      { 
+         get
+         {
+            return rootCommand;
+         }
+      }
+      public A CreateWithRootCommand(Delegate codeToRun)
+      {
+         return new A();
+      }
+   }
+   
+   public class ACli : ICommandHandler
    {
       public Command Command {get; set;}
       public ACli()
@@ -13,8 +30,17 @@ namespace CliDefinition
          Command = new Command("A");
          oneOption = new Option<string>("one");
          Command.Add(oneOption);
-         Command.SetHandler(MyCommand, oneOption);
+         Command.Handler = this;
       }
       public Option<string> oneOption {get; set;}
+      public string oneOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(oneOption);
+      }
+      public Task<int> InvokeAsync()
+      {
+         A(oneOptionResult(context));
+         return Task.FromResult(context.ExitCode);
+      }
    }
 }
