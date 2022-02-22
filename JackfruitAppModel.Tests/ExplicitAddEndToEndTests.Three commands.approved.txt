@@ -4,16 +4,19 @@ using System.CommandLine.Invocation;
 using System.Threading.Tasks;
 using CommandBase;
 using CliApp;
-
 namespace Prototype
 {
-    internal partial class CliApp : AppBase
+    internal partial class OriginalSeriesApp : AppBase
     {
-        public OriginalSeriesCommand RootCommand { get; set; }
-        public static CliApp Create(Delegate codeToRun)
+        private OriginalSeriesApp()
         {
-            var newApp = new CliApp;
+        }
+        public OriginalSeriesCommand RootCommand {get; set;}
+        public static new OriginalSeriesApp Create(Delegate codeToRun)
+        {
+            var newApp = new OriginalSeriesApp();
             newApp.RootCommand = OriginalSeriesCommand.Create();
+            return newApp;
         }
     }
 

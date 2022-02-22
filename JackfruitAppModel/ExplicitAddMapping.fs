@@ -27,7 +27,7 @@ module ExplicitAddMapping =
                 
                     // KAD-Don: This seems to be something I repeat. Do some stuff with results and then add 
                     //          to a list if it is all OK. Is there a way to shortcut this? I don't think I     
-                    //          can have a function that returns a value or unit.
+                    //          can have a function that returns a value or unit. It feels like a railway pattern, but not quite
                     match patternResult with
                     | Ok pattern -> pattern.Replace("\"", "")
                     | Error _ -> () 

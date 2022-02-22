@@ -488,7 +488,6 @@ type Constructor() =
         let method = this.Empty() :?> ConstructorModel
         { method with Statements = [ item ] }
 
-    // KAD-Don: I believe this builder must be of type IMember. I cannot get the following correct
     [<CustomOperation("Public2", MaintainsVariableSpaceUsingBind = true)>]
     member this.setPublic(varModel: M<IMember, 'Vars0>, ?modifier1: Modifier, ?modifier2: Modifier) =
        this.SetScopeAndModifiers varModel Scope.Public modifier1 modifier2

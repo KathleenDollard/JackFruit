@@ -2,39 +2,43 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
+using CommandBase;
 using CliApp;
 namespace CliDefinition
 {
    
-   public class OriginalSeriesApp : AppBase
+   internal partial class OriginalSeriesApp : AppBase
    {
-      private OriginalSeriesCli rootCommand
-      public OriginalSeries RootCommand
+      private OriginalSeriesApp()
       {
-         get
-         {
-            return rootCommand;
-         }
       }
-      public OriginalSeries CreateWithRootCommand(Delegate codeToRun)
+      public OriginalSeriesCommand RootCommand {get; set;}
+      public static OriginalSeriesApp Create()
       {
-         return new OriginalSeries();
+         var newApp = new OriginalSeriesApp();
+         newApp.RootCommand = OriginalSeriesCommand.Create();
+         return newApp;
       }
    }
    
-   public class OriginalSeriesCli : ICommandHandler
+   public partial class OriginalSeriesCommand : CliRootCommand, ICommandHandler
    {
-      public Command Command {get; set;}
-      public OriginalSeriesCli()
+      private OriginalSeriesCommand()
       {
-         Command = new Command("OriginalSeries");
-         kirkOption = new Option<string>("kirk");
-         Command.Add(kirkOption);
-         spockOption = new Option<string>("spock");
-         Command.Add(spockOption);
-         uhuraOption = new Option<string>("uhura");
-         Command.Add(uhuraOption);
-         Command.Handler = this;
+      }
+      public static OriginalSeriesCommand Create()
+      {
+         var command = **Unknown<Generator.BuildNewerCliCodeModel+recurse@86-10>**;
+         command.kirkOption = new Option<string>("kirk");
+         command.Add(command.kirkOption);
+         command.spockOption = new Option<string>("spock");
+         command.Add(command.spockOption);
+         command.uhuraOption = new Option<string>("uhura");
+         command.Add(command.uhuraOption);
+         OriginalSeriesCommand = **Unknown<Generator.BuildNewerCliCodeModel+recurse@96-17>**;
+         command.Add(NextGenerationCommand);
+         command.Handler = command;
+         return command;
       }
       public Option<string> kirkOption {get; set;}
       public string kirkOptionResult(InvocationContext context)
@@ -59,15 +63,20 @@ namespace CliDefinition
       }
    }
    
-   public class NextGenerationCli : ICommandHandler
+   public partial class NextGenerationCommand : CliRootCommand, ICommandHandler
    {
-      public Command Command {get; set;}
-      public NextGenerationCli()
+      private NextGenerationCommand()
       {
-         Command = new Command("NextGeneration");
-         picardOption = new Option<string>("picard");
-         Command.Add(picardOption);
-         Command.Handler = this;
+      }
+      public static NextGenerationCommand Create()
+      {
+         var command = **Unknown<Generator.BuildNewerCliCodeModel+recurse@86-10>**;
+         command.picardOption = new Option<string>("picard");
+         command.Add(command.picardOption);
+         NextGenerationCommand = **Unknown<Generator.BuildNewerCliCodeModel+recurse@96-17>**;
+         command.Add(VoyagerCommand);
+         command.Handler = command;
+         return command;
       }
       public Option<string> picardOption {get; set;}
       public string picardOptionResult(InvocationContext context)
@@ -82,23 +91,26 @@ namespace CliDefinition
       }
    }
    
-   public class VoyagerCli : ICommandHandler
+   public partial class VoyagerCommand : CliRootCommand, ICommandHandler
    {
-      public Command Command {get; set;}
-      public VoyagerCli()
+      private VoyagerCommand()
       {
-         Command = new Command("Voyager");
-         janewayOption = new Option<string>("janeway");
-         Command.Add(janewayOption);
-         chakotayOption = new Option<string>("chakotay");
-         Command.Add(chakotayOption);
-         torresOption = new Option<string>("torres");
-         Command.Add(torresOption);
-         tuvokOption = new Option<bool>("tuvok");
-         Command.Add(tuvokOption);
-         sevenOfNineOption = new Option<string>("sevenOfNine");
-         Command.Add(sevenOfNineOption);
-         Command.Handler = this;
+      }
+      public static VoyagerCommand Create()
+      {
+         var command = **Unknown<Generator.BuildNewerCliCodeModel+recurse@86-10>**;
+         command.janewayOption = new Option<string>("janeway");
+         command.Add(command.janewayOption);
+         command.chakotayOption = new Option<string>("chakotay");
+         command.Add(command.chakotayOption);
+         command.torresOption = new Option<string>("torres");
+         command.Add(command.torresOption);
+         command.tuvokOption = new Option<bool>("tuvok");
+         command.Add(command.tuvokOption);
+         command.sevenOfNineOption = new Option<string>("sevenOfNine");
+         command.Add(command.sevenOfNineOption);
+         command.Handler = command;
+         return command;
       }
       public Option<string> janewayOption {get; set;}
       public string janewayOptionResult(InvocationContext context)

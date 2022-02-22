@@ -22,38 +22,28 @@ let argumentSpecificValues (memberDef:MemberDef) = []
 
 let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel, AppErrors> =
 
-    let className (commandDef:CommandDef) = $"{commandDef.Name}Cli"
 
     let appClass(commandDef: CommandDef) = 
-        let className = className commandDef
-        let classNamedItem = NamedItem.SimpleNamedItem className
+        let appName (commandDef:CommandDef) = $"{commandDef.Name}App"
+        let commandName (commandDef: CommandDef) = $"{commandDef.Name}Command"
+        let className = appName commandDef
+        let rootCommandClass = commandName commandDef
         let fieldName = "rootCommand"
-        Class ($"{commandDef.Name}App") {
+        Class (className) {
             Internal Partial
             InheritedFrom "AppBase"
-            Property ("RootCommand", commandDef.Name) { 
+            Constructor() { Private }
+            Property ("RootCommand", rootCommandClass) { 
                 Public2
             }
             Method("Create") {
                 Public2 Static
                 ReturnType className
-                AssignWithVar "newApp" To (New commandDef.Name [])
+                AssignWithVar "newApp" To (New className [])
+                Assign "newApp.RootCommand" To (Invoke rootCommandClass "Create" [])
                 Return (SymbolLiteral (Symbol "newApp"))
             }
         }
-
-    let commandConstructor (commandDef: CommandDef) =
-        Constructor() {
-            Public2
-            Assign "Command" To (New "Command" [ StringLiteral commandDef.Name ])
-            for mbr in commandDef.Members do
-                Assign mbr.NameAsProperty To (New mbr.SymbolType [ StringLiteral mbr.Name ])
-                match mbr.Description with 
-                | Some desc -> Assign $"{mbr.NameAsProperty}.Description" To mbr.Description
-                | None -> ()
-                Invoke "Command" "Add" [ Literal mbr.NameAsProperty ] 
-            Assign "Command.Handler" To ThisLiteral
-            }
 
     let memberResult(mbr: MemberDef) =
         let propertyAccess = Literal mbr.NameAsProperty
@@ -80,17 +70,34 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
             }
 
     let commandClass (rootCommandDef: CommandDef) =
-
+        let className (commandDef:CommandDef) = $"{commandDef.Name}Command"
         let rec recurse (recurseDepth: int) (commandDef: CommandDef) =
             if recurseDepth > 10 then invalidOp "Runaway recursion suspected!"
-            let className = className commandDef
+            let thisClassName = className commandDef
 
-            [ Class className {
+            [ Class thisClassName {
                 Public2 Partial
                 InheritedFrom "CliRootCommand"
                 ImplementsInterface "ICommandHandler"
-                Property ("Command", "Command") { Public2 }
-                commandConstructor commandDef
+                Constructor() { Private }
+                Method("Create") {
+                    Public2 Static
+                    ReturnType thisClassName
+                    AssignWithVar "command" To (New thisClassName)
+                    for mbr in commandDef.Members do
+                        let propertyName = $"command.{mbr.NameAsProperty}"
+                        Assign propertyName To (New mbr.SymbolType [ StringLiteral mbr.Name ])
+                        match mbr.Description with 
+                        | Some desc -> Assign $"{propertyName}.Description" To mbr.Description
+                        | None -> ()
+                        Invoke "command" "Add" [ SymbolLiteral (Symbol propertyName) ] 
+                    for subCommand in commandDef.SubCommands do 
+                        let subCommandName = className subCommand
+                        Assign commandDef.MethodName To (Invoke subCommandName "Create")
+                        Invoke "command" "Add" [ SymbolLiteral (Symbol subCommandName) ] 
+                    Assign "command.Handler" To (SymbolLiteral (Symbol "command"))
+                    Return (SymbolLiteral (Symbol "command"))
+                    }
 
                 for mbr in commandDef.Members do
                     Property (mbr.NameAsProperty, mbr.SymbolType) { Public2 }
@@ -116,6 +123,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
             Using "System.CommandLine"
             Using "System.CommandLine.Invocation"
             Using "System.Threading.Tasks"
+            Using "CommandBase";
             Using "CliApp"
             
             match commandDefs with

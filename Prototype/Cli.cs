@@ -9,7 +9,8 @@ namespace Prototype
     {
         public static int Run(string[] args)
         {
-            var cli = CliApp.Create(Handlers.StarTrek);
+            CreateWithRootCommand(Handlers.StarTrek); 
+            var cli = new CliApp();
             cli.RootCommand.AddSubCommand(Handlers.NextGeneration);
             cli.RootCommand.NextGeneration.AddSubCommand(Handlers.Voyager);
 

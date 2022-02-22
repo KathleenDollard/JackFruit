@@ -179,7 +179,7 @@ type ``For command definitons, you can``() =
         let actual = 
             [ for info in infoList do 
                 info.Path]
-        // KAD-Don-Chet: I did not find a sane way to do the following
+        // KAD-Don-Chet: I did not find an easkir  way to do the following
         let zip = List.zip actual expected
         for pair in zip do
             match pair with 
