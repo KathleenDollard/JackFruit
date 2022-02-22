@@ -24,6 +24,7 @@ type LanguageBase() =
     abstract AbstractKeyword: string with get
     abstract ReadonlyKeyword: string with get
     abstract SealedKeyword: string with get
+    abstract HideByNameKeyword: string with get
 
     abstract TrueKeyword: string with get
     abstract FalseKeyword: string with get
@@ -49,6 +50,7 @@ type LanguageBase() =
     abstract member TypeAndName: typeName: NamedItem -> name: string -> string
     abstract member BlockClose: blockType: string -> string
     abstract member ConstructorName: ClassModel -> ConstructorModel -> string
+    abstract member BaseOrThisCall: BaseOrThisInvocation -> string
 
     abstract member Generic: typeNames: NamedItem list -> string
     abstract member ClassOpen: ClassModel -> string list
@@ -88,6 +90,9 @@ type LanguageBase() =
 
         member this.ConstructorOpen cls (ctor: ConstructorModel) =
             [ $"{this.ScopeOutput ctor.Scope}{this.OutputModifiers ctor.Modifiers} {this.ConstructorName cls ctor}({this.OutputParameters ctor.Parameters})"
+              match ctor.BaseOrThisInvocation with
+              | Some c -> this.BaseOrThisCall c
+              | None -> ()
               this.BlockOpen]
         member this.ConstructorClose _ =
             [this.BlockClose "Sub"]
@@ -152,9 +157,11 @@ type LanguageBase() =
                 | Readonly -> this.ReadonlyKeyword
                 | Extension -> "" // extensions need special handling
                 | Sealed -> this.SealedKeyword
+                | HideByName -> this.HideByNameKeyword
            ] 
         if modifierList.IsEmpty then ""
-        else " " + String.Join(", ", modifierList)
+        else " " + String.Join(" ", modifierList)
+
 
     member this.ScopeOutput scope =
         match scope with 

@@ -523,6 +523,11 @@ type Constructor() =
         let newParameter = this.NewParameter parameterName parameterType style
         this.SetModel varModel (method.AddParameter newParameter)
   
+    [<CustomOperation("Base", MaintainsVariableSpaceUsingBind = true)>]
+    member this.setBase ((varModel: M<IMember, 'Vars0>), (arguments: IExpression list))   =
+        let ctor = varModel.Model :?> ConstructorModel 
+        this.SetModel varModel (ctor.AddBaseOrThis Base arguments)
+
 
 type If(condition: ICompareExpression) =
     inherit StatementBuilderBase<IStatement>()

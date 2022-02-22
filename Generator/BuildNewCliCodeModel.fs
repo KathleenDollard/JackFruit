@@ -37,7 +37,8 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                 Public2
             }
             Method("Create") {
-                Public2 Static
+                Public2 Static HideByName
+                Parameter "codeToRun" "Delegate"
                 ReturnType className
                 AssignWithVar "newApp" To (New className [])
                 Assign "newApp.RootCommand" To (Invoke rootCommandClass "Create" [])
@@ -47,20 +48,22 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
 
     let memberResult(mbr: MemberDef) =
         let propertyAccess = Literal mbr.NameAsProperty
+        let invocationName(mbr: MemberDef) = GenericNamedItem ($"GetValueFor{mbr.KindName}", [mbr.TypeName])
         Method (mbr.NameAsResult) { 
             Public2 
             Parameter "context" "InvocationContext"
             // KAD-Chet: Work on the following line
             ReturnType (ReturnType.ReturnType mbr.TypeName)
             // KAD-Chet: Work on Symbol in the following line
-            Return (Invoke "context.ParseResult" $"GetValueFor{mbr.KindName}<{mbr.TypeName}>" [ propertyAccess ] )
+            Return (Invoke "context.ParseResult" (invocationName(mbr)) [ propertyAccess ] )
             }
 
     let invokeMethod (commandDef: CommandDef) =
-        let handlerName = commandDef.CommandId
+        let handlerName = commandDef.HandlerMethodName
         let invokeReturnType = ReturnType.ReturnType (NamedItem.Create ("Task", ["int"]))
         Method("InvokeAsync") {
             Public2
+            Parameter "context" "InvocationContext"
             ReturnType invokeReturnType
             Invoke "" handlerName [ 
                 for mbr in commandDef.Members do
@@ -70,20 +73,23 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
             }
 
     let commandClass (rootCommandDef: CommandDef) =
-        let className (commandDef:CommandDef) = $"{commandDef.Name}Command"
         let rec recurse (recurseDepth: int) (commandDef: CommandDef) =
             if recurseDepth > 10 then invalidOp "Runaway recursion suspected!"
-            let thisClassName = className commandDef
+            let thisClassName = commandDef.TypeName
+            let isRoot = (recurseDepth = 0)
+            let baseClassName = if isRoot then "CliRootCommand" else "CliCommand"
 
             [ Class thisClassName {
                 Public2 Partial
-                InheritedFrom "CliRootCommand"
+                InheritedFrom baseClassName
                 ImplementsInterface "ICommandHandler"
-                Constructor() { Private }
+                Constructor() { 
+                    Private 
+                    Base [ StringLiteral commandDef.Name ] }
                 Method("Create") {
                     Public2 Static
                     ReturnType thisClassName
-                    AssignWithVar "command" To (New thisClassName)
+                    AssignWithVar "command" To (New thisClassName [])
                     for mbr in commandDef.Members do
                         let propertyName = $"command.{mbr.NameAsProperty}"
                         Assign propertyName To (New mbr.SymbolType [ StringLiteral mbr.Name ])
@@ -92,9 +98,10 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                         | None -> ()
                         Invoke "command" "Add" [ SymbolLiteral (Symbol propertyName) ] 
                     for subCommand in commandDef.SubCommands do 
-                        let subCommandName = className subCommand
-                        Assign commandDef.MethodName To (Invoke subCommandName "Create")
-                        Invoke "command" "Add" [ SymbolLiteral (Symbol subCommandName) ] 
+                        let propertyName = $"command.{subCommand.NameAsPascal}"
+                        let subCommandName = subCommand.TypeName
+                        Assign propertyName To (Invoke subCommandName "Create" [])
+                        Invoke "command" "Add" [ SymbolLiteral (Symbol propertyName) ] 
                     Assign "command.Handler" To (SymbolLiteral (Symbol "command"))
                     Return (SymbolLiteral (Symbol "command"))
                     }
@@ -104,7 +111,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                     memberResult mbr
 
                 for subCommand in commandDef.SubCommands do
-                    Property (subCommand.Name, "CommandBase") { Public2 }
+                    Property (subCommand.Name, subCommand.TypeName) { Public2 }
 
                 invokeMethod commandDef
                 }

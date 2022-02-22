@@ -365,7 +365,7 @@ type ``When creating a constructor``() =
 
     [<Fact>]
     member _.``Can create a ctor``() =
-        let expected = { ConstructorModel.Scope = Scope.Private; Modifiers = []; Parameters = []; Statements = [] }
+        let expected = { ConstructorModel.Scope = Scope.Private; Modifiers = []; Parameters = []; Statements = []; BaseOrThisInvocation = None }
         let actual = 
             Constructor() {
                 Private

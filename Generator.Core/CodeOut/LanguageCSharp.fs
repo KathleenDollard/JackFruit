@@ -23,6 +23,8 @@ type LanguageCSharp() =
     override _.AbstractKeyword = "abstract"
     override _.ReadonlyKeyword = "readonly"
     override _.SealedKeyword = "sealed"
+    override _.HideByNameKeyword = "new"
+
     override _.UsingKeyword = "using"
     override _.NamespaceKeyword = "namespace"
     override _.ClassKeyword = "class"
@@ -83,6 +85,14 @@ type LanguageCSharp() =
             | ReturnTypeUnknown -> "<UNKNOWN>"
        [$"{this.ScopeOutput method.Scope}{this.OutputModifiers method.Modifiers} {returnType} {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters})"; "{"]
     override _.MethodClose _ = [ "}" ]
+
+    override this.BaseOrThisCall baseOrThisInvocation = 
+        let baseOrThisString = match baseOrThisInvocation.BaseOrThis with | Base -> "base" | _ -> "this"
+        let arguments = 
+            [ for a in baseOrThisInvocation.Arguments do
+                this.OutputExpression a ]
+        let argumentString = String.Join(", ", arguments)
+        $": {baseOrThisString}({argumentString})"
 
     override this.AutoProperty property  = 
         [$"{this.ScopeOutput property.Scope}{this.OutputModifiers property.Modifiers} {this.OutputNamedItem property.Type} {property.PropertyName} {{get; set;}}"]

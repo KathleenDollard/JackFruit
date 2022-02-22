@@ -90,10 +90,10 @@ let VoyagerPseudoGenerated = $"
 let Handlers = $"
     public static class Handlers
     {{
-        public static void OriginalSeries(string kirk, string spock, string uhura) {{ }}
-        public static void NextGeneration(string picard) {{ }}
-        public static void DeepSpaceNine(string sisko, string odo, string dax, string worf, string oBrien) {{ }}
-        public static void Voyager(string janeway, string chakotay, string torres, bool tuvok, string sevenOfNine) {{ }}
+        public static void OriginalSeries(string greeting, bool kirk, bool spock, bool uhura) {{ }}
+        public static void NextGeneration(string greeting, bool picard) {{ }}
+        public static void DeepSpaceNine(string greeting, bool sisko, bool odo, bool dax, bool worf, bool oBrien) {{ }}
+        public static void Voyager(string greeting, bool janeway, bool chakotay, bool torres, bool tuvok, bool sevenOfNine) {{ }}
     }}"
 
 let CliWrapperCode statements = $@"
@@ -154,19 +154,12 @@ let ThreeMappings =
     // KAD-Don-Chet: Why don't I need mutable here?
     let voyager = CommandDef("Voyager", [ "OriginalSeries"; "NextGeneration"; "Voyager" ], ReturnType.ReturnTypeVoid, Arbitrary "Voyager")
     voyager.Members <-
-        [ MemberDef("janeway", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
+        [ MemberDef("greeting", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("janeway", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("chakotay", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("torres",  voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("tuvok",  voyager, (SimpleNamedItem "bool"), ArbitraryMember, true)
           MemberDef("sevenOfNine",  voyager, (SimpleNamedItem "string"), ArbitraryMember, true) ]
-   
-    //let deepSpaceNine = CommandDef("nextGeneration", [ "originalSeries"; "nextGeneration"; "deepSpaceNine" ], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine")
-    //deepSpaceNine.Members <-
-    //    [ MemberDef("sisko", deepSpaceNine, (SimpleNamedItem "string"), ArbitraryMember, true)
-    //      MemberDef("odo", deepSpaceNine, (SimpleNamedItem "string"), ArbitraryMember, true)
-    //      MemberDef("dax",  deepSpaceNine, (SimpleNamedItem "string"), ArbitraryMember, true)
-    //      MemberDef("worf",  deepSpaceNine, (SimpleNamedItem "bool"), ArbitraryMember, true)
-    //      MemberDef("oBrien",  deepSpaceNine, (SimpleNamedItem "string"), ArbitraryMember, true) ]
 
     let nextGeneration = CommandDef("NextGeneration", [ "OriginalSeries"; "NextGeneration" ], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine")
     nextGeneration.Members <-
@@ -175,7 +168,8 @@ let ThreeMappings =
 
     let deepSpaceNine = CommandDef("DeepSpaceNine", [ "OriginalSeries"; "NextGeneration"; "DeepSpaceNine"], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine")
     deepSpaceNine.Members <-
-        [ MemberDef("sisko", nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
+        [ MemberDef("greeting", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("sisko", nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("odo", nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("dax",  nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("worf",  nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true)
@@ -184,7 +178,8 @@ let ThreeMappings =
 
     let originalSeries = CommandDef("OriginalSeries", [ "OriginalSeries" ], ReturnType.ReturnTypeVoid, Arbitrary "OriginalSeries")
     originalSeries.Members <-
-        [ MemberDef("kirk", originalSeries, (SimpleNamedItem "string"), ArbitraryMember, true)
+        [ MemberDef("greeting", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("kirk", originalSeries, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("spock", originalSeries, (SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("uhura",  originalSeries, (SimpleNamedItem "string"), ArbitraryMember, true) ]
     originalSeries.SubCommands <- [nextGeneration]
