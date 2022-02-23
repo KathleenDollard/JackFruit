@@ -4,7 +4,7 @@ using System.CommandLine.Invocation;
 using System.Threading.Tasks;
 using CommandBase;
 using CliApp;
-namespace CliDefinition
+namespace Prototype
 {
    
    internal partial class NextGenerationApp : AppBase
@@ -24,7 +24,6 @@ namespace CliDefinition
    public partial class NextGenerationCommand : CliRootCommand, ICommandHandler
    {
       private NextGenerationCommand()
-      : base(SymbolLiteral (Symbol "NextGeneration"))
       {
       }
       public static NextGenerationCommand Create()
@@ -49,7 +48,7 @@ namespace CliDefinition
       }
       public Task<int> InvokeAsync(InvocationContext context)
       {
-         CliApp.Handlers.NextGeneration(GreetingOptionResult(context), PicardOptionResult(context));
+         Prototype.Handlers.NextGeneration(GreetingOptionResult(context), PicardOptionResult(context));
          return Task.FromResult(context.ExitCode);
       }
    }

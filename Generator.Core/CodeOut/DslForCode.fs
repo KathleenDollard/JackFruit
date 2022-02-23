@@ -527,6 +527,11 @@ type Constructor() =
     member this.setBase ((varModel: M<IMember, 'Vars0>), (arguments: IExpression list))   =
         let ctor = varModel.Model :?> ConstructorModel 
         this.SetModel varModel (ctor.AddBaseOrThis Base arguments)
+  
+    [<CustomOperation("This", MaintainsVariableSpaceUsingBind = true)>]
+    member this.seThis ((varModel: M<IMember, 'Vars0>), (arguments: IExpression list))   =
+        let ctor = varModel.Model :?> ConstructorModel 
+        this.SetModel varModel (ctor.AddBaseOrThis This arguments)
 
 
 type If(condition: ICompareExpression) =

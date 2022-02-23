@@ -270,23 +270,23 @@ and CommandDef(commandId: string, path: string list, returnType: ReturnType, com
         with get, set
 
     /// Pocket is a property bag for the AppModel use. During structural 
-      /// setup there is generally additional information discovered that 
-      /// is needed by later transformers. Put that data in the pocket.
-      ///
-      /// Things are added to the Pocket by both the AppModel (such as details of the input) 
-      /// and by the generator (the MethodSymbol and the SemanticModel). Ideally
-      /// the order of transformer evaluation is strictly for precedence, and thus
-      /// it is not ideal for transformers to use the pocket to communicate because it
-      /// sets a transformer dependency order. But if transformers need to communicate
-      /// something that can't be set during structural eval, then OK. But don't steal
-      /// anything out of the pocket ;-)
-      ///
-      /// Open question: Pocket is currently a list of tuples. This seems kind of a half way
-      /// thing. Perhaps, either use a map, or use an object list, and allow the value
-      /// to often be retrieved via the type. And if we use a map, should it be the current
-      /// random string map, or a map based on a DU for expected items. ** Update: This open
-      /// question is somewhat less important with the redesign that made expected things 
-      /// part of the CommandDef and MemberDef rather than being in the pocket. 
+    /// setup there is generally additional information discovered that 
+    /// is needed by later transformers. Put that data in the pocket.
+    ///
+    /// Things are added to the Pocket by both the AppModel (such as details of the input) 
+    /// and by the generator (the MethodSymbol and the SemanticModel). Ideally
+    /// the order of transformer evaluation is strictly for precedence, and thus
+    /// it is not ideal for transformers to use the pocket to communicate because it
+    /// sets a transformer dependency order. But if transformers need to communicate
+    /// something that can't be set during structural eval, then OK. But don't steal
+    /// anything out of the pocket ;-)
+    ///
+    /// Open question: Pocket is currently a list of tuples. This seems kind of a half way
+    /// thing. Perhaps, either use a map, or use an object list, and allow the value
+    /// to often be retrieved via the type. And if we use a map, should it be the current
+    /// random string map, or a map based on a DU for expected items. ** Update: This open
+    /// question is somewhat less important with the redesign that made expected things 
+    /// part of the CommandDef and MemberDef rather than being in the pocket. 
     member _.Pocket
         with get(key) = 
             match pocket.TryGetValue key with
@@ -346,6 +346,12 @@ and CommandDef(commandId: string, path: string list, returnType: ReturnType, com
     member this.PathString =
         String.concat " " this.Path
 
-      
+    member _.AppNamespace =
+        match commandDefUsage with 
+        | UserMethod (userMethod, _) ->
+            let containingClass = userMethod.ContainingType
+            containingClass.ContainingNamespace.ToString()
+        | _ -> "CliApp"
+
 
 

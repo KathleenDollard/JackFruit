@@ -4,7 +4,7 @@ using System.CommandLine.Invocation;
 using System.Threading.Tasks;
 using CommandBase;
 using CliApp;
-namespace CliDefinition
+namespace Prototype
 {
    
    internal partial class OriginalSeriesApp : AppBase
@@ -24,7 +24,6 @@ namespace CliDefinition
    public partial class OriginalSeriesCommand : CliRootCommand, ICommandHandler
    {
       private OriginalSeriesCommand()
-      : base(SymbolLiteral (Symbol "OriginalSeries"))
       {
       }
       public static OriginalSeriesCommand Create()
@@ -66,7 +65,7 @@ namespace CliDefinition
       public NextGenerationCommand NextGeneration {get; set;}
       public Task<int> InvokeAsync(InvocationContext context)
       {
-         CliApp.Handlers.OriginalSeries(GreetingOptionResult(context), KirkOptionResult(context), SpockOptionResult(context), UhuraOptionResult(context));
+         Prototype.Handlers.OriginalSeries(GreetingOptionResult(context), KirkOptionResult(context), SpockOptionResult(context), UhuraOptionResult(context));
          return Task.FromResult(context.ExitCode);
       }
    }
@@ -74,7 +73,7 @@ namespace CliDefinition
    public partial class NextGenerationCommand : CliCommand, ICommandHandler
    {
       private NextGenerationCommand()
-      : base(SymbolLiteral (Symbol "NextGeneration"))
+      : base("NextGeneration")
       {
       }
       public static NextGenerationCommand Create()
@@ -102,7 +101,7 @@ namespace CliDefinition
       public VoyagerCommand Voyager {get; set;}
       public Task<int> InvokeAsync(InvocationContext context)
       {
-         CliApp.Handlers.NextGeneration(GreetingOptionResult(context), PicardOptionResult(context));
+         Prototype.Handlers.NextGeneration(GreetingOptionResult(context), PicardOptionResult(context));
          return Task.FromResult(context.ExitCode);
       }
    }
@@ -110,7 +109,7 @@ namespace CliDefinition
    public partial class VoyagerCommand : CliCommand, ICommandHandler
    {
       private VoyagerCommand()
-      : base(SymbolLiteral (Symbol "Voyager"))
+      : base("Voyager")
       {
       }
       public static VoyagerCommand Create()
@@ -163,7 +162,7 @@ namespace CliDefinition
       }
       public Task<int> InvokeAsync(InvocationContext context)
       {
-         CliApp.Handlers.Voyager(GreetingOptionResult(context), JanewayOptionResult(context), ChakotayOptionResult(context), TorresOptionResult(context), TuvokOptionResult(context), SevenOfNineOptionResult(context));
+         Prototype.Handlers.Voyager(GreetingOptionResult(context), JanewayOptionResult(context), ChakotayOptionResult(context), TorresOptionResult(context), TuvokOptionResult(context), SevenOfNineOptionResult(context));
          return Task.FromResult(context.ExitCode);
       }
    }

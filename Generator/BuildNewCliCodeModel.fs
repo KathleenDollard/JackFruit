@@ -72,7 +72,17 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
             Return (Invoke "Task" "FromResult" [ SymbolLiteral (Symbol "context.ExitCode") ] )
             }
 
+
     let commandClass (rootCommandDef: CommandDef) =
+        let commandConstructor (isRoot: bool) (name: string) =
+            if isRoot then
+                Constructor() { 
+                    Private }
+            else
+                Constructor() { 
+                    Private 
+                    Base [ StringLiteral name ] }
+
         let rec recurse (recurseDepth: int) (commandDef: CommandDef) =
             if recurseDepth > 10 then invalidOp "Runaway recursion suspected!"
             let thisClassName = commandDef.TypeName
@@ -83,9 +93,9 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                 Public2 Partial
                 InheritedFrom baseClassName
                 ImplementsInterface "ICommandHandler"
-                Constructor() { 
-                    Private 
-                    Base [ StringLiteral commandDef.Name ] }
+
+                commandConstructor isRoot commandDef.Name
+
                 Method("Create") {
                     Public2 Static
                     ReturnType thisClassName
@@ -124,8 +134,9 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
         recurse 0 rootCommandDef
 
     try
+        let appNamespace = if commandDefs.IsEmpty then "CliApp" else commandDefs[0].AppNamespace
         // KAD: Figure out right namespace: Should probably collect the correct namespace from the initial code. 
-        let nspace = Namespace ("CliDefinition") {
+        let nspace = Namespace (appNamespace) {
             Using "System" 
             Using "System.CommandLine"
             Using "System.CommandLine.Invocation"

@@ -99,7 +99,7 @@ let Handlers = $"
 let CliWrapperCode statements = $@"
 using System;
 using System.Collections.Generic;
-namespace CliApp
+namespace Prototype
 {{
 
    {AppBaseCode}

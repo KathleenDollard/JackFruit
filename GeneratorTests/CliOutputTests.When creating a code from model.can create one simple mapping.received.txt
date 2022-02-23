@@ -4,7 +4,7 @@ using System.CommandLine.Invocation;
 using System.Threading.Tasks;
 using CommandBase;
 using CliApp;
-namespace CliDefinition
+namespace CliApp
 {
    
    internal partial class AApp : AppBase
@@ -24,7 +24,6 @@ namespace CliDefinition
    public partial class ACommand : CliRootCommand, ICommandHandler
    {
       private ACommand()
-      : base(SymbolLiteral (Symbol "A"))
       {
       }
       public static ACommand Create()
