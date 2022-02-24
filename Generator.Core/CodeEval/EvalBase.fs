@@ -12,7 +12,7 @@ type EvalBase(language: string) =
     abstract member MethodSymbolFromMethodCall: model: SemanticModel -> expression: SyntaxNode -> IMethodSymbol option
     abstract member ExpressionFrom: node: SyntaxNode -> Result<SyntaxNode, AppErrors>
     abstract member IsNullLiteral: expression: SyntaxNode -> bool
-
+    abstract member NamespaceFromdDescendant: node: SyntaxNode -> semanticModel: SemanticModel -> string
 
 //let rec StringFrom (syntaxNode: CSharpSyntaxNode) =
 //    match syntaxNode with

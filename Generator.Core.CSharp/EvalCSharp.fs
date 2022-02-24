@@ -47,3 +47,12 @@ type EvalCSharp() =
         match syntaxNode with 
         | :? CSharp.CSharpSyntaxNode as node-> RoslynCSharpUtils.IsNullLiteral node
         | _ -> invalidOp "Invalid node type"
+
+    override _.NamespaceFromdDescendant node semanticModel = 
+        let info = semanticModel.GetSymbolInfo node
+        let symbol = info.Symbol
+
+        match symbol with 
+        | :? INamedTypeSymbol as s ->
+            s.ContainingNamespace.ToString()
+        | _ -> ""

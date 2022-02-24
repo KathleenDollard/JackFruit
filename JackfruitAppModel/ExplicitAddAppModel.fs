@@ -12,9 +12,23 @@ type AppModel(evalLanguage: EvalBase) =
     // TODO: Add SubCommands
     let mapMethodNames = ["CreateWithRootCommand"; "AddSubCommand"]
 
+    let mutable nspace = ""
+
     override _.Initialize semanticModel =
-        evalLanguage.InvocationsFromModel mapMethodNames semanticModel
-        |> Result.bind (ExplicitAddInfoListFrom evalLanguage semanticModel)
+        let invocationResult = evalLanguage.InvocationsFromModel mapMethodNames semanticModel
+        nspace <- 
+            match invocationResult with
+            | Ok invocations -> 
+                // KAD-Chet: is there an easier way to do this?
+                let flat = List.collect (fun (_, invs) -> invs) invocations
+                if not flat.IsEmpty then
+                    let node = flat.Head
+                    evalLanguage.NamespaceFromdDescendant node semanticModel
+                else
+                    ""
+            | Error e -> ""
+
+        invocationResult|> Result.bind (ExplicitAddInfoListFrom evalLanguage semanticModel)
         |> Result.bind ExplicitAddInfoTreeFrom
         
     override _.Children archTree =
@@ -34,7 +48,9 @@ type AppModel(evalLanguage: EvalBase) =
           Path = nodeInfo.Path 
           Method = method 
           ForPocket = [] }
-        
+
+    override _.Namespace = nspace
+
     //member _.CommandDefTransformers = []            
 
     //member _.MemberDefTransformers = []

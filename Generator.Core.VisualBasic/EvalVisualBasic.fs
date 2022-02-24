@@ -11,3 +11,4 @@ type EvalVisualBasic() =
     override _.MethodSymbolFromMethodCall semanticModel expression = None
     override _.ExpressionFrom syntaxNode  : Result<SyntaxNode, AppErrors> = Error (AppErrors.NotImplemented "Not yet")
     override _.IsNullLiteral syntaxNode = false
+    override _.NamespaceFromdDescendant node semanticModel = ""
