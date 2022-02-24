@@ -103,8 +103,7 @@ module ExplicitAddMapping =
                                 | Some m -> Ok (ParseExplicitAddInfo target exprOption m.Name)
                                 | None -> Error (Generator.AppModelIssue $"Parameter must be a {pos}")
                             | None -> Error (Generator.AppModelIssue $"Method is required {pos}")
-                        | Error _->  Error (Generator.AppModelIssue $"Unexpected expression {pos}")
-                    | _ -> Error Generator.UnexpectednumberOfArguments ]
+                        | Error _->  Error (Generator.AppModelIssue $"Unexpected expression {pos}") ]
             let errors = [
                 for result in addCommandInfoWithResults do
                     match result with 

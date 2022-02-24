@@ -41,11 +41,12 @@ type ``For Command Name Patterns, you can ``() =
         | Error err -> invalidOp $"Error building test code: {err}"
 
     [<Fact>]
-    // KAD-Don: There is an issue here with ambiguity between a 'T and an IEnumerable<'T> overload without the explicit generic
+    // KAD: MAKE AN ISSUE: There is an issue here with ambiguity between a 'T and an IEnumerable<'T> overload without the explicit generic
     member _.``Add a pattern``() =
         let actual = GetPatterns @"AppBase.AddCommandNamePattern(""Cmd*"");"
         let expected = AppBase.DefaultPatterns @ ["Cmd*"]
         Assert.Equal<IEnumerable<string>>(expected, actual)
+        //Assert.Equal(expected, actual)
 
     [<Fact>]
     member _.``Remove a pattern``() =
@@ -179,7 +180,7 @@ type ``For command definitons, you can``() =
         let actual = 
             [ for info in infoList do 
                 info.Path]
-        // KAD-Don-Chet: I did not find an easkir  way to do the following
+        // KAD-Chet: I did not find an easkir  way to do the following
         let zip = List.zip actual expected
         for pair in zip do
             match pair with 

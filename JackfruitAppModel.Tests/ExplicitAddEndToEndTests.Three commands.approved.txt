@@ -20,7 +20,7 @@ namespace Prototype
          return newApp;
       }
    }
-
+   
    public partial class OriginalSeriesCommand : CliRootCommand, ICommandHandler
    {
       private OriginalSeriesCommand()
@@ -65,11 +65,11 @@ namespace Prototype
       public NextGenerationCommand NextGeneration {get; set;}
       public Task<int> InvokeAsync(InvocationContext context)
       {
-        Prototype.Handlers.OriginalSeries(GreetingOptionResult(context), KirkOptionResult(context), SpockOptionResult(context), UhuraOptionResult(context));
-        return Task.FromResult(context.ExitCode);
+         Prototype.Handlers.OriginalSeries(GreetingOptionResult(context), KirkOptionResult(context), SpockOptionResult(context), UhuraOptionResult(context));
+         return Task.FromResult(context.ExitCode);
       }
    }
-
+   
    public partial class NextGenerationCommand : CliCommand, ICommandHandler
    {
       private NextGenerationCommand()
@@ -105,30 +105,30 @@ namespace Prototype
          return Task.FromResult(context.ExitCode);
       }
    }
-
+   
    public partial class VoyagerCommand : CliCommand, ICommandHandler
    {
-      private VoyagerCommand() 
+      private VoyagerCommand()
       : base("Voyager")
       {
       }
       public static VoyagerCommand Create()
       {
-          var command = new VoyagerCommand();
-          command.GreetingOption = new Option<string>("greeting");
-          command.Add(command.GreetingOption);
-          command.JanewayOption = new Option<bool>("janeway");
-          command.Add(command.JanewayOption);
-          command.ChakotayOption = new Option<bool>("chakotay");
-          command.Add(command.ChakotayOption);
-          command.TorresOption = new Option<bool>("torres");
-          command.Add(command.TorresOption);
-          command.TuvokOption = new Option<bool>("tuvok");
-          command.Add(command.TuvokOption);
-          command.SevenOfNineOption = new Option<bool>("sevenOfNine");
-          command.Add(command.SevenOfNineOption);
-          command.Handler = command;
-          return command;
+         var command = new VoyagerCommand();
+         command.GreetingOption = new Option<string>("greeting");
+         command.Add(command.GreetingOption);
+         command.JanewayOption = new Option<bool>("janeway");
+         command.Add(command.JanewayOption);
+         command.ChakotayOption = new Option<bool>("chakotay");
+         command.Add(command.ChakotayOption);
+         command.TorresOption = new Option<bool>("torres");
+         command.Add(command.TorresOption);
+         command.TuvokOption = new Option<bool>("tuvok");
+         command.Add(command.TuvokOption);
+         command.SevenOfNineOption = new Option<bool>("sevenOfNine");
+         command.Add(command.SevenOfNineOption);
+         command.Handler = command;
+         return command;
       }
       public Option<string> GreetingOption {get; set;}
       public string GreetingOptionResult(InvocationContext context)

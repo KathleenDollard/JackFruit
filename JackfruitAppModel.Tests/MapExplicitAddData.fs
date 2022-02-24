@@ -15,7 +15,7 @@ let AppBaseCode =
         public static List<string> DefaultPatterns = new() { ""*"", ""Run *"", ""* Handler"" };
         public static void AddCommandNamePattern(string pattern) { }
         public static void RemoveCommandNamePattern(string pattern) { }
-        public void CreateWithRootCommand(Delegate handler) { }
+        public static void CreateWithRootCommand(Delegate handler) { }
         public void AddSubCommand(Delegate handler) { }
     }"
 
@@ -49,9 +49,6 @@ let OriginalSeriesPseudoGenerated = $"
     public class OriginalSeries : AppBase
     {{
         public NextGeneration NextGeneration {{ get; set; }}
-        public AppBase Kirk {{ get; set; }}
-        public AppBase Spock {{ get; set; }}
-        public AppBase Uhura {{ get; set; }}
     }}
     "
 
@@ -60,7 +57,6 @@ let NextGenerationPseudoGenerated = $"
     {{
         public Voyager Voyager {{ get; set; }}
         public DeepSpaceNine DeepSpaceNine {{ get; set; }}
-        public AppBase Picard {{ get; set; }}
     }}
     "
 
@@ -68,22 +64,12 @@ let NextGenerationPseudoGenerated = $"
 let DeepSpaceNinePseudoGenerated = $"
     public class DeepSpaceNine : AppBase
     {{
-        public AppBase Sisko {{ get; set; }}
-        public AppBase Odo {{ get; set; }}
-        public AppBase Dax {{ get; set; }}
-        public AppBase Worf {{ get; set; }}
-        public AppBase OBrien {{ get; set; }}
     }}
     "
 
 let VoyagerPseudoGenerated = $"
     public class Voyager : AppBase
     {{
-        public AppBase Janeway {{ get; set; }}
-        public AppBase Chakotay {{ get; set; }}
-        public AppBase Torres {{ get; set; }}
-        public AppBase Tuvok {{ get; set; }}
-        public AppBase SevenOfNine {{ get; set; }}
     }}
     "
 
@@ -97,31 +83,30 @@ let Handlers = $"
     }}"
 
 let CliWrapperCode statements = $@"
-using System;
-using System.Collections.Generic;
-namespace Prototype
-{{
+    using System;
+    using System.Collections.Generic;
+    namespace Prototype
+    {{
+    
+       {AppBaseCode}
 
-   {AppBaseCode}
-
-   {OriginalSeriesPseudoGenerated}
-   {NextGenerationPseudoGenerated}
-   {DeepSpaceNinePseudoGenerated}
-   {VoyagerPseudoGenerated}
-
-   {Handlers}
-
-   public class MyCli : AppBase
-   {{
-       public OriginalSeries OriginalSeries {{ get; set; }}
-   }}
-
-   public class Program
-   {{
-       {statements} 
-   }}
-}}"
-
+       {OriginalSeriesPseudoGenerated}
+       {NextGenerationPseudoGenerated}
+       {DeepSpaceNinePseudoGenerated}
+       {VoyagerPseudoGenerated}
+    
+       {Handlers}
+    
+       public class MyCli : AppBase
+       {{
+             public OriginalSeries OriginalSeries {{ get; set; }}
+       }}
+    
+       public class Program
+       {{
+           {statements} 
+       }}
+    }}"
 
 type Data =
     { ExplicitAddStatements: string
@@ -145,13 +130,12 @@ let OneMapping =
     public void DefineCli ()
     {{ 
         var app = new MyCli();
-        app.CreateWithRootCommand(Handlers.NextGeneration);
+        MyCli.CreateWithRootCommand(Handlers.NextGeneration);
     }}"
       CommandNames = [ "NextGeneration" ]
       CommandDefs = [ commandDef ] }
 
 let ThreeMappings =
-    // KAD-Don-Chet: Why don't I need mutable here?
     let voyager = CommandDef("Voyager", [ "OriginalSeries"; "NextGeneration"; "Voyager" ], ReturnType.ReturnTypeVoid, Arbitrary "Voyager")
     voyager.Members <-
         [ MemberDef("greeting", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
@@ -188,8 +172,8 @@ let ThreeMappings =
         @"
     public void DefineCli ()
     {{ 
+        MyCli.CreateWithRootCommand(Handlers.OriginalSeries);
         var app = new MyCli();
-        app.CreateWithRootCommand(Handlers.OriginalSeries);
         app.OriginalSeries.AddSubCommand(Handlers.NextGeneration);
         app.OriginalSeries.NextGeneration.AddSubCommand(Handlers.Voyager);
     }}"

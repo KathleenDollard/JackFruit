@@ -2,25 +2,15 @@
 using DemoHandlers;
 using CliDefinition;
 
-public class Program
+namespace CliDefinition
 {
-
-    static void Main(string[] args)
+    public class Program
     {
-        //var app = DefineCli();
-        return;
 
-    }
-
-    public void DefineCli()
-    {
+        static async Task<int> Main(string[] args)
         {
-            var app = AppBase.CreateWithRootCommand(Handlers.NextGeneration);
-            app.OriginalSeries.AddSubCommand(Handlers.NextGeneration);
-            app.OriginalSeries.NextGeneration.AddSubCommand(Handlers.Voyager);
-            app.OriginalSeries.NextGeneration.AddSubCommand(Handlers.DeepSpaceNine);
+            return await CliDefinition.StarTrekApp.Run(args);
         }
     }
-
 }
 

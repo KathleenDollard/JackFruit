@@ -36,7 +36,7 @@ type EvalCSharp() =
         | _ -> 
             match handler.Symbol with
             | :? IMethodSymbol as m -> Some m
-//        | _ -> None
+            | _ -> None
 
     override _.ExpressionFrom syntaxNode  : Result<SyntaxNode, AppErrors> = // Error (AppErrors.NotImplemented "Not yet")
         match syntaxNode with 

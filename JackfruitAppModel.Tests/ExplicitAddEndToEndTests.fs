@@ -18,7 +18,7 @@ type ExplicitAddTestGenerator() =
     override _.CodeModelBuilder commandDef =
         BuildNewerCliCodeModel.OutputCommandWrapper commandDef
 
-[<Generator>]
+//[<Generator>]
 type ExplicitAddEndToEndTests() =
     let RunCliModelGenerator (inputCompilation: Compilation) generator =
         RunGenerator generator inputCompilation

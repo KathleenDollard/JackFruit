@@ -13,7 +13,7 @@ module ExtraParamInBinding =
     //    f1 42
     //    |> Result.bind f2
 
-    //// This is an easy mistake to make, especially responding to the above error, the error is awful
+    //// This is an easy mistake to make, especially responding to the above error,
     //let (x:int) = 
     //    f1 42
     //    |> Result.bind f2

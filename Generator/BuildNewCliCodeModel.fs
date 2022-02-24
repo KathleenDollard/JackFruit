@@ -74,6 +74,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
 
 
     let commandClass (rootCommandDef: CommandDef) =
+        // KAD: Make a test for Don
         let commandConstructor (isRoot: bool) (name: string) =
             if isRoot then
                 Constructor() { 
@@ -134,7 +135,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
         recurse 0 rootCommandDef
 
     try
-        let appNamespace = if commandDefs.IsEmpty then "CliApp" else commandDefs[0].AppNamespace
+        let appNamespace = if commandDefs.IsEmpty then "CliApp42" else commandDefs[0].AppNamespace
         // KAD: Figure out right namespace: Should probably collect the correct namespace from the initial code. 
         let nspace = Namespace (appNamespace) {
             Using "System" 

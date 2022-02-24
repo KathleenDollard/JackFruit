@@ -338,7 +338,7 @@ type ``When outputting code`` () =
             { NamespaceModel.ForTesting.Data with
                 Classes = [ ClassModel.ForTesting.Data ]}
 
-        outPutter.Output data
+        let _ =outPutter.Output data
         let actual = writer.LinePairs()
 
         CompareLines (expected: (struct (int * string)) list) actual

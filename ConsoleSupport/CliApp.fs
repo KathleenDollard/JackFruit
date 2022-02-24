@@ -75,8 +75,6 @@ type AppBase() =
     member _.IsArgumentSource = IsArgumentSource.All;
     member _.OptionArgumentNameSource optionArgumentNameSource = OptionArgumentNameSource.All;
 
-    // KAD-Don: How to do return some dumb thing, since this will not run, but needs to retur
-    // static member CreateWithRootCommand(codeToRun: Delegate) : CliRootCommand = null
     static member CreateWithRootCommand(codeToRun: Delegate) = ()
 
 

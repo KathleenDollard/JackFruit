@@ -21,7 +21,6 @@ type ``Create namespaces with``() =
         let expected = { NamespaceName = namespaceName
                          Usings = [ UsingModel.Create usingName ]
                          Classes = [] }
-        // KAD-Don: The return here is the wrapped model. I understand why, What is the most graceful way to return
         let actual =
             Namespace(namespaceName) { 
                 Using usingName }

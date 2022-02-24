@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<AssemblyVersion>0.0.1-alpha</AssemblyVersion>
+		<AssemblyVersion>0.0.1</AssemblyVersion>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 

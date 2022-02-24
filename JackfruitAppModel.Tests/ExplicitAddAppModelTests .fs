@@ -34,7 +34,8 @@ type ``Can retrieve method for AddCommand-AddSubCommand``() =
             match commands, subCommands with
             | (Ok r1, Ok r2) -> Ok (r1 @ r2)
             | (Error err1, Error err2) -> invalidOp $"Failed finding AddCommand/AddSubCommand: {err1} {err2}"
-            
+            | (Error err1, _) -> invalidOp $"Failed finding AddCommand/AddSubCommand: {err1}"
+            | (_, Error err2) -> invalidOp $"Failed finding AddCommand/AddSubCommand: {err2}"            
         let infoListResult = 
             invocationResult
             |> Result.bind (ExplicitAddInfoListFrom eval semanticModel)

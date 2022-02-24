@@ -184,5 +184,4 @@ type RoslynOut(language: ILanguage, writer: IWriter) =
             writer.AddLines (language.NamespaceClose nspace)
             Ok writer
         with 
-        // KAD-Chet: OK, the warning tells me this cast always succeeds, but how to do I fix?
-        | :? Exception as e -> Error e.Message
+        | e -> Error e.Message
