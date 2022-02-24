@@ -274,7 +274,7 @@ let CommandDefFromHandlerSource source =
     let model, methods = MethodSymbolsFromSource source
 
     [ for method in methods do
-        CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} ]
+        CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []; Namespace = ""} ]
 
 let ShouldEqual (expected: 'a) (actual: 'a) =     
     try

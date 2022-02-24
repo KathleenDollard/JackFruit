@@ -122,8 +122,10 @@ let NoMapping =
       CommandDefs = [ ] }
 
 let OneMapping =
-    let mutable commandDef = CommandDef("NextGeneration", ["NextGeneration"], ReturnType.ReturnTypeVoid, Arbitrary "NextGeneration")
-    let members = [ MemberDef("picard",commandDef, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+    let mutable commandDef = CommandDef("NextGeneration", ["NextGeneration"], ReturnType.ReturnTypeVoid, Arbitrary "NextGeneration", "")
+    let members = 
+        [ MemberDef("greeting",commandDef, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("picard",commandDef, (SimpleNamedItem "bool"), ArbitraryMember, true) ]
     commandDef.Members <- members
 
     { ExplicitAddStatements = @$"
@@ -136,36 +138,37 @@ let OneMapping =
       CommandDefs = [ commandDef ] }
 
 let ThreeMappings =
-    let voyager = CommandDef("Voyager", [ "OriginalSeries"; "NextGeneration"; "Voyager" ], ReturnType.ReturnTypeVoid, Arbitrary "Voyager")
+    let voyager = CommandDef("Voyager", [ "OriginalSeries"; "NextGeneration"; "Voyager" ], ReturnType.ReturnTypeVoid, Arbitrary "Voyager", "")
     voyager.Members <-
         [ MemberDef("greeting", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("janeway", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("chakotay", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("torres",  voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("janeway", voyager, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("chakotay", voyager, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("torres",  voyager, (SimpleNamedItem "bool"), ArbitraryMember, true)
           MemberDef("tuvok",  voyager, (SimpleNamedItem "bool"), ArbitraryMember, true)
-          MemberDef("sevenOfNine",  voyager, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+          MemberDef("sevenOfNine",  voyager, (SimpleNamedItem "bool"), ArbitraryMember, true) ]
 
-    let nextGeneration = CommandDef("NextGeneration", [ "OriginalSeries"; "NextGeneration" ], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine")
+    let nextGeneration = CommandDef("NextGeneration", [ "OriginalSeries"; "NextGeneration" ], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine", "")
     nextGeneration.Members <-
-        [ MemberDef("picard", nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+        [ MemberDef("greeting", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("picard", nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true) ]
     nextGeneration.SubCommands <- [voyager]
 
-    let deepSpaceNine = CommandDef("DeepSpaceNine", [ "OriginalSeries"; "NextGeneration"; "DeepSpaceNine"], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine")
+    let deepSpaceNine = CommandDef("DeepSpaceNine", [ "OriginalSeries"; "NextGeneration"; "DeepSpaceNine"], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine", "")
     deepSpaceNine.Members <-
         [ MemberDef("greeting", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("sisko", nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("odo", nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("dax",  nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("sisko", nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("odo", nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("dax",  nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true)
           MemberDef("worf",  nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true)
-          MemberDef("oBrien",  nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+          MemberDef("oBrien",  nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true) ]
     deepSpaceNine.SubCommands <- []
 
-    let originalSeries = CommandDef("OriginalSeries", [ "OriginalSeries" ], ReturnType.ReturnTypeVoid, Arbitrary "OriginalSeries")
+    let originalSeries = CommandDef("OriginalSeries", [ "OriginalSeries" ], ReturnType.ReturnTypeVoid, Arbitrary "OriginalSeries", "")
     originalSeries.Members <-
         [ MemberDef("greeting", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("kirk", originalSeries, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("spock", originalSeries, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("uhura",  originalSeries, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+          MemberDef("kirk", originalSeries, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("spock", originalSeries, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("uhura",  originalSeries, (SimpleNamedItem "bool"), ArbitraryMember, true) ]
     originalSeries.SubCommands <- [nextGeneration]
 
     { ExplicitAddStatements =

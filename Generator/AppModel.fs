@@ -48,7 +48,8 @@ type AppModelCommandInfo =
     { InfoCommandId: string option
       Path: string list
       Method: IMethodSymbol option
-      ForPocket: (string * obj) list }
+      ForPocket: (string * obj) list 
+      Namespace: string}
 
 /// AppModels are distinguished by how they do structural
 /// evaluation (Info and Children) and transforms defined 
@@ -59,7 +60,7 @@ type AppModel<'T>() =
     abstract member Children: 'T -> 'T list
     abstract member Info: SemanticModel -> 'T -> AppModelCommandInfo
     abstract member Transformers: Transformer list
-    abstract member Namespace: string
+
 
     default _.Transformers = 
         [ DescriptionsFromXmlCommentsTransformer() 

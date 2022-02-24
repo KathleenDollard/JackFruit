@@ -47,9 +47,9 @@ type AppModel(evalLanguage: EvalBase) =
         { InfoCommandId = commandId
           Path = nodeInfo.Path 
           Method = method 
-          ForPocket = [] }
+          ForPocket = [] 
+          Namespace = nspace}
 
-    override _.Namespace = nspace
 
     //member _.CommandDefTransformers = []            
 

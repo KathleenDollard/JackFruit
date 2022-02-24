@@ -211,7 +211,7 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: NamedItem, me
 
 
 /// The main structure for commands during transformations
-and CommandDef(commandId: string, path: string list, returnType: ReturnType, commandDefUsage: CommandDefUsage) =
+and CommandDef(commandId: string, path: string list, returnType: ReturnType, commandDefUsage: CommandDefUsage, appNamespace: string) =
 
     let pocket = Dictionary<string, obj>()
 
@@ -346,12 +346,12 @@ and CommandDef(commandId: string, path: string list, returnType: ReturnType, com
     member this.PathString =
         String.concat " " this.Path
 
-    member _.AppNamespace =
-        match commandDefUsage with 
-        | UserMethod (userMethod, _) ->
-            let containingClass = userMethod.ContainingType
-            containingClass.ContainingNamespace.ToString()
-        | _ -> "CliApp"
+    member _.AppNamespace = appNamespace
+        //match commandDefUsage with 
+        //| UserMethod (userMethod, _) ->
+        //    let containingClass = userMethod.ContainingType
+        //    containingClass.ContainingNamespace.ToString()
+        //| _ -> "CliApp"
 
 
 

@@ -15,7 +15,7 @@ let NoMapping =
       OutputCode = [ "" ] }
 
 let OneSimpleMapping =
-    let commandDef = CommandDef("A", [], ReturnType.ReturnTypeVoid, Arbitrary "MyCommand")
+    let commandDef = CommandDef("A", [], ReturnType.ReturnTypeVoid, Arbitrary "MyCommand", "")
     let members = [ MemberDef("one", commandDef, (SimpleNamedItem "string"), ArbitraryMember, true) ]
     commandDef.Members <- members
 
@@ -24,7 +24,7 @@ let OneSimpleMapping =
       OutputCode = [ "" ] }
 
 let OneComplexMapping =
-    let commandDef = CommandDef("BLongName", [], ReturnType.ReturnTypeVoid, Arbitrary "MyCommand")
+    let commandDef = CommandDef("BLongName", [], ReturnType.ReturnTypeVoid, Arbitrary "MyCommand", "")
     let members = 
         [ MemberDef("packageName", commandDef,(SimpleNamedItem "string"), ArbitraryMember, true)
           MemberDef("two", commandDef,(SimpleNamedItem "int"), ArbitraryMember, true)
@@ -37,7 +37,7 @@ let OneComplexMapping =
 
 let ThreeMappings =
     let makeCommandDef id =
-        CommandDef(id, [], ReturnType.ReturnTypeVoid, Arbitrary "MyCommand")
+        CommandDef(id, [], ReturnType.ReturnTypeVoid, Arbitrary "MyCommand", "")
 
     { HandlerCode = 
         [ "public static void A() { }"

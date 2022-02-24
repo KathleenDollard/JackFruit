@@ -26,7 +26,7 @@ let CommandDefFromMethod model (info: AppModelCommandInfo) =
         | Some m -> ReturnType.Create (m.ReturnType.ToDisplayString())
         | None -> ReturnTypeVoid
 
-    let commandDef = CommandDef(id, info.Path, returnType, usage)
+    let commandDef = CommandDef(id, info.Path, returnType, usage, info.Namespace)
 
     let members = 
         match info.Method with

@@ -143,7 +143,7 @@ type ``Transforms for descriptions``() =
 
         let commandDefs = 
             [ for method in methods do
-                CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} ]
+                CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []; Namespace = "" } ]
         [ for commandDef in commandDefs do 
             let mutable newCommandDef = commandDef
             for transform in transforms do

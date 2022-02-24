@@ -3,6 +3,8 @@
 open Generator.CodeEval
 open Microsoft.CodeAnalysis
 open Generator.RoslynCSharpUtils
+open System.Linq
+open Microsoft.CodeAnalysis.CSharp.Syntax
 
 type EvalCSharp() =
     inherit EvalBase("C#")
@@ -49,10 +51,11 @@ type EvalCSharp() =
         | _ -> invalidOp "Invalid node type"
 
     override _.NamespaceFromdDescendant node semanticModel = 
-        let info = semanticModel.GetSymbolInfo node
-        let symbol = info.Symbol
+        let namespaceNode = 
+            node.Ancestors().OfType<NamespaceDeclarationSyntax>().FirstOrDefault()
+        if namespaceNode = null then 
+            ""
+        else
+            let s = semanticModel.GetDeclaredSymbol namespaceNode
+            s.ToString()
 
-        match symbol with 
-        | :? INamedTypeSymbol as s ->
-            s.ContainingNamespace.ToString()
-        | _ -> ""

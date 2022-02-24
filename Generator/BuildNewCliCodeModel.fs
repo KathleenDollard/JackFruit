@@ -11,7 +11,7 @@ open Generator.LanguageHelpers
 open Generator.JackfruitHelpers
 open DslKeywords
 open Common
-
+open System
 
 let generatedCommandHandlerName (_: CommandDef) = "GeneratedHandler"
 
@@ -135,8 +135,11 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
         recurse 0 rootCommandDef
 
     try
-        let appNamespace = if commandDefs.IsEmpty then "CliApp42" else commandDefs[0].AppNamespace
-        // KAD: Figure out right namespace: Should probably collect the correct namespace from the initial code. 
+        let appNamespace = 
+            if commandDefs.IsEmpty || String.IsNullOrWhiteSpace(commandDefs[0].AppNamespace) then 
+                "CliApp"
+            else
+                commandDefs[0].AppNamespace
         let nspace = Namespace (appNamespace) {
             Using "System" 
             Using "System.CommandLine"
