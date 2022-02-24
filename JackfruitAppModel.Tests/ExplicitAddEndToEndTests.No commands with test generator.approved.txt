@@ -4,6 +4,6 @@ using System.CommandLine.Invocation;
 using System.Threading.Tasks;
 using CommandBase;
 using CliApp;
-namespace CliApp42
+namespace CliApp
 {
 }
