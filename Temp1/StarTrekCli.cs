@@ -10,8 +10,8 @@ namespace CliDefinition
         {
             CreateWithRootCommand(Handlers.StarTrek);
             var cli = StarTrekApp.Create();
-            cli.RootCommand.AddSubCommand(Handlers.NextGeneration);
-            cli.RootCommand.NextGeneration.AddSubCommand(Handlers.Voyager);
+            cli.StarTrek.AddSubCommand(Handlers.NextGeneration);
+            cli.StarTrek.NextGeneration.AddSubCommand(Handlers.Voyager);
 
             // Issue: With the following, is it confusing to require using System.CommandLiner
             return await cli.RootCommand.InvokeAsync(args);

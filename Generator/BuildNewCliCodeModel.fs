@@ -12,6 +12,7 @@ open Generator.JackfruitHelpers
 open DslKeywords
 open Common
 open System
+open System.Linq
 
 let generatedCommandHandlerName (_: CommandDef) = "GeneratedHandler"
 
@@ -28,20 +29,20 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
         let commandName (commandDef: CommandDef) = $"{commandDef.Name}Command"
         let className = appName commandDef
         let rootCommandClass = commandName commandDef
-        let fieldName = "rootCommand"
+        let rootCommandProperty = commandDef.Name
         Class (className) {
             Internal Partial
             InheritedFrom "AppBase"
             Constructor() { Private }
-            Property ("RootCommand", rootCommandClass) { 
+            Property (rootCommandProperty, rootCommandClass) { 
                 Public2
             }
             Method("Create") {
                 Public2 Static HideByName
-                Parameter "codeToRun" "Delegate"
+                //Parameter "codeToRun" "Delegate"
                 ReturnType className
                 AssignWithVar "newApp" To (New className [])
-                Assign "newApp.RootCommand" To (Invoke rootCommandClass "Create" [])
+                Assign $"newApp.{rootCommandProperty}" To (Invoke rootCommandClass "Create" [])
                 Return (SymbolLiteral (Symbol "newApp"))
             }
         }
@@ -141,7 +142,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
             else
                 commandDefs[0].AppNamespace
         let nspace = Namespace (appNamespace) {
-            Using "System" 
+            Using $"System; // Count = {commandDefs.Count()}" 
             Using "System.CommandLine"
             Using "System.CommandLine.Invocation"
             Using "System.Threading.Tasks"
