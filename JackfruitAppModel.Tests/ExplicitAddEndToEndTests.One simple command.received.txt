@@ -1,0 +1,55 @@
+﻿using System; // Count = 1;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.Threading.Tasks;
+using CommandBase;
+using CliApp;
+namespace Prototype
+{
+   
+   internal partial class NextGenerationApp : AppBase
+   {
+      private NextGenerationApp()
+      {
+      }
+      public NextGenerationCommand NextGeneration {get; set;}
+      public static new NextGenerationApp Create()
+      {
+         var newApp = new NextGenerationApp();
+         newApp.NextGeneration = NextGenerationCommand.Create();
+         return newApp;
+      }
+   }
+   
+   public partial class NextGenerationCommand : CliRootCommand, ICommandHandler
+   {
+      private NextGenerationCommand()
+      {
+      }
+      public static NextGenerationCommand Create()
+      {
+         var command = new NextGenerationCommand();
+         command.GreetingOption = new Option<string>("greeting");
+         command.Add(command.GreetingOption);
+         command.PicardOption = new Option<bool>("picard");
+         command.Add(command.PicardOption);
+         command.Handler = command;
+         return command;
+      }
+      public Option<string> GreetingOption {get; set;}
+      public string GreetingOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<string>(GreetingOption);
+      }
+      public Option<bool> PicardOption {get; set;}
+      public bool PicardOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<bool>(PicardOption);
+      }
+      public Task<int> InvokeAsync(InvocationContext context)
+      {
+         Prototype.Handlers.NextGeneration(GreetingOptionResult(context), PicardOptionResult(context));
+         return Task.FromResult(context.ExitCode);
+      }
+   }
+}

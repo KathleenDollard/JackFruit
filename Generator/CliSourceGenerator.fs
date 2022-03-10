@@ -25,7 +25,7 @@ let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel (wr
 
 [<AbstractClass>]
 type CliSourceGenerator<'T>() =
-    abstract member GetAppModel: synataxTrees: SyntaxTree list -> semanticModel : SemanticModel -> AppModel<'T>
+    abstract member GetAppModel: unit -> AppModel<'T>
 
     abstract member CodeModelBuilder: CommandDef list -> Result<NamespaceModel, AppErrors>
     default _.CodeModelBuilder commandDef =
@@ -48,7 +48,7 @@ type CliSourceGenerator<'T>() =
 
                     | _ -> invalidOp "Unexpected language encountered (not C# or VB)"
 
-                let appModel = this.GetAppModel syntaxTrees semanticModel
+                let appModel = this.GetAppModel()
 
                 let outputter = RoslynOut(language, (StringBuilderWriter 3))
                 let modelResult = 

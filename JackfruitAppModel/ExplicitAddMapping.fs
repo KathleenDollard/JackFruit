@@ -6,6 +6,7 @@ open Microsoft.CodeAnalysis
 open Common
 open Generator
 open System
+open System.Linq
 
 type ExplicitAddInfo =
     { Path: string list 
@@ -86,6 +87,7 @@ module ExplicitAddMapping =
             Some expression
 
     let ExplicitAddInfoListFrom (evalLanguage: EvalBase) semanticModel (invocations: (string * SyntaxNode list) list) : Result<ExplicitAddInfo list, AppErrors> =
+            Console.WriteLine($"Invation Count = {invocations.Length}")
             let addCommandInfoWithResults =
                 let mutable pos = 0
                 [ for invoke in invocations do

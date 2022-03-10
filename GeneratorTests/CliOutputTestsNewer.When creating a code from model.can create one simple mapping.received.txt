@@ -1,0 +1,48 @@
+﻿using System; // Count = 1;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.Threading.Tasks;
+using CommandBase;
+using CliApp;
+namespace CliApp
+{
+   
+   internal partial class AApp : AppBase
+   {
+      private AApp()
+      {
+      }
+      public ACommand A {get; set;}
+      public static new AApp Create()
+      {
+         var newApp = new AApp();
+         newApp.A = ACommand.Create();
+         return newApp;
+      }
+   }
+   
+   public partial class ACommand : CliRootCommand, ICommandHandler
+   {
+      private ACommand()
+      {
+      }
+      public static ACommand Create()
+      {
+         var command = new ACommand();
+         command.OneOption = new Option<string>("one");
+         command.Add(command.OneOption);
+         command.Handler = command;
+         return command;
+      }
+      public Option<string> OneOption {get; set;}
+      public string OneOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<string>(OneOption);
+      }
+      public Task<int> InvokeAsync(InvocationContext context)
+      {
+         MyCommand(OneOptionResult(context));
+         return Task.FromResult(context.ExitCode);
+      }
+   }
+}
