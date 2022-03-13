@@ -14,6 +14,7 @@ open Generator.Transforms
 open UtilsForTests
 open Generator.LanguageRoslynOut
 open Generator.Tests.MapData
+open Models
 
 // I'm not sure what we should be testing first
 //  * Creating CommandDef from random method (per most APpModels) : ``When building CommandDefs``
@@ -143,7 +144,7 @@ type ``Transforms for descriptions``() =
 
         let commandDefs = 
             [ for method in methods do
-                CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []; Namespace = "" } ]
+                CommandDefFromMethod {InfoCommandId = None; Method = MethodSymbol method; Path = []; ForPocket = []; Namespace = "" } ]
         [ for commandDef in commandDefs do 
             let mutable newCommandDef = commandDef
             for transform in transforms do

@@ -3,10 +3,12 @@
 open System.CommandLine;
 open System.Collections.Generic
 open System
+open CommandBase
 
-type ConsoleApplication(rootCommand: RootCommand) =
+type ConsoleApplication(rootCommand: CliRootCommand) =
 
-    new () = ConsoleApplication (RootCommand())
+    // KAD-Chet: What is this and why does it work?
+    new () = ConsoleApplication (CliRootCommand())
 
     member _.RootCommand: RootCommand = rootCommand 
     

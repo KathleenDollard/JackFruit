@@ -405,7 +405,6 @@ type Method(name: string) =
             Parameters = method1.Parameters @ method2.Parameters
             Statements = method1.Statements @ method2.Statements}  
 
-
     override this.NewMember item =
         let method = this.Empty() :?> MethodModel
         { method with Statements = [ item ] }

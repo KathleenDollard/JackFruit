@@ -14,8 +14,18 @@ type EvalCSharp() =
         | :? CSharp.CSharpSyntaxNode as cSharpNode-> StringFrom cSharpNode
         | _ -> invalidOp "Unexpected type"
     
-    override _.InvocationsFromModel names semantiModel = // Error (AppErrors.NotImplemented "Not yet")
-        let syntaxTree = semantiModel.SyntaxTree
+    //override _.InvocationsFromModel names semantiModel = // Error (AppErrors.NotImplemented "Not yet")
+    //    let syntaxTree = semantiModel.SyntaxTree
+    //    Ok 
+    //        [ for node in syntaxTree.GetRoot().DescendantNodes() do
+    //            match node with 
+    //            | SimpleInvocationByName names (caller, argList) 
+    //                -> (caller, 
+    //                    [for arg in argList do arg :> SyntaxNode])
+    //            | _ 
+    //                -> ()]
+
+    override _.InvocationsFromSyntaxTree names syntaxTree = // Error (AppErrors.NotImplemented "Not yet")
         Ok 
             [ for node in syntaxTree.GetRoot().DescendantNodes() do
                 match node with 

@@ -3,20 +3,21 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
 using CommandBase;
-using CliApp;
+using Generator.ConsoleSupport;
 namespace CliApp
 {
    
-   internal partial class AApp : AppBase
+   internal partial class AApp : ConsoleApplication
    {
-      private AApp()
+      private AApp(ACommand rootCommand)
+      : base(rootCommand)
       {
+         A = rootCommand;
       }
       public ACommand A {get; set;}
       public static new AApp Create()
       {
-         var newApp = new AApp();
-         newApp.A = ACommand.Create();
+         var newApp = new AApp(ACommand.Create());
          return newApp;
       }
    }
