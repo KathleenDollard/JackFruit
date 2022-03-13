@@ -2,6 +2,8 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
-namespace CliDefinition
+using CommandBase;
+using CliApp;
+namespace CliApp
 {
 }

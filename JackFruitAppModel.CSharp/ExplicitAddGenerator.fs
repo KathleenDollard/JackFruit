@@ -5,14 +5,19 @@
 open Microsoft.CodeAnalysis
 open Generator.SourceGenerator
 open Common
-open Jackfruit.Models
 open Generator.ExplicitAdd
 open Generator
+open Generator.NewMapping
+open Generator.Transforms
+open System.Linq
+open LanguageRoslynOut
 
 
 [<Generator(LanguageNames.CSharp)>]
 type ExplicitAddGenerator() =
     inherit CliSourceGenerator<TreeNodeType<ExplicitAddInfo>>()
 
-    override _.GetAppModel synataxTrees semanticModel =
+    override _.GetAppModel() =
         AppModel(EvalCSharp())
+
+

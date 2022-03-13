@@ -99,12 +99,10 @@ let GetSemanticModelFromFirstTree trees =
     else
         Error (Roslyn errors)
 
-
 let IsResultOk result = 
     match result with 
     | Ok _ -> true
     | Error e -> false
-
 
 let IsModelOk modelResult =
     let errorMessages =
@@ -132,7 +130,7 @@ let SyntaxTreeResult (source: Source) =
     else
         Error (Roslyn errors)
 
-let ModelFrom(sources: Source list) =
+let SyntaxTreesFrom (sources: Source list) =
     let combineTrees (trees: SyntaxTree list) source =
         let newTreeResult = SyntaxTreeResult source
         match newTreeResult with 
@@ -150,9 +148,37 @@ let ModelFrom(sources: Source list) =
             | Ok trees -> combineTrees trees source
             | Error _ -> result
         result <- newResult
+    result
+
+let CompilationFrom(sources: Source list) =
+    let result = SyntaxTreesFrom sources
     match result with 
-    | Ok trees -> GetSemanticModelFromFirstTree trees
+    | Ok trees -> Ok (GetCSharpCompilation trees)
     | Error err -> Error err
+
+
+ 
+//let ModelFrom(sources: Source list) =
+//    let combineTrees (trees: SyntaxTree list) source =
+//        let newTreeResult = SyntaxTreeResult source
+//        match newTreeResult with 
+//        | Ok newTree -> Ok (List.concat [trees; [newTree]])
+//        | Error err -> Error err
+
+//    let mutable result: Result<SyntaxTree list, AppErrors> = 
+//        match SyntaxTreeResult sources.Head with 
+//        | Ok tree -> Ok [tree]
+//        | Error err -> Error err
+
+//    for source in sources.Tail do
+//        let newResult = 
+//            match result with 
+//            | Ok trees -> combineTrees trees source
+//            | Error _ -> result
+//        result <- newResult
+//    match result with 
+//    | Ok trees -> GetSemanticModelFromFirstTree trees
+//    | Error err -> Error err
  
 
 let MethodDeclarationNodesFrom (syntaxTree: CSharpSyntaxTree) = 
@@ -247,16 +273,18 @@ let MethodSymbolFromMethodCall (model: SemanticModel) (expression: SyntaxNode) =
          
 let MethodSymbolsFromSource source =
     let code = AddMethodsToClass source
-    let modelResult = ModelFrom [ CSharpCode code ]
-    let model =
-        match modelResult with 
-        | Ok model -> model
-        | Error _ -> invalidOp "Test failed during SemanticModel creation"
-    let tree = 
-        match model.SyntaxTree with
+    let treesResult = SyntaxTreesFrom [ CSharpCode code ]
+    let trees =
+        match treesResult with
+        | Ok t -> t
+        | Error _ -> invalidOp "Failure building syntax tree"
+    let compilation = GetCSharpCompilation trees
+    let csharpTree = 
+        match trees[0] with // only one
         | :? CSharpSyntaxTree as t -> t
-        | _ -> invalidOp "Unexpected syntax tree type"
-    let declarationsResults = MethodDeclarationNodesFrom tree
+        | _ -> invalidOp "Unexpected syntax tree language"
+    let declarationsResults = MethodDeclarationNodesFrom csharpTree 
+    let semanticModel = compilation.GetSemanticModel(csharpTree, true)
 
     let declarations =
          match declarationsResults with 
@@ -264,17 +292,17 @@ let MethodSymbolsFromSource source =
          | Error _ -> invalidOp "Test failed during Method syntax lookup"
     let methods =
         [ for declaration in declarations do
-            let methodResult = MethodSymbolFromMethodDeclaration model declaration 
+            let methodResult = MethodSymbolFromMethodDeclaration semanticModel declaration 
             match methodResult with 
             | Some method -> method 
             | None -> invalidOp "Test failed during Method symbol lookup" ]
-    model, methods
+    semanticModel, methods
 
 let CommandDefFromHandlerSource source =
     let model, methods = MethodSymbolsFromSource source
 
     [ for method in methods do
-        CommandDefFromMethod model {InfoCommandId = None; Method = Some method; Path = []; ForPocket = []} ]
+        CommandDefFromMethod {InfoCommandId = None; Method = MethodSymbol method; Path = []; ForPocket = []; Namespace = ""} ]
 
 let ShouldEqual (expected: 'a) (actual: 'a) =     
     try

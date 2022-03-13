@@ -23,6 +23,7 @@ type LanguageVisualBasic() =
     override _.AbstractKeyword = "MustInherit"
     override _.ReadonlyKeyword = "Readonly"
     override _.SealedKeyword = "NotInheritable"
+    override _.HideByNameKeyword = "Shadows"
 
     override _.UsingKeyword = "Imports"
     override _.NamespaceKeyword = "Namespace"
@@ -74,11 +75,18 @@ type LanguageVisualBasic() =
             | ReturnTypeVoid -> $" Sub {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters})"
             | _ -> $" Function {this.OutputNamedItem method.MethodName}({this.OutputParameters method.Parameters}) As {method.ReturnType}" ]
         // TODO: Add implements to the basic data
-
     override _.MethodClose method  = 
         [ match method.ReturnType with 
              | ReturnTypeVoid -> "End Sub"
              | _ -> "End Function" ]
+
+    override this.BaseOrThisCall baseOrThisInvocation = 
+        let baseOrThisString = match baseOrThisInvocation.BaseOrThis with | Base -> "MyBase" | _ -> "Me"
+        let arguments = 
+            [ for a in baseOrThisInvocation.Arguments do
+                this.OutputExpression a ]
+        let argumentString = String.Join(", ", arguments)
+        $"   {baseOrThisString}({argumentString})"
 
     override this.AutoProperty property  = 
         [$"{this.ScopeOutput property.Scope}{this.OutputModifiers property.Modifiers} Property {property.PropertyName} As  {this.OutputNamedItem property.Type}"]

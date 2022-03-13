@@ -2,121 +2,167 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
-namespace CliDefinition
+using CommandBase;
+using CliApp;
+namespace Prototype
 {
    
-   public partial class OriginalSeriesCli : ICommandHandler
+   internal partial class OriginalSeriesApp : AppBase
    {
-      private Action<string, string, string> _operation {get; set;}
-      public Command Command {get; set;}
-      public OriginalSeriesCli(Action<string, string, string> operation)
+      private OriginalSeriesApp()
       {
-         _operation = operation;
-         Command = new Command("OriginalSeries");
-         kirkOption = new Option<string>("kirk");
-         Command.Add(kirkOption);
-         spockOption = new Option<string>("spock");
-         Command.Add(spockOption);
-         uhuraOption = new Option<string>("uhura");
-         Command.Add(uhuraOption);
-         Command.Handler = this;
       }
-      public Option<string> kirkOption {get; set;}
-      public string kirkOptionResult(InvocationContext context)
+      public OriginalSeriesCommand RootCommand {get; set;}
+      public static new OriginalSeriesApp Create(Delegate codeToRun)
       {
-         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(kirkOption);
+         var newApp = new OriginalSeriesApp();
+         newApp.RootCommand = OriginalSeriesCommand.Create();
+         return newApp;
       }
-      public Option<string> spockOption {get; set;}
-      public string spockOptionResult(InvocationContext context)
+   }
+   
+   public partial class OriginalSeriesCommand : CliRootCommand, ICommandHandler
+   {
+      private OriginalSeriesCommand()
       {
-         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(spockOption);
       }
-      public Option<string> uhuraOption {get; set;}
-      public string uhuraOptionResult(InvocationContext context)
+      public static OriginalSeriesCommand Create()
       {
-         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(uhuraOption);
+         var command = new OriginalSeriesCommand();
+         command.GreetingOption = new Option<string>("greeting");
+         command.Add(command.GreetingOption);
+         command.KirkOption = new Option<bool>("kirk");
+         command.Add(command.KirkOption);
+         command.SpockOption = new Option<bool>("spock");
+         command.Add(command.SpockOption);
+         command.UhuraOption = new Option<bool>("uhura");
+         command.Add(command.UhuraOption);
+         command.NextGeneration = NextGenerationCommand.Create();
+         command.Add(command.NextGeneration);
+         command.Handler = command;
+         return command;
       }
-      public CommandBase NextGeneration {get; set;}
-      public Task<int> InvokeAsync()
+      public Option<string> GreetingOption {get; set;}
+      public string GreetingOptionResult(InvocationContext context)
       {
-         ._operation(.kirkOptionResult(context), .spockOptionResult(context), .uhuraOptionResult(context));
+         return context.ParseResult.GetValueForOption<string>(GreetingOption);
+      }
+      public Option<bool> KirkOption {get; set;}
+      public bool KirkOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<bool>(KirkOption);
+      }
+      public Option<bool> SpockOption {get; set;}
+      public bool SpockOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<bool>(SpockOption);
+      }
+      public Option<bool> UhuraOption {get; set;}
+      public bool UhuraOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<bool>(UhuraOption);
+      }
+      public NextGenerationCommand NextGeneration {get; set;}
+      public Task<int> InvokeAsync(InvocationContext context)
+      {
+         Prototype.Handlers.OriginalSeries(GreetingOptionResult(context), KirkOptionResult(context), SpockOptionResult(context), UhuraOptionResult(context));
          return Task.FromResult(context.ExitCode);
       }
    }
    
-   public partial class NextGenerationCli : ICommandHandler
+   public partial class NextGenerationCommand : CliCommand, ICommandHandler
    {
-      private Action<string> _operation {get; set;}
-      public Command Command {get; set;}
-      public NextGenerationCli(Action<string> operation)
+      private NextGenerationCommand()
+      : base("NextGeneration")
       {
-         _operation = operation;
-         Command = new Command("NextGeneration");
-         picardOption = new Option<string>("picard");
-         Command.Add(picardOption);
-         Command.Handler = this;
       }
-      public Option<string> picardOption {get; set;}
-      public string picardOptionResult(InvocationContext context)
+      public static NextGenerationCommand Create()
       {
-         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(picardOption);
+         var command = new NextGenerationCommand();
+         command.GreetingOption = new Option<string>("greeting");
+         command.Add(command.GreetingOption);
+         command.PicardOption = new Option<bool>("picard");
+         command.Add(command.PicardOption);
+         command.Voyager = VoyagerCommand.Create();
+         command.Add(command.Voyager);
+         command.Handler = command;
+         return command;
       }
-      public CommandBase Voyager {get; set;}
-      public Task<int> InvokeAsync()
+      public Option<string> GreetingOption {get; set;}
+      public string GreetingOptionResult(InvocationContext context)
       {
-         ._operation(.picardOptionResult(context));
+         return context.ParseResult.GetValueForOption<string>(GreetingOption);
+      }
+      public Option<bool> PicardOption {get; set;}
+      public bool PicardOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<bool>(PicardOption);
+      }
+      public VoyagerCommand Voyager {get; set;}
+      public Task<int> InvokeAsync(InvocationContext context)
+      {
+         Prototype.Handlers.NextGeneration(GreetingOptionResult(context), PicardOptionResult(context));
          return Task.FromResult(context.ExitCode);
       }
    }
    
-   public partial class VoyagerCli : ICommandHandler
+   public partial class VoyagerCommand : CliCommand, ICommandHandler
    {
-      private Action<string, string, string, bool, string> _operation {get; set;}
-      public Command Command {get; set;}
-      public VoyagerCli(Action<string, string, string, bool, string> operation)
+      private VoyagerCommand()
+      : base("Voyager")
       {
-         _operation = operation;
-         Command = new Command("Voyager");
-         janewayOption = new Option<string>("janeway");
-         Command.Add(janewayOption);
-         chakotayOption = new Option<string>("chakotay");
-         Command.Add(chakotayOption);
-         torresOption = new Option<string>("torres");
-         Command.Add(torresOption);
-         tuvokOption = new Option<bool>("tuvok");
-         Command.Add(tuvokOption);
-         sevenOfNineOption = new Option<string>("sevenOfNine");
-         Command.Add(sevenOfNineOption);
-         Command.Handler = this;
       }
-      public Option<string> janewayOption {get; set;}
-      public string janewayOptionResult(InvocationContext context)
+      public static VoyagerCommand Create()
       {
-         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(janewayOption);
+         var command = new VoyagerCommand();
+         command.GreetingOption = new Option<string>("greeting");
+         command.Add(command.GreetingOption);
+         command.JanewayOption = new Option<bool>("janeway");
+         command.Add(command.JanewayOption);
+         command.ChakotayOption = new Option<bool>("chakotay");
+         command.Add(command.ChakotayOption);
+         command.TorresOption = new Option<bool>("torres");
+         command.Add(command.TorresOption);
+         command.TuvokOption = new Option<bool>("tuvok");
+         command.Add(command.TuvokOption);
+         command.SevenOfNineOption = new Option<bool>("sevenOfNine");
+         command.Add(command.SevenOfNineOption);
+         command.Handler = command;
+         return command;
       }
-      public Option<string> chakotayOption {get; set;}
-      public string chakotayOptionResult(InvocationContext context)
+      public Option<string> GreetingOption {get; set;}
+      public string GreetingOptionResult(InvocationContext context)
       {
-         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(chakotayOption);
+         return context.ParseResult.GetValueForOption<string>(GreetingOption);
       }
-      public Option<string> torresOption {get; set;}
-      public string torresOptionResult(InvocationContext context)
+      public Option<bool> JanewayOption {get; set;}
+      public bool JanewayOptionResult(InvocationContext context)
       {
-         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(torresOption);
+         return context.ParseResult.GetValueForOption<bool>(JanewayOption);
       }
-      public Option<bool> tuvokOption {get; set;}
-      public bool tuvokOptionResult(InvocationContext context)
+      public Option<bool> ChakotayOption {get; set;}
+      public bool ChakotayOptionResult(InvocationContext context)
       {
-         return context.ParseResult.GetValueForOption<SimpleNamedItem "bool">(tuvokOption);
+         return context.ParseResult.GetValueForOption<bool>(ChakotayOption);
       }
-      public Option<string> sevenOfNineOption {get; set;}
-      public string sevenOfNineOptionResult(InvocationContext context)
+      public Option<bool> TorresOption {get; set;}
+      public bool TorresOptionResult(InvocationContext context)
       {
-         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(sevenOfNineOption);
+         return context.ParseResult.GetValueForOption<bool>(TorresOption);
       }
-      public Task<int> InvokeAsync()
+      public Option<bool> TuvokOption {get; set;}
+      public bool TuvokOptionResult(InvocationContext context)
       {
-         ._operation(.janewayOptionResult(context), .chakotayOptionResult(context), .torresOptionResult(context), .tuvokOptionResult(context), .sevenOfNineOptionResult(context));
+         return context.ParseResult.GetValueForOption<bool>(TuvokOption);
+      }
+      public Option<bool> SevenOfNineOption {get; set;}
+      public bool SevenOfNineOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<bool>(SevenOfNineOption);
+      }
+      public Task<int> InvokeAsync(InvocationContext context)
+      {
+         Prototype.Handlers.Voyager(GreetingOptionResult(context), JanewayOptionResult(context), ChakotayOptionResult(context), TorresOptionResult(context), TuvokOptionResult(context), SevenOfNineOptionResult(context));
          return Task.FromResult(context.ExitCode);
       }
    }

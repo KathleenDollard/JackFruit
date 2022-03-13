@@ -19,6 +19,7 @@ open Generator.ExplicitAdd.ExplicitAddMapping
 open Microsoft.CodeAnalysis
 open Common
 open Generator.ExplicitAdd
+open Generator.Models
 
 
 //NOTE: We are testing against a facsimile of AppBase because using reference assemblies is a PITB
@@ -35,17 +36,15 @@ type ``For Command Name Patterns, you can ``() =
         }}" 
         let source = CliWrapperCode statements
         let tree = CSharpSyntaxTree.ParseText(source)
-        let semanticModelResult = GetSemanticModelFromFirstTree [tree]
-        match semanticModelResult with
-        | Ok semanticModel ->  GetNamePatterns AppBase.DefaultPatterns evalLang semanticModel
-        | Error err -> invalidOp $"Error building test code: {err}"
+        GetNamePatterns AppBase.DefaultPatterns evalLang tree
 
     [<Fact>]
-    // KAD-Don: There is an issue here with ambiguity between a 'T and an IEnumerable<'T> overload without the explicit generic
+    // KAD: MAKE AN ISSUE: There is an issue here with ambiguity between a 'T and an IEnumerable<'T> overload without the explicit generic
     member _.``Add a pattern``() =
         let actual = GetPatterns @"AppBase.AddCommandNamePattern(""Cmd*"");"
         let expected = AppBase.DefaultPatterns @ ["Cmd*"]
         Assert.Equal<IEnumerable<string>>(expected, actual)
+        //Assert.Equal(expected, actual)
 
     [<Fact>]
     member _.``Remove a pattern``() =
@@ -78,28 +77,28 @@ type ``For Command Name Patterns, you can ``() =
 type ``When parsing ExplicitAdds``() =
      [<Fact>]
      static member internal ``Ancestors found for empty ExplicitAdd``() =
-         let actual = ParseExplicitAddInfo "\"\"" None "current"
+         let actual = ParseExplicitAddInfo "\"\"" NoSymbolFound "current"
          let expected = 
             { ExplicitAddInfo.Path = ["current"]
-              Handler = None }
+              Handler = NoSymbolFound }
 
          Assert.Equal(expected, actual)
  
      [<Fact>]
      member _.``Ancestors found for simple ExplicitAdd``() =
-         let actual = ParseExplicitAddInfo "\"app.first\"" None "current"
+         let actual = ParseExplicitAddInfo "\"app.first\"" NoSymbolFound "current"
          let expected = 
             { Path = ["first"; "current"]
-              Handler = None }
+              Handler = NoSymbolFound }
  
          Assert.Equal(expected, actual)
 
      [<Fact>]
      member _.``Ancestors found for multi-level ExplicitAdd``() =
-         let actual = ParseExplicitAddInfo "\"app.first.second.third\"" None "current"
+         let actual = ParseExplicitAddInfo "\"app.first.second.third\"" NoSymbolFound "current"
          let expected = 
             { Path = [ "first"; "second"; "third"; "current"]
-              Handler = None }
+              Handler = NoSymbolFound }
  
          Assert.Equal(expected, actual)
 
@@ -112,20 +111,26 @@ type ``When creating ExplicitAddInfo from mapping``() =
                 archInfo.Path |> List.last ]
 
         //let commandNamesFromModel semanticModel=
-        //    GetPathAndHandler ["AddRootCommand"] eval semanticModel
+        //    GetPathAndHandler ["CreateWithRootCommand"] eval semanticModel
         //    |> Result.bind (mergeWith (GetPathAndHandler ["AddSubCommand"] eval semanticModel))
         //    |> Result.bind (ExplicitAddInfoListFrom eval)
         //    |> Result.map getCommandNames
 
-        let commandNamesFromModel semanticModel=
-            eval.InvocationsFromModel ["AddRootCommand"] semanticModel
-            |> Result.bind (MergeWith (eval.InvocationsFromModel ["AddSubCommand"] semanticModel))
-            |> Result.bind (ExplicitAddInfoListFrom eval semanticModel)
+        let commandNamesFromModel syntaxTree compilation =
+            eval.InvocationsFromSyntaxTree ["CreateWithRootCommand"] syntaxTree
+            |> Result.bind (MergeWith (eval.InvocationsFromSyntaxTree ["AddSubCommand"] syntaxTree))
+            |> Result.bind (ExplicitAddInfoListFrom eval compilation)
             |> Result.map getCommandNames
 
         let result = 
-            match ModelFrom [(CSharpCode source)] with
-            | Ok semanticModel -> Ok (commandNamesFromModel semanticModel)
+            let treeResult = SyntaxTreesFrom [(CSharpCode source)]
+            let tree =
+                match treeResult with 
+                | Ok m -> m.Head
+                | Error err -> invalidOp $"Test failed during SyntaxtTree creation with {err}"
+
+            match CompilationFrom [(CSharpTree tree)] with
+            | Ok compilation -> Ok (commandNamesFromModel tree compilation)
             | Error err -> Error err
             
  
@@ -169,44 +174,64 @@ type ``For command definitons, you can``() =
     let evalLang = EvalCSharp()
 
     let TestPath source methodName expected =
-        let semanticModel = GetSemanticModel source
-        let invocationsResult = eval.InvocationsFromModel methodName semanticModel
+        let treeResult = SyntaxTreesFrom [(CSharpCode source)]
+        let tree =
+            match treeResult with 
+            | Ok m -> m.Head
+            | Error err -> invalidOp $"Test failed during SyntaxtTree creation with {err}"
+
+        let invocationsResult = eval.InvocationsFromSyntaxTree methodName tree
         let invocations =
             match invocationsResult with
             | Ok inv -> inv
             | Error err -> invalidOp "Error finding invocations"
-        let infoList = GetCommandInfoList evalLang semanticModel invocations
+
+        let compilation =
+            match CompilationFrom [(CSharpTree tree)] with
+            | Ok compilation -> compilation
+            | Error err ->invalidOp "Error making compilation"
+
+        let infoList = GetCommandInfoList evalLang compilation invocations
         let actual = 
             [ for info in infoList do 
                 info.Path]
-        // KAD-Don-Chet: I did not find a sane way to do the following
+        // KAD-Chet: I did not find an easkir  way to do the following
         let zip = List.zip actual expected
         for pair in zip do
             match pair with 
             | act, exp -> Assert.Equal<IEnumerable<string>>(exp, act)
     
     let TestHandler source methodName expected =
-        let semanticModel = GetSemanticModel source
-        let invocationsResult = eval.InvocationsFromModel methodName semanticModel
+        let treeResult = SyntaxTreesFrom [(CSharpCode source)]
+        let tree =
+            match treeResult with 
+            | Ok m -> m.Head
+            | Error err -> invalidOp $"Test failed during SyntaxtTree creation with {err}"
+
+        let invocationsResult = eval.InvocationsFromSyntaxTree methodName tree
         let invocations =
             match invocationsResult with
             | Ok inv -> inv
             | Error err -> invalidOp "Error finding invocations"
-        let infoList = GetCommandInfoList evalLang semanticModel invocations
-        let actual = 
-            [ for info in infoList do 
-                match info.Handler with
-                | Some handler -> MethodSymbolFromMethodCall semanticModel handler
-                | None -> Assert.Fail("Handler missing")]
+
+        let compilation =
+            match CompilationFrom [(CSharpTree tree)] with
+            | Ok compilation -> compilation
+            | Error err ->invalidOp "Error making compilation"
+
+        let actual = GetCommandInfoList evalLang compilation invocations
         let zip = List.zip actual expected
-        for pair in zip do
-            match pair with
-            | Some act, exp -> Assert.Equal(exp, act.Name)
-            | None, _ -> Assert.Fail("Handler missing")
+        for (act, exp) in zip do
+            let methodName =
+                match act.Handler with
+                | MethodSymbol m -> m.Name
+                | NoSymbolFound -> invalidOp "Method symbol not found in test"
+
+            Assert.Equal(exp, methodName)
 
     [<Fact>]
     member _.``Extract the path members for a command``() =
-        TestPath OneMapping.CliCode ["AddRootCommand"] [ ["NextGeneration"] ]
+        TestPath OneMapping.CliCode ["CreateWithRootCommand"] [ ["NextGeneration"] ]
 
     [<Fact>]
     member _.``Extract the path members for a subcommand``() =
@@ -216,7 +241,7 @@ type ``For command definitons, you can``() =
 
     [<Fact>]
     member _.``Extract the handler for a command``() =
-        TestHandler OneMapping.CliCode ["AddRootCommand"] [ "NextGeneration"]
+        TestHandler OneMapping.CliCode ["CreateWithRootCommand"] [ "NextGeneration"]
 
 
     [<Fact>]
@@ -230,13 +255,13 @@ type ToCompare =
 type ``When building CommandDefs from explicit AddCommands, you can``() =
     let evalLang = EvalCSharp()
 
-    let InputTree semanticModel methodName =
-        let invocationsResult = eval.InvocationsFromModel methodName semanticModel
+    let InputTree syntaxTree compilation methodName =
+        let invocationsResult = eval.InvocationsFromSyntaxTree methodName syntaxTree
         let invocations =
             match invocationsResult with
             | Ok inv -> inv
             | Error err -> invalidOp "Error finding invocations"
-        let infoList = GetCommandInfoList evalLang semanticModel invocations
+        let infoList = GetCommandInfoList evalLang compilation invocations
         let result = ExplicitAddInfoTreeFrom infoList
         match result with
         | Ok tree -> tree
@@ -251,11 +276,15 @@ type ``When building CommandDefs from explicit AddCommands, you can``() =
         | None -> invalidOp "Handler missing"
          
 
-    let CompareWithTree semanticModel (expected: TreeNodeType<ToCompare>) (actual: TreeNodeType<ExplicitAddInfo>) =
+    let CompareWithTree (expected: TreeNodeType<ToCompare>) (actual: TreeNodeType<ExplicitAddInfo>) =
         let rec recurse depth exp (act: TreeNodeType<ExplicitAddInfo>) =
             if depth > 20 then invalidOp "Possible runaway recursion"
             Assert.Equal<IEnumerable<string>>(exp.Data.Path, act.Data.Path)
-            Assert.Equal<string>(exp.Data.HandlerName, (GetHandlerName semanticModel act.Data.Handler))
+            let methodName =
+                match act.Data.Handler with
+                | MethodSymbol m -> m.Name
+                | NoSymbolFound -> invalidOp "Symbol not found in test"
+            Assert.Equal<string>(exp.Data.HandlerName, methodName)
             let zip = List.zip exp.Children act.Children
             for (e, a) in zip do
                 recurse (depth + 1) e a
@@ -263,10 +292,20 @@ type ``When building CommandDefs from explicit AddCommands, you can``() =
         recurse 0 expected actual
 
     let TestTree methodName source expected =
-        let semanticModel = GetSemanticModel source
-        let trees = InputTree semanticModel methodName
+        let treeResult = SyntaxTreesFrom [(CSharpCode source)]
+        let tree =
+            match treeResult with 
+            | Ok m -> m.Head
+            | Error err -> invalidOp $"Test failed during SyntaxtTree creation with {err}"
+
+        let compilation =
+            match CompilationFrom [(CSharpTree tree)] with
+            | Ok compilation -> compilation
+            | Error err ->invalidOp "Error making compilation"
+
+        let trees = InputTree tree compilation methodName
         for tree in trees do
-            CompareWithTree semanticModel expected tree
+            CompareWithTree expected tree
         trees
 
     [<Fact>]
@@ -274,7 +313,7 @@ type ``When building CommandDefs from explicit AddCommands, you can``() =
         let expected =
             { Data = { Path = [ "NextGeneration"]; HandlerName = "NextGeneration" }
               Children = [] }
-        let trees = TestTree ["AddRootCommand"] OneMapping.CliCode expected
+        let trees = TestTree ["CreateWithRootCommand"] OneMapping.CliCode expected
         Assert.NotNull(trees[0].Data.Handler)
 
     [<Fact>]
@@ -286,4 +325,4 @@ type ``When building CommandDefs from explicit AddCommands, you can``() =
                     Children = 
                         [ { Data = { Path = [ "OriginalSeries"; "NextGeneration"; "Voyager"]; HandlerName = "Voyager" }
                             Children = [] }] } ] }
-        TestTree ["AddRootCommand"; "AddSubCommand"] ThreeMappings.CliCode expected
+        TestTree ["CreateWithRootCommand"; "AddSubCommand"] ThreeMappings.CliCode expected

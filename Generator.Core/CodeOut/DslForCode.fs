@@ -222,12 +222,12 @@ type Field(name: string, typeName: NamedItem) =
 
     [<CustomOperation("InitialValue", MaintainsVariableSpace = true)>]
     member this.initialValue ((varModel: M<IMember, 'Vars0>), [<ProjectionParameter>] initialValue) =
-        let initialValue: string = initialValue varModel.Variables
+        let initialValue: IExpression = initialValue varModel.Variables
         let fld = varModel.Model :?> FieldModel 
-        this.SetModel varModel { fld with InitialValue = Some (Literal initialValue) }
+        this.SetModel varModel { fld with InitialValue = Some initialValue }
  
 type Property(name: string, typeName: NamedItem) =
-    inherit DslBase<IMember, unit>()
+    inherit DslBase<IMember, PropertyAccessorModel>()
 
     member private this.SetScopeAndModifiers 
             (varModel: M<IMember, 'Vars0>) 
@@ -244,15 +244,25 @@ type Property(name: string, typeName: NamedItem) =
     override _.Empty() =  PropertyModel.Create name typeName
 
     override _.CombineModels mbr1 mbr2 = 
+        let combineAccessors (acc1: PropertyAccessorModel option) (acc2: PropertyAccessorModel option) = 
+            match acc1, acc2 with
+            | None, None -> None
+            | Some x , None -> Some x
+            | None, Some x -> Some x
+            | Some a1, Some a2 -> 
+                let scope =
+                    match a1.Scope, a2.Scope with 
+                    | Unknown, Unknown -> Unknown
+                    | Unknown, s -> s
+                    | s, Unknown -> s
+                    | s, _ -> s
+                Some 
+                    { PropertyAccessorModel.Scope = scope
+                      AccessorType = a1.AccessorType
+                      Statements = a1.Statements @ a2.Statements }
+
         let prop1 = mbr1 :?> PropertyModel
         let prop2 = mbr2 :?> PropertyModel
-        //let newName = 
-        //    if String.IsNullOrWhiteSpace(prop1.PropertyName) then prop1.PropertyName
-        //    else prop2.PropertyName
-        //let newType = 
-        //    match prop1.Type with
-        //    | SimpleNamedItem n when String.IsNullOrWhiteSpace(n) -> prop2.Type
-        //    | _ -> prop1.Type
         let newScope = 
             match prop1.Scope with 
             | Unknown -> prop2.Scope
@@ -262,12 +272,16 @@ type Property(name: string, typeName: NamedItem) =
             Type = prop1.Type // Always set via constructor
             Scope = newScope
             Modifiers = List.append prop1.Modifiers prop2.Modifiers
-            GetStatements = prop1.GetStatements @ prop2.GetStatements
-            SetStatements = prop1.SetStatements @ prop2.SetStatements}  
+            Getter = combineAccessors prop1.Getter prop2.Getter
+            Setter = combineAccessors prop1.Setter prop2.Setter }
 
- 
-    // Need work an Set and Get before this works
-    override this.NewMember item = invalidOp "Not yet implemented"
+    // Need work an Set and Get and initialize before this works
+    override this.NewMember item = 
+        let property = this.Empty() :?> PropertyModel
+        if item.AccessorType = Getter then  
+            { property with Getter = Some item }
+        else
+            { property with Setter = Some item }
 
     [<CustomOperation("Public2", MaintainsVariableSpaceUsingBind = true)>]
     member this.setPublic(varModel: M<IMember, 'Vars0>, ?modifier1: Modifier, ?modifier2: Modifier) =
@@ -296,7 +310,61 @@ type Property(name: string, typeName: NamedItem) =
     [<CustomOperation("PrivateProtected", MaintainsVariableSpaceUsingBind = true)>]
     member this.setPrivateProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
          this.SetScopeAndModifiers varModel Scope.PrivateProtected modifier1 modifier2
-  
+
+type Get() =
+    inherit StatementBuilderBase<PropertyAccessorModel>()
+
+    member private this.SetScope 
+           (varModel: M<PropertyAccessorModel, 'Vars0>) 
+           (scope: Scope) =
+       let getter = varModel.Model
+       let newGetter: PropertyAccessorModel = 
+           { getter with Scope = scope }
+       this.SetModel varModel newGetter
+
+    override _.Empty() =  PropertyAccessorModel.Create(Getter)
+
+    override _.CombineModels acc1 acc2 = 
+        let newScope = 
+            match acc1.Scope with 
+            | Unknown -> acc2.Scope
+            | _ -> acc1.Scope  
+        { acc1 with 
+            Scope = newScope
+            Statements = acc1.Statements @ acc2.Statements}
+
+    override this.NewMember item =
+        let method = this.Empty() 
+        { method with Statements = [ item ] }
+
+    [<CustomOperation("Public2", MaintainsVariableSpaceUsingBind = true)>]
+    member this.setPublic(varModel: M<PropertyAccessorModel, 'Vars0>, ?modifier1: Modifier, ?modifier2: Modifier) =
+       this.SetScope varModel Scope.Public
+
+    [<CustomOperation("Private", MaintainsVariableSpaceUsingBind = true)>]
+    member this.setPrivate (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetScope varModel Scope.Private
+ 
+    [<CustomOperation("Internal", MaintainsVariableSpaceUsingBind = true)>]
+    member this.setInternal (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetScope varModel Scope.Internal
+ 
+    [<CustomOperation("Friend", MaintainsVariableSpaceUsingBind = true)>]
+    member this.setFriend (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetScope varModel Scope.Internal
+ 
+    [<CustomOperation("Protected", MaintainsVariableSpaceUsingBind = true)>]
+    member this.setProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetScope varModel Scope.Protected
+ 
+    [<CustomOperation("ProtectedInternal", MaintainsVariableSpaceUsingBind = true)>]
+    member this.setProtectedInternal (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetScope varModel Scope.ProtectedInternal
+ 
+    [<CustomOperation("PrivateProtected", MaintainsVariableSpaceUsingBind = true)>]
+    member this.setPrivateProtected (varModel, ?modifier1: Modifier, ?modifier2: Modifier) =
+        this.SetScope varModel Scope.PrivateProtected
+
 type Method(name: string) =
     inherit MethodBase<IMember>()
 
@@ -336,7 +404,6 @@ type Method(name: string) =
             Modifiers = method1.Modifiers@  method2.Modifiers
             Parameters = method1.Parameters @ method2.Parameters
             Statements = method1.Statements @ method2.Statements}  
-
 
     override this.NewMember item =
         let method = this.Empty() :?> MethodModel
@@ -420,7 +487,6 @@ type Constructor() =
         let method = this.Empty() :?> ConstructorModel
         { method with Statements = [ item ] }
 
-    // KAD-Don: I believe this builder must be of type IMember. I cannot get the following correct
     [<CustomOperation("Public2", MaintainsVariableSpaceUsingBind = true)>]
     member this.setPublic(varModel: M<IMember, 'Vars0>, ?modifier1: Modifier, ?modifier2: Modifier) =
        this.SetScopeAndModifiers varModel Scope.Public modifier1 modifier2
@@ -456,6 +522,16 @@ type Constructor() =
         let newParameter = this.NewParameter parameterName parameterType style
         this.SetModel varModel (method.AddParameter newParameter)
   
+    [<CustomOperation("Base", MaintainsVariableSpaceUsingBind = true)>]
+    member this.setBase ((varModel: M<IMember, 'Vars0>), (arguments: IExpression list))   =
+        let ctor = varModel.Model :?> ConstructorModel 
+        this.SetModel varModel (ctor.AddBaseOrThis Base arguments)
+  
+    [<CustomOperation("This", MaintainsVariableSpaceUsingBind = true)>]
+    member this.seThis ((varModel: M<IMember, 'Vars0>), (arguments: IExpression list))   =
+        let ctor = varModel.Model :?> ConstructorModel 
+        this.SetModel varModel (ctor.AddBaseOrThis This arguments)
+
 
 type If(condition: ICompareExpression) =
     inherit StatementBuilderBase<IStatement>()

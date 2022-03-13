@@ -128,8 +128,8 @@ type PropertyModel with
               Type = NamedItem.Create("MyReturnType", [])
               Scope = Public
               Modifiers = []
-              GetStatements = []
-              SetStatements = [] }
+              Getter = Some (PropertyAccessorModel.Create(Getter))
+              Setter = Some (PropertyAccessorModel.Create(Setter)) }
 
         { Data = data
           CSharpOpen = [ "public MyReturnType MyProperty"; "{"]

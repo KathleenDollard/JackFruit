@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Temp1": {
+      "commandName": "Project",
+      "commandLineArgs": "uhura"
+    }
+  }
+}

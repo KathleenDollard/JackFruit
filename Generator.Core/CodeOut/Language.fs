@@ -14,21 +14,21 @@ type Modifier =
     | Abstract
     | Sealed
     | Readonly
+    | HideByName
     static member Contains modifier list =
         List.exists (fun x -> x = modifier) list
     static member CombineModifiers (modifier1: Modifier option) (modifier2: Modifier option) =
         [ match modifier1 with | Some m -> m | None -> ()
           match modifier2 with | Some m -> m | None -> () ]        
 
-
-
-        
 type ParameterStyle =
     | Normal
     | DefaultValue of IExpression
     | IsParamArray
 
-
+type BaseOrThis =
+    | Base
+    | This
 
 type IMember = interface end
 type IStatementLike = interface end
@@ -106,24 +106,29 @@ type MethodModel =
             this.AddParameter parameterModel
         member this.AddReturnType returnType = 
             this.AddReturnType returnType
-     
+
+type BaseOrThisInvocation =
+    { BaseOrThis: BaseOrThis
+      Arguments: IExpression list }
  
 type ConstructorModel =
     { Scope: Scope
       Modifiers: Modifier list
       Parameters: ParameterModel list
+      BaseOrThisInvocation:  BaseOrThisInvocation option
       Statements: IStatement list}
     static member Create() =
         { Scope = Public
           Modifiers = []
           Parameters = []
+          BaseOrThisInvocation = None
           Statements = [] }
-    // TODO: Remove the following overload when it won't break too much
-    static member Create (className) =
-        { Scope = Public
-          Modifiers = []
-          Parameters = []
-          Statements = [] }
+    //// TODO: Remove the following overload when it won't break too much
+    //static member Create (className) =
+    //    { Scope = Public
+    //      Modifiers = []
+    //      Parameters = []
+    //      Statements = [] }
     interface IMember
     member this.AddStatements statements =
         { this with Statements = statements }
@@ -131,6 +136,8 @@ type ConstructorModel =
         { this with Scope = scopeAndModifiers.Scope; Modifiers = scopeAndModifiers.Modifiers }
     member this.AddParameter parameterModel = 
         { this with Parameters = List.append this.Parameters [parameterModel] }
+    member this.AddBaseOrThis baseOrThis arguments =
+        { this with BaseOrThisInvocation = Some { BaseOrThis = baseOrThis; Arguments = arguments} }
     interface IMethodLike<ConstructorModel> with
         member this.AddStatements statements = this.AddStatements statements
         member this.AddScopeAndModifiers scopeAndModifiers = this.AddScopeAndModifiers scopeAndModifiers
@@ -140,20 +147,36 @@ type ConstructorModel =
             this  // no op
 
 
+type AccessorType = 
+    | Getter
+    | Setter
+
+type PropertyAccessorModel =
+    { Scope: Scope
+      AccessorType: AccessorType
+      Statements: IStatement list}
+    interface IMember
+    member this.AddScope (scope: Scope) = 
+        { this with Scope = scope }
+    member this.AddStatements statements =
+        { this with Statements = statements }
+    static member Create(accessorType) = 
+        { Scope = Unknown; AccessorType = accessorType; Statements = [] }
+
 type PropertyModel =
     { PropertyName: string
       Type: NamedItem
       Scope: Scope
       Modifiers: Modifier list
-      GetStatements: IStatement list
-      SetStatements: IStatement list}
+      Getter: PropertyAccessorModel option
+      Setter: PropertyAccessorModel option }
     static member Create propertyName propertyType =
         { PropertyName = propertyName
           Type = propertyType
           Scope = Public
           Modifiers = []
-          GetStatements = []
-          SetStatements = [] }
+          Getter = None
+          Setter = None }
     interface IMember
     member this.AddScopeAndModifiers (scopeAndModifiers: ScopeAndModifiers) = 
         { this with Scope = scopeAndModifiers.Scope; Modifiers = scopeAndModifiers.Modifiers }

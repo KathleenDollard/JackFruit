@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ConsoleSupport\ConsoleSupport.fsproj" />
+    <ProjectReference Include="..\DemoHandlers\DemoHandlers.csproj" />
+    <!--<ProjectReference Include="..\JackFruitAppModel.CSharp\JackfruitAppModel.CSharp.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=netstandard2.0" />-->
+  </ItemGroup>
+
+</Project>

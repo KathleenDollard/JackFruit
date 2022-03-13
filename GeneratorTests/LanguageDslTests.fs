@@ -21,8 +21,6 @@ type ``Create namespaces with``() =
         let expected = { NamespaceName = namespaceName
                          Usings = [ UsingModel.Create usingName ]
                          Classes = [] }
-        // KAD-Don: Uncomment the empty string here when DSL can overload
-        // KAD-Don: The return here is the wrapped model. While I understand why, it's problematic
         let actual =
             Namespace(namespaceName) { 
                 Using usingName }
@@ -51,7 +49,7 @@ type ``Create namespaces with``() =
               Classes = [ ClassModel.Create(className, Public) ] }
         let actual =
             Namespace(namespaceName) { 
-            // KAD-Don: Nesting builders doesn't seem to work here
+                // KAD-Don: Are empty CEs just not practical
                 Class(className) {
                     Public2 } }
         Assert.Equal(expected, actual.Model)

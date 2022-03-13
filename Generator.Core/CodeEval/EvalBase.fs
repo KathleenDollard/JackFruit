@@ -8,11 +8,11 @@ type EvalBase(language: string) =
     member _.Language = language
 
     abstract member StringFrom: SyntaxNode -> Result<string, AppErrors> 
-    abstract member InvocationsFromModel: names: string list -> semanticModel: SemanticModel -> Result<(string * SyntaxNode list) list, AppErrors> 
+    abstract member InvocationsFromSyntaxTree: names: string list -> syntaxTree: SyntaxTree -> Result<(string * SyntaxNode list) list, AppErrors> 
     abstract member MethodSymbolFromMethodCall: model: SemanticModel -> expression: SyntaxNode -> IMethodSymbol option
     abstract member ExpressionFrom: node: SyntaxNode -> Result<SyntaxNode, AppErrors>
     abstract member IsNullLiteral: expression: SyntaxNode -> bool
-
+    abstract member NamespaceFromdDescendant: node: SyntaxNode -> semanticModel: SemanticModel -> string
 
 //let rec StringFrom (syntaxNode: CSharpSyntaxNode) =
 //    match syntaxNode with

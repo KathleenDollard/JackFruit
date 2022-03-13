@@ -2,19 +2,47 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
-namespace CliDefinition
+using CommandBase;
+using CliApp;
+namespace CliApp
 {
    
-   public class ACli
+   internal partial class AApp : AppBase
    {
-      public Command Command {get; set;}
-      public ACli()
+      private AApp()
       {
-         Command = new Command("A");
-         oneOption = new Option<string>("one");
-         Command.Add(oneOption);
-         Command.SetHandler(MyCommand, oneOption);
       }
-      public Option<string> oneOption {get; set;}
+      public ACommand RootCommand {get; set;}
+      public static new AApp Create(Delegate codeToRun)
+      {
+         var newApp = new AApp();
+         newApp.RootCommand = ACommand.Create();
+         return newApp;
+      }
+   }
+   
+   public partial class ACommand : CliRootCommand, ICommandHandler
+   {
+      private ACommand()
+      {
+      }
+      public static ACommand Create()
+      {
+         var command = new ACommand();
+         command.OneOption = new Option<string>("one");
+         command.Add(command.OneOption);
+         command.Handler = command;
+         return command;
+      }
+      public Option<string> OneOption {get; set;}
+      public string OneOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<string>(OneOption);
+      }
+      public Task<int> InvokeAsync(InvocationContext context)
+      {
+         MyCommand(OneOptionResult(context));
+         return Task.FromResult(context.ExitCode);
+      }
    }
 }

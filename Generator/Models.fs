@@ -8,6 +8,11 @@ open Common
 open Generator.LanguageModel
 
 
+type RoslynSymbol =
+    // May support constructors and other things in the future
+    | MethodSymbol of Method: IMethodSymbol
+    | NoSymbolFound
+
 type ItemReturn<'T> =
 | NewValue of Value: 'T
 | UsePreviousValue
@@ -61,7 +66,7 @@ type MemberDefUsage =
     | ArbitraryMember
 
 type CommandDefUsage =
-    | UserMethod of Method: IMethodSymbol * SemanticModel: SemanticModel
+    | UserMethod of Method: IMethodSymbol
     // Set Handler is just to support the work Kevin Bost did in 2021. Might be deleted in future
     //| SetHandlerMethod of Method: IMethodSymbol * SemanticModel: SemanticModel * Symbol: Symbol
     | Arbitrary of Name: string // might just be used in testing
@@ -211,7 +216,7 @@ type MemberDef(memberId: string, commandDef: CommandDef, typeName: NamedItem, me
 
 
 /// The main structure for commands during transformations
-and CommandDef(commandId: string, path: string list, returnType: ReturnType, commandDefUsage: CommandDefUsage) =
+and CommandDef(commandId: string, path: string list, returnType: ReturnType, commandDefUsage: CommandDefUsage, appNamespace: string) =
 
     let pocket = Dictionary<string, obj>()
 
@@ -247,13 +252,13 @@ and CommandDef(commandId: string, path: string list, returnType: ReturnType, com
 
     member this.HandlerMethodName : string = 
         match commandDefUsage with 
-        | UserMethod (m, _) -> 
+        | UserMethod m -> 
             m.ToDisplayString().SubstringBefore("(", m.ToDisplayString())
         | Arbitrary n -> n
 
     member this.ParameterTypes : NamedItem list =
        match commandDefUsage with 
-        | UserMethod (m, _) -> 
+        | UserMethod m -> 
             [ for p in m.Parameters do 
                 NamedItem.Create (p.Type.ToDisplayString()) ]
         | Arbitrary n -> []
@@ -270,23 +275,23 @@ and CommandDef(commandId: string, path: string list, returnType: ReturnType, com
         with get, set
 
     /// Pocket is a property bag for the AppModel use. During structural 
-      /// setup there is generally additional information discovered that 
-      /// is needed by later transformers. Put that data in the pocket.
-      ///
-      /// Things are added to the Pocket by both the AppModel (such as details of the input) 
-      /// and by the generator (the MethodSymbol and the SemanticModel). Ideally
-      /// the order of transformer evaluation is strictly for precedence, and thus
-      /// it is not ideal for transformers to use the pocket to communicate because it
-      /// sets a transformer dependency order. But if transformers need to communicate
-      /// something that can't be set during structural eval, then OK. But don't steal
-      /// anything out of the pocket ;-)
-      ///
-      /// Open question: Pocket is currently a list of tuples. This seems kind of a half way
-      /// thing. Perhaps, either use a map, or use an object list, and allow the value
-      /// to often be retrieved via the type. And if we use a map, should it be the current
-      /// random string map, or a map based on a DU for expected items. ** Update: This open
-      /// question is somewhat less important with the redesign that made expected things 
-      /// part of the CommandDef and MemberDef rather than being in the pocket. 
+    /// setup there is generally additional information discovered that 
+    /// is needed by later transformers. Put that data in the pocket.
+    ///
+    /// Things are added to the Pocket by both the AppModel (such as details of the input) 
+    /// and by the generator (the MethodSymbol and the SemanticModel). Ideally
+    /// the order of transformer evaluation is strictly for precedence, and thus
+    /// it is not ideal for transformers to use the pocket to communicate because it
+    /// sets a transformer dependency order. But if transformers need to communicate
+    /// something that can't be set during structural eval, then OK. But don't steal
+    /// anything out of the pocket ;-)
+    ///
+    /// Open question: Pocket is currently a list of tuples. This seems kind of a half way
+    /// thing. Perhaps, either use a map, or use an object list, and allow the value
+    /// to often be retrieved via the type. And if we use a map, should it be the current
+    /// random string map, or a map based on a DU for expected items. ** Update: This open
+    /// question is somewhat less important with the redesign that made expected things 
+    /// part of the CommandDef and MemberDef rather than being in the pocket. 
     member _.Pocket
         with get(key) = 
             match pocket.TryGetValue key with
@@ -346,6 +351,12 @@ and CommandDef(commandId: string, path: string list, returnType: ReturnType, com
     member this.PathString =
         String.concat " " this.Path
 
-      
+    member _.AppNamespace = appNamespace
+        //match commandDefUsage with 
+        //| UserMethod (userMethod, _) ->
+        //    let containingClass = userMethod.ContainingType
+        //    containingClass.ContainingNamespace.ToString()
+        //| _ -> "CliApp"
+
 
 

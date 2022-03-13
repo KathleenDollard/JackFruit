@@ -14,7 +14,7 @@ open Generator
 type ExplicitAddGenerator() =
     inherit CliSourceGenerator<TreeNodeType<ExplicitAddInfo>>()
 
-    override _.GetAppModel synataxTrees semanticModel =
+    override _.GetAppModel() =
         AppModel(EvalVisualBasic())
 
 

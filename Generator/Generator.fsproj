@@ -21,7 +21,7 @@
 
 		<Compile Include="NewMapping.fs" />
 		<Compile Include="JackfruitHelpers.fs" />
-		<Compile Include="BuildCodeModel.fs" />
+		<!--<Compile Include="BuildCodeModel.fs" />-->
 		<!--<Compile Include="BuildCliCodeModel.fs" />-->
 		<Compile Include="BuildNewCliCodeModel.fs" />
 		<Compile Include="CliSourceGenerator.fs" />

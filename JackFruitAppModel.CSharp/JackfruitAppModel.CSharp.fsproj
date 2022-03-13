@@ -13,7 +13,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Include="ShimGenerator.fs" />
+	  <!--<Compile Include="ShimGenerator.fs" />-->
 	  <!--<Compile Include="GeneratorCSharp.fs" />-->
 	  <Compile Include="ExplicitAddGenerator.fs" />
 	</ItemGroup>

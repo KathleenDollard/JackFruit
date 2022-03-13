@@ -8,4 +8,8 @@
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.22057.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ConsoleSupport\ConsoleSupport.fsproj" />
+  </ItemGroup>
 </Project>

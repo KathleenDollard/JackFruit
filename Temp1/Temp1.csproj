@@ -4,13 +4,23 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <!--<Nullable>enable</Nullable>-->
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ConsoleSupport\ConsoleSupport.fsproj" />
     <ProjectReference Include="..\DemoHandlers\DemoHandlers.csproj" />
     <ProjectReference Include="..\JackFruitAppModel.CSharp\JackfruitAppModel.CSharp.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=netstandard2.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(MSBuildProjectDirectory)\.generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The .generated folder is excluded by default, but we want to show the items in Solution Explorer so we included it as None -->
+    <None Include=".generated\**" />
   </ItemGroup>
 
 </Project>

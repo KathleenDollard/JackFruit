@@ -2,29 +2,53 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
-namespace CliDefinition
+using CommandBase;
+using CliApp;
+namespace Prototype
 {
    
-   public partial class NextGenerationCli : ICommandHandler
+   internal partial class NextGenerationApp : AppBase
    {
-      private Action<string> _operation {get; set;}
-      public Command Command {get; set;}
-      public NextGenerationCli(Action<string> operation)
+      private NextGenerationApp()
       {
-         _operation = operation;
-         Command = new Command("NextGeneration");
-         picardOption = new Option<string>("picard");
-         Command.Add(picardOption);
-         Command.Handler = this;
       }
-      public Option<string> picardOption {get; set;}
-      public string picardOptionResult(InvocationContext context)
+      public NextGenerationCommand RootCommand {get; set;}
+      public static new NextGenerationApp Create(Delegate codeToRun)
       {
-         return context.ParseResult.GetValueForOption<SimpleNamedItem "string">(picardOption);
+         var newApp = new NextGenerationApp();
+         newApp.RootCommand = NextGenerationCommand.Create();
+         return newApp;
       }
-      public Task<int> InvokeAsync()
+   }
+   
+   public partial class NextGenerationCommand : CliRootCommand, ICommandHandler
+   {
+      private NextGenerationCommand()
       {
-         ._operation(.picardOptionResult(context));
+      }
+      public static NextGenerationCommand Create()
+      {
+         var command = new NextGenerationCommand();
+         command.GreetingOption = new Option<string>("greeting");
+         command.Add(command.GreetingOption);
+         command.PicardOption = new Option<bool>("picard");
+         command.Add(command.PicardOption);
+         command.Handler = command;
+         return command;
+      }
+      public Option<string> GreetingOption {get; set;}
+      public string GreetingOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<string>(GreetingOption);
+      }
+      public Option<bool> PicardOption {get; set;}
+      public bool PicardOptionResult(InvocationContext context)
+      {
+         return context.ParseResult.GetValueForOption<bool>(PicardOption);
+      }
+      public Task<int> InvokeAsync(InvocationContext context)
+      {
+         Prototype.Handlers.NextGeneration(GreetingOptionResult(context), PicardOptionResult(context));
          return Task.FromResult(context.ExitCode);
       }
    }

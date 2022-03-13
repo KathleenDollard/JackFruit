@@ -6,14 +6,17 @@ open Microsoft.CodeAnalysis
 open Common
 open Generator
 open System
+open System.Linq
+open Models
+
 
 type ExplicitAddInfo =
     { Path: string list 
-      Handler: SyntaxNode option }
+      Handler: RoslynSymbol }
 
 
 module ExplicitAddMapping =
-    let GetNamePatterns defaultPatterns (evalLanguage: EvalBase) semanticModel =
+    let GetNamePatterns defaultPatterns (evalLanguage: EvalBase) syntaxTree =
         // We are not checking the caller. If there is another use of these method name on another class
         // with a single string argument, we will use it as a pattern
 
@@ -27,15 +30,15 @@ module ExplicitAddMapping =
                 
                     // KAD-Don: This seems to be something I repeat. Do some stuff with results and then add 
                     //          to a list if it is all OK. Is there a way to shortcut this? I don't think I     
-                    //          can have a function that returns a value or unit.
+                    //          can have a function that returns a value or unit. It feels like a railway pattern, but not quite
                     match patternResult with
                     | Ok pattern -> pattern.Replace("\"", "")
                     | Error _ -> () 
                 | _ -> () ]
 
         let patternsFromInvocations methodName =
-            let invocations = evalLanguage.InvocationsFromModel methodName semanticModel
-            let result = evalLanguage.InvocationsFromModel methodName semanticModel
+            let invocations = evalLanguage.InvocationsFromSyntaxTree methodName syntaxTree
+            let result = evalLanguage.InvocationsFromSyntaxTree methodName syntaxTree
             match result with
             | Ok list -> patternsFromSyntaxNodes list
             | Error _ -> []
@@ -85,7 +88,8 @@ module ExplicitAddMapping =
         else
             Some expression
 
-    let ExplicitAddInfoListFrom (evalLanguage: EvalBase) semanticModel (invocations: (string * SyntaxNode list) list) : Result<ExplicitAddInfo list, AppErrors> =
+    let ExplicitAddInfoListFrom (evalLanguage: EvalBase) (compilation: Compilation) (invocations: (string * SyntaxNode list) list) : Result<ExplicitAddInfo list, AppErrors> =
+            Console.WriteLine($"Invation Count = {invocations.Length}")
             let addCommandInfoWithResults =
                 let mutable pos = 0
                 [ for invoke in invocations do
@@ -98,13 +102,15 @@ module ExplicitAddMapping =
                             let exprOption = (ExpresionOption evalLanguage expr)
                             match exprOption with
                             | Some expression ->
+                                let semanticModel = compilation.GetSemanticModel(expression.SyntaxTree)
                                 let method = evalLanguage.MethodSymbolFromMethodCall semanticModel expression
                                 match method with
-                                | Some m -> Ok (ParseExplicitAddInfo target exprOption m.Name)
+                                | Some m -> 
+                                    let roslynSymbol = MethodSymbol m
+                                    Ok (ParseExplicitAddInfo target roslynSymbol m.Name)
                                 | None -> Error (Generator.AppModelIssue $"Parameter must be a {pos}")
                             | None -> Error (Generator.AppModelIssue $"Method is required {pos}")
-                        | Error _->  Error (Generator.AppModelIssue $"Unexpected expression {pos}")
-                    | _ -> Error Generator.UnexpectednumberOfArguments ]
+                        | Error _->  Error (Generator.AppModelIssue $"Unexpected expression {pos}") ]
             let errors = [
                 for result in addCommandInfoWithResults do
                     match result with 
@@ -125,7 +131,7 @@ module ExplicitAddMapping =
                 | Some x -> x
                 | None -> 
                     { Path = parents 
-                      Handler = None }
+                      Handler = NoSymbolFound }
             { Data = data; Children = childList }
 
         let getKey (item: ExplicitAddInfo) = item.Path

@@ -15,7 +15,7 @@ let AppBaseCode =
         public static List<string> DefaultPatterns = new() { ""*"", ""Run *"", ""* Handler"" };
         public static void AddCommandNamePattern(string pattern) { }
         public static void RemoveCommandNamePattern(string pattern) { }
-        public void AddRootCommand(Delegate handler) { }
+        public static void CreateWithRootCommand(Delegate handler) { }
         public void AddSubCommand(Delegate handler) { }
     }"
 
@@ -49,9 +49,6 @@ let OriginalSeriesPseudoGenerated = $"
     public class OriginalSeries : AppBase
     {{
         public NextGeneration NextGeneration {{ get; set; }}
-        public AppBase Kirk {{ get; set; }}
-        public AppBase Spock {{ get; set; }}
-        public AppBase Uhura {{ get; set; }}
     }}
     "
 
@@ -60,7 +57,6 @@ let NextGenerationPseudoGenerated = $"
     {{
         public Voyager Voyager {{ get; set; }}
         public DeepSpaceNine DeepSpaceNine {{ get; set; }}
-        public AppBase Picard {{ get; set; }}
     }}
     "
 
@@ -68,60 +64,49 @@ let NextGenerationPseudoGenerated = $"
 let DeepSpaceNinePseudoGenerated = $"
     public class DeepSpaceNine : AppBase
     {{
-        public AppBase Sisko {{ get; set; }}
-        public AppBase Odo {{ get; set; }}
-        public AppBase Dax {{ get; set; }}
-        public AppBase Worf {{ get; set; }}
-        public AppBase OBrien {{ get; set; }}
     }}
     "
 
 let VoyagerPseudoGenerated = $"
     public class Voyager : AppBase
     {{
-        public AppBase Janeway {{ get; set; }}
-        public AppBase Chakotay {{ get; set; }}
-        public AppBase Torres {{ get; set; }}
-        public AppBase Tuvok {{ get; set; }}
-        public AppBase SevenOfNine {{ get; set; }}
     }}
     "
 
 let Handlers = $"
     public static class Handlers
     {{
-        public static void OriginalSeries(string kirk, string spock, string uhura) {{ }}
-        public static void NextGeneration(string picard) {{ }}
-        public static void DeepSpaceNine(string sisko, string odo, string dax, string worf, string oBrien) {{ }}
-        public static void Voyager(string janeway, string chakotay, string torres, bool tuvok, string sevenOfNine) {{ }}
+        public static void OriginalSeries(string greeting, bool kirk, bool spock, bool uhura) {{ }}
+        public static void NextGeneration(string greeting, bool picard) {{ }}
+        public static void DeepSpaceNine(string greeting, bool sisko, bool odo, bool dax, bool worf, bool oBrien) {{ }}
+        public static void Voyager(string greeting, bool janeway, bool chakotay, bool torres, bool tuvok, bool sevenOfNine) {{ }}
     }}"
 
 let CliWrapperCode statements = $@"
-using System;
-using System.Collections.Generic;
-namespace CliApp
-{{
+    using System;
+    using System.Collections.Generic;
+    namespace Prototype
+    {{
+    
+       {AppBaseCode}
 
-   {AppBaseCode}
-
-   {OriginalSeriesPseudoGenerated}
-   {NextGenerationPseudoGenerated}
-   {DeepSpaceNinePseudoGenerated}
-   {VoyagerPseudoGenerated}
-
-   {Handlers}
-
-   public class MyCli : AppBase
-   {{
-       public OriginalSeries OriginalSeries {{ get; set; }}
-   }}
-
-   public class Program
-   {{
-       {statements} 
-   }}
-}}"
-
+       {OriginalSeriesPseudoGenerated}
+       {NextGenerationPseudoGenerated}
+       {DeepSpaceNinePseudoGenerated}
+       {VoyagerPseudoGenerated}
+    
+       {Handlers}
+    
+       public class MyCli : AppBase
+       {{
+             public OriginalSeries OriginalSeries {{ get; set; }}
+       }}
+    
+       public class Program
+       {{
+           {statements} 
+       }}
+    }}"
 
 type Data =
     { ExplicitAddStatements: string
@@ -137,64 +122,61 @@ let NoMapping =
       CommandDefs = [ ] }
 
 let OneMapping =
-    let mutable commandDef = CommandDef("NextGeneration", ["NextGeneration"], ReturnType.ReturnTypeVoid, Arbitrary "NextGeneration")
-    let members = [ MemberDef("picard",commandDef, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+    let mutable commandDef = CommandDef("NextGeneration", ["NextGeneration"], ReturnType.ReturnTypeVoid, Arbitrary "NextGeneration", "")
+    let members = 
+        [ MemberDef("greeting",commandDef, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("picard",commandDef, (SimpleNamedItem "bool"), ArbitraryMember, true) ]
     commandDef.Members <- members
 
     { ExplicitAddStatements = @$"
     public void DefineCli ()
     {{ 
         var app = new MyCli();
-        app.AddRootCommand(Handlers.NextGeneration);
+        MyCli.CreateWithRootCommand(Handlers.NextGeneration);
     }}"
       CommandNames = [ "NextGeneration" ]
       CommandDefs = [ commandDef ] }
 
 let ThreeMappings =
-    // KAD-Don-Chet: Why don't I need mutable here?
-    let voyager = CommandDef("Voyager", [ "OriginalSeries"; "NextGeneration"; "Voyager" ], ReturnType.ReturnTypeVoid, Arbitrary "Voyager")
+    let voyager = CommandDef("Voyager", [ "OriginalSeries"; "NextGeneration"; "Voyager" ], ReturnType.ReturnTypeVoid, Arbitrary "Voyager", "")
     voyager.Members <-
-        [ MemberDef("janeway", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("chakotay", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("torres",  voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
+        [ MemberDef("greeting", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("janeway", voyager, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("chakotay", voyager, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("torres",  voyager, (SimpleNamedItem "bool"), ArbitraryMember, true)
           MemberDef("tuvok",  voyager, (SimpleNamedItem "bool"), ArbitraryMember, true)
-          MemberDef("sevenOfNine",  voyager, (SimpleNamedItem "string"), ArbitraryMember, true) ]
-   
-    //let deepSpaceNine = CommandDef("nextGeneration", [ "originalSeries"; "nextGeneration"; "deepSpaceNine" ], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine")
-    //deepSpaceNine.Members <-
-    //    [ MemberDef("sisko", deepSpaceNine, (SimpleNamedItem "string"), ArbitraryMember, true)
-    //      MemberDef("odo", deepSpaceNine, (SimpleNamedItem "string"), ArbitraryMember, true)
-    //      MemberDef("dax",  deepSpaceNine, (SimpleNamedItem "string"), ArbitraryMember, true)
-    //      MemberDef("worf",  deepSpaceNine, (SimpleNamedItem "bool"), ArbitraryMember, true)
-    //      MemberDef("oBrien",  deepSpaceNine, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+          MemberDef("sevenOfNine",  voyager, (SimpleNamedItem "bool"), ArbitraryMember, true) ]
 
-    let nextGeneration = CommandDef("NextGeneration", [ "OriginalSeries"; "NextGeneration" ], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine")
+    let nextGeneration = CommandDef("NextGeneration", [ "OriginalSeries"; "NextGeneration" ], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine", "")
     nextGeneration.Members <-
-        [ MemberDef("picard", nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+        [ MemberDef("greeting", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("picard", nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true) ]
     nextGeneration.SubCommands <- [voyager]
 
-    let deepSpaceNine = CommandDef("DeepSpaceNine", [ "OriginalSeries"; "NextGeneration"; "DeepSpaceNine"], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine")
+    let deepSpaceNine = CommandDef("DeepSpaceNine", [ "OriginalSeries"; "NextGeneration"; "DeepSpaceNine"], ReturnType.ReturnTypeVoid, Arbitrary "DeepSpaceNine", "")
     deepSpaceNine.Members <-
-        [ MemberDef("sisko", nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("odo", nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("dax",  nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true)
+        [ MemberDef("greeting", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("sisko", nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("odo", nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("dax",  nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true)
           MemberDef("worf",  nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true)
-          MemberDef("oBrien",  nextGeneration, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+          MemberDef("oBrien",  nextGeneration, (SimpleNamedItem "bool"), ArbitraryMember, true) ]
     deepSpaceNine.SubCommands <- []
 
-    let originalSeries = CommandDef("OriginalSeries", [ "OriginalSeries" ], ReturnType.ReturnTypeVoid, Arbitrary "OriginalSeries")
+    let originalSeries = CommandDef("OriginalSeries", [ "OriginalSeries" ], ReturnType.ReturnTypeVoid, Arbitrary "OriginalSeries", "")
     originalSeries.Members <-
-        [ MemberDef("kirk", originalSeries, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("spock", originalSeries, (SimpleNamedItem "string"), ArbitraryMember, true)
-          MemberDef("uhura",  originalSeries, (SimpleNamedItem "string"), ArbitraryMember, true) ]
+        [ MemberDef("greeting", voyager, (SimpleNamedItem "string"), ArbitraryMember, true)
+          MemberDef("kirk", originalSeries, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("spock", originalSeries, (SimpleNamedItem "bool"), ArbitraryMember, true)
+          MemberDef("uhura",  originalSeries, (SimpleNamedItem "bool"), ArbitraryMember, true) ]
     originalSeries.SubCommands <- [nextGeneration]
 
     { ExplicitAddStatements =
         @"
     public void DefineCli ()
     {{ 
+        MyCli.CreateWithRootCommand(Handlers.OriginalSeries);
         var app = new MyCli();
-        app.AddRootCommand(Handlers.OriginalSeries);
         app.OriginalSeries.AddSubCommand(Handlers.NextGeneration);
         app.OriginalSeries.NextGeneration.AddSubCommand(Handlers.Voyager);
     }}"
