@@ -47,7 +47,7 @@ type DescriptionsFromXmlCommentsTransformer() =
 type AppModelCommandInfo =
     { InfoCommandId: string option
       Path: string list
-      Method: IMethodSymbol option
+      Method: RoslynSymbol
       ForPocket: (string * obj) list 
       Namespace: string}
 
@@ -56,9 +56,9 @@ type AppModelCommandInfo =
 /// as a set of ICommandDefTransformers and IMemberDefTransformers.
 [<AbstractClass>]
 type AppModel<'T>() =
-    abstract member Initialize: SemanticModel -> Result<'T list, AppErrors>
+    abstract member Initialize: Compilation -> Result<'T list, AppErrors>
     abstract member Children: 'T -> 'T list
-    abstract member Info: SemanticModel -> 'T -> AppModelCommandInfo
+    abstract member Info: 'T -> AppModelCommandInfo
     abstract member Transformers: Transformer list
 
 

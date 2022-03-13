@@ -3,20 +3,21 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
 using CommandBase;
-using CliApp;
+using Generator.ConsoleSupport;
 namespace Prototype
 {
    
-   internal partial class OriginalSeriesApp : AppBase
+   internal partial class OriginalSeriesApp : ConsoleApplication
    {
-      private OriginalSeriesApp()
+      private OriginalSeriesApp(OriginalSeriesCommand rootCommand)
+      : base(rootCommand)
       {
+         OriginalSeries = rootCommand;
       }
       public OriginalSeriesCommand OriginalSeries {get; set;}
       public static new OriginalSeriesApp Create()
       {
-         var newApp = new OriginalSeriesApp();
-         newApp.OriginalSeries = OriginalSeriesCommand.Create();
+         var newApp = new OriginalSeriesApp(OriginalSeriesCommand.Create());
          return newApp;
       }
    }

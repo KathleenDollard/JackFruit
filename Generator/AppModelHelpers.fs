@@ -20,7 +20,7 @@ let DescriptionFromLookup mapOption (commandDef: CommandDef) =
 
 let private MethodFromCommandDef (commandDef: CommandDef) =
     match commandDef.CommandDefUsage with
-    | UserMethod (method, _) -> Some method
+    | UserMethod method -> Some method
     | _ -> None
 
 
@@ -85,7 +85,7 @@ let DescFromAttribute (roslynSymbol: ISymbol) =
 
 let CommandDescFromAttribute (commandDef: CommandDef) =
     match commandDef.CommandDefUsage with
-    | UserMethod (method, _) -> DescFromAttribute method
+    | UserMethod method -> DescFromAttribute method
     | _ -> UsePreviousValue
 
 let MemberDescFromAttribute (memberDef: MemberDef) =
@@ -100,6 +100,6 @@ let DescriptionFromSymbol (commandDef: CommandDef) =
         UsePreviousValue
 
     match commandDef.CommandDefUsage with 
-    | UserMethod (_, _) -> UsePreviousValue
+    | UserMethod _ -> UsePreviousValue
     | _ -> UsePreviousValue
 

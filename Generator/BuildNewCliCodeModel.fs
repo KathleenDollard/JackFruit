@@ -32,8 +32,13 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
         let rootCommandProperty = commandDef.Name
         Class (className) {
             Internal Partial
-            InheritedFrom "AppBase"
-            Constructor() { Private }
+            InheritedFrom "ConsoleApplication"
+            Constructor() { 
+                Private 
+                Parameter "rootCommand" rootCommandClass
+                Base [SymbolLiteral (Symbol "rootCommand")]
+                Assign rootCommandProperty To "rootCommand" 
+                }
             Property (rootCommandProperty, rootCommandClass) { 
                 Public2
             }
@@ -41,8 +46,8 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
                 Public2 Static HideByName
                 //Parameter "codeToRun" "Delegate"
                 ReturnType className
-                AssignWithVar "newApp" To (New className [])
-                Assign $"newApp.{rootCommandProperty}" To (Invoke rootCommandClass "Create" [])
+                AssignWithVar "newApp" To (New className [Invoke rootCommandClass "Create" []])
+                //Assign $"newApp.{rootCommandProperty}" To (Invoke rootCommandClass "Create" [])
                 Return (SymbolLiteral (Symbol "newApp"))
             }
         }
@@ -147,7 +152,7 @@ let OutputCommandWrapper (commandDefs: CommandDef list) : Result<NamespaceModel,
             Using "System.CommandLine.Invocation"
             Using "System.Threading.Tasks"
             Using "CommandBase";
-            Using "CliApp"
+            Using "Generator.ConsoleSupport"
             
             match commandDefs with
             | [] -> ()

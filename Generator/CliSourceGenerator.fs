@@ -10,17 +10,17 @@ open LanguageRoslynOut
 open Models
 open Generator.LanguageModel
 
-let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel (writer: IWriter) =
-    let outputter = RoslynOut(language, writer)
-    let x = 
-        appModel.Initialize(semanticModel)                           // Passes back 'T
-        |> Result.bind (CommandDefsFrom semanticModel appModel)      // Passes back CommandDefs shape
-        |> Result.bind (ApplyTransformsToMany appModel.Transformers) // Passes back transformed CommandDefs
-        |> Result.bind OutputCommandWrapper                          // Passes back CodeModel/Namespace
-        //|> Result.map ()                   // Passes back a writer, such as an ArrayWriter or StringBuilderWriter
-    match x with 
-    | Error e -> invalidOp "Oops"
-    | Ok codeModel -> outputter.Output codeModel
+//let GenerateFromAppModel<'T> (appModel: AppModel<'T>) language semanticModel (writer: IWriter) =
+//    let outputter = RoslynOut(language, writer)
+//    let x = 
+//        appModel.Initialize(semanticModel)                           // Passes back 'T
+//        |> Result.bind (CommandDefsFrom semanticModel appModel)      // Passes back CommandDefs shape
+//        |> Result.bind (ApplyTransformsToMany appModel.Transformers) // Passes back transformed CommandDefs
+//        |> Result.bind OutputCommandWrapper                          // Passes back CodeModel/Namespace
+//        //|> Result.map ()                   // Passes back a writer, such as an ArrayWriter or StringBuilderWriter
+//    match x with 
+//    | Error e -> invalidOp "Oops"
+//    | Ok codeModel -> outputter.Output codeModel
 
 
 [<AbstractClass>]
@@ -39,7 +39,6 @@ type CliSourceGenerator<'T>() =
         member this.Execute(context) =
             try
                 let syntaxTrees = List.ofSeq context.Compilation.SyntaxTrees
-                let semanticModel = context.Compilation.GetSemanticModel(syntaxTrees.First())
 
                 let language: ILanguage = 
                     match context.Compilation.Language with
@@ -52,8 +51,8 @@ type CliSourceGenerator<'T>() =
 
                 let outputter = RoslynOut(language, (StringBuilderWriter 3))
                 let modelResult = 
-                    appModel.Initialize(semanticModel)                           // Passes back 'T
-                    |> Result.bind (CommandDefsFrom semanticModel appModel)      // Passes back CommandDefs shape
+                    appModel.Initialize(context.Compilation)                     // Passes back 'T
+                    |> Result.bind (CommandDefsFrom appModel)      // Passes back CommandDefs shape
                     |> Result.bind (ApplyTransformsToMany appModel.Transformers) // Passes back transformed CommandDefs
                     |> Result.bind this.CodeModelBuilder                         // Passes back CodeModel/Namespace
                     //|> Result.map ()                   // Passes back a writer, such as an ArrayWriter or StringBuilderWriter

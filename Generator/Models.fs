@@ -8,6 +8,11 @@ open Common
 open Generator.LanguageModel
 
 
+type RoslynSymbol =
+    // May support constructors and other things in the future
+    | MethodSymbol of Method: IMethodSymbol
+    | NoSymbolFound
+
 type ItemReturn<'T> =
 | NewValue of Value: 'T
 | UsePreviousValue
@@ -61,7 +66,7 @@ type MemberDefUsage =
     | ArbitraryMember
 
 type CommandDefUsage =
-    | UserMethod of Method: IMethodSymbol * SemanticModel: SemanticModel
+    | UserMethod of Method: IMethodSymbol
     // Set Handler is just to support the work Kevin Bost did in 2021. Might be deleted in future
     //| SetHandlerMethod of Method: IMethodSymbol * SemanticModel: SemanticModel * Symbol: Symbol
     | Arbitrary of Name: string // might just be used in testing
@@ -247,13 +252,13 @@ and CommandDef(commandId: string, path: string list, returnType: ReturnType, com
 
     member this.HandlerMethodName : string = 
         match commandDefUsage with 
-        | UserMethod (m, _) -> 
+        | UserMethod m -> 
             m.ToDisplayString().SubstringBefore("(", m.ToDisplayString())
         | Arbitrary n -> n
 
     member this.ParameterTypes : NamedItem list =
        match commandDefUsage with 
-        | UserMethod (m, _) -> 
+        | UserMethod m -> 
             [ for p in m.Parameters do 
                 NamedItem.Create (p.Type.ToDisplayString()) ]
         | Arbitrary n -> []
