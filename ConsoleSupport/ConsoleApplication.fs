@@ -11,7 +11,9 @@ type ConsoleApplication(rootCommand: CliRootCommand) =
     new () = ConsoleApplication (CliRootCommand())
 
     member _.RootCommand: RootCommand = rootCommand 
-    
+
+    static member CreateWithRootCommand(codeToRun: Delegate)  = ConsoleApplication (CliRootCommand())
+
     member val CommonAliases: Dictionary<string, string> = 
            Dictionary<string, string>()
         with get
