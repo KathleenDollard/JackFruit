@@ -14,6 +14,8 @@ type AppModel(evalLanguage: EvalBase) =
 
     let mutable nspace = ""
 
+    override _.Namespace = nspace
+
     override _.Initialize compilation =
         let syntaxTrees = compilation.SyntaxTrees
         // KAD-Chet: is there a way to do a bind over a list?

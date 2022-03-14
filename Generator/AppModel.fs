@@ -60,6 +60,7 @@ type AppModel<'T>() =
     abstract member Children: 'T -> 'T list
     abstract member Info: 'T -> AppModelCommandInfo
     abstract member Transformers: Transformer list
+    abstract member Namespace: string
 
 
     default _.Transformers = 

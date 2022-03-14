@@ -1,4 +1,4 @@
-﻿using System; // Count = 1;
+﻿using System; // Count = 2;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
@@ -38,8 +38,6 @@ namespace CliDefinition
          command.Add(command.SpockOption);
          command.UhuraOption = new Option<bool>("uhura");
          command.Add(command.UhuraOption);
-         command.NextGeneration = NextGenerationCommand.Create();
-         command.Add(command.NextGeneration);
          command.Handler = command;
          return command;
       }
@@ -63,7 +61,6 @@ namespace CliDefinition
       {
          return context.ParseResult.GetValueForOption<bool>(UhuraOption);
       }
-      public NextGenerationCommand NextGeneration {get; set;}
       public Task<int> InvokeAsync(InvocationContext context)
       {
          DemoHandlers.Handlers.StarTrek(GreetingOptionResult(context), KirkOptionResult(context), SpockOptionResult(context), UhuraOptionResult(context));
@@ -71,10 +68,9 @@ namespace CliDefinition
       }
    }
    
-   public partial class NextGenerationCommand : CliCommand, ICommandHandler
+   public partial class NextGenerationCommand : CliRootCommand, ICommandHandler
    {
       private NextGenerationCommand()
-      : base("NextGeneration")
       {
       }
       public static NextGenerationCommand Create()
